@@ -1,20 +1,12 @@
-# G16 DebtMate  
+# React + Vite
 
-DebtMate is a simple web app for tracking and splitting debts with friends. It helps keep financial records clear and easy to manage.  
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features  
-- **Debt Record Log** – Log and track debts in an organized way.  
-- **Split Debt Across Users** – Easily divide expenses among multiple people.  
-- **Transaction History & Settlement** – Review all past payments and summaries.  
-- **Debt Log Notes** – Add notes to debt entries for extra context.  
-- **Customizable User Profile** – Set a profile picture and add details.  
+Currently, two official plugins are available:
 
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Team  
-Group 16:  
-- Oakar Oo  
-- Myo Thet Paing  
-- May Thu Khaing  
+## Expanding the ESLint configuration
 
----  
-Made for CSC105 Web Application Development (2/2024).  
+If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
