@@ -1,9 +1,16 @@
-// TODO: Add form validation
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { z } from "zod";
+
+// dont get freak out by this long css
+// this is just a template for every textbox on this page
+const baseInputClass = `w-full py-[1vh] px-[6%] border rounded-2xl placeholder-gray-300 text-gray-800 
+  placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] 
+  transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border 
+  focus:border-twilight focus:shadow-inner focus:outline-none`;
 
 function SignUp() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -13,6 +20,55 @@ function SignUp() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  // Zod schema
+  const signupSchema = z
+    .object({
+      username: z.string().min(3, "Username must be at least 3 characters"),
+      email: z.string().email("Invalid email address"),
+      password: z.string().min(6, "Password must be at least 6 characters"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
+  const fieldNames = ["username", "email", "password", "confirmPassword"];
+  // check field for error (type)
+  const validateField = (name, value) => {
+    try {
+      const validations = {
+        username: () => z.string().parse(value),
+        email: () => z.string().email("Invalid email address").parse(value),
+        password: () =>
+          z
+            .string()
+            .min(6, "Password must be at least 6 characters")
+            .parse(value),
+        confirmPassword: () => {
+          if (value !== formData.password) {
+            throw new Error("Passwords do not match");
+          }
+          return true;
+        },
+      };
+
+      // if it exists
+      if (validations[name]) {
+        validations[name]();
+      }
+
+      return "";
+    } catch (err) {
+      return err.errors?.[0]?.message || err.message;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +76,23 @@ function SignUp() {
       ...prev,
       [name]: value,
     }));
+
+    // check as user types
+    const fieldError = validateField(name, value);
+    setErrors((prev) => ({
+      ...prev,
+      [name]: fieldError,
+    }));
+
+    // whether "password do not match" text is shown or not
+    if (name === "password" && formData.confirmPassword) {
+      const confirmError =
+        value !== formData.confirmPassword ? "Passwords do not match" : "";
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword: confirmError,
+      }));
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -30,9 +103,67 @@ function SignUp() {
     setShowConfirmPassword((prev) => !prev);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const newErrors = Object.fromEntries(
+      fieldNames.map((name) => [name, validateField(name, formData[name])])
+    );
+
+    setErrors(newErrors);
+
+    // Check errors
+    if (Object.values(newErrors).some((error) => error !== "")) {
+      return; // if any errors exist do not summit
+    }
+
+    try {
+      // check if user already exists in localStg
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+
+      if (existingUsers.some((user) => user.username === formData.username)) {
+        setErrors((prev) => ({
+          ...prev,
+          username: "Username already exists",
+        }));
+        return;
+      }
+
+      if (existingUsers.some((user) => user.email === formData.email)) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "Email already exists",
+        }));
+        return;
+      }
+
+      const newUser = {
+        _id: Date.now().toString(),
+        ...formData,
+        createdAt: new Date().toISOString(),
+      };
+
+      // save to localStg
+      localStorage.setItem(
+        "users",
+        JSON.stringify([...existingUsers, newUser])
+      );
+
+      // save current user (for session)
+      const { password, confirmPassword, ...userSession } = newUser;
+      localStorage.setItem("currentUser", JSON.stringify(userSession));
+
+      // Redirect to home
+      navigate("/home");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col items-center overflow-hidden mx-auto">
+        {/* Logo  */}
         <div className="w-full flex justify-center mt-4">
           <div className="w-[10vw] h-[8vw] max-w-[12%] max-h-[12%] scale-[4] transform-gpu mt-[10vh] mb-[8vh] sm:w-[60px] sm:h-[60px] sm:scale-[1.5] sm:mt-[2vh] sm:mb-0">
             <svg
@@ -67,75 +198,23 @@ function SignUp() {
             Create Account
           </h2>
 
-          <form className="space-y-[3vh] mt-[3vh] sm:space-y-[20px] sm:mt-[20px]">
-            <div className="relative">
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Username"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
-              />
-              <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="sm:w-[20px] sm:h-[20px]"
-                >
-                  <path
-                    d="M12 4C13.0609 4 14.0783 4.42143 14.8284 5.17157C15.5786 5.92172 16 6.93913 16 8C16 9.06087 15.5786 10.0783 14.8284 10.8284C14.0783 11.5786 13.0609 12 12 12C10.9391 12 9.92172 11.5786 9.17157 10.8284C8.42143 10.0783 8 9.06087 8 8C8 6.93913 8.42143 5.92172 9.17157 5.17157C9.92172 4.42143 10.9391 4 12 4ZM12 14C16.42 14 20 15.79 20 18V20H4V18C4 15.79 7.58 14 12 14Z"
-                    fill="#D6D6D6"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
-              />
-              <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-[5vw] h-[5vw] max-w-[20px] max-h-[20px] sm:w-[20px] sm:h-[20px]"
-                >
-                  <path
-                    d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"
-                    fill="#D6D6D6"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
-              />
-              <div
-                className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
-                onClick={togglePasswordVisibility}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  // Open eye icon
+          <form
+            className="space-y-[3vh] mt-[3vh] sm:space-y-[20px] sm:mt-[20px]"
+            onSubmit={handleSubmit}
+          >
+            <div className="flex flex-col">
+              <div className="relative">
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Username"
+                  className={`${baseInputClass} ${
+                    errors.username ? "border-red-400" : "border-gray-300"
+                  }`}
+                />
+                <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
                   <svg
                     width="24"
                     height="24"
@@ -145,76 +224,167 @@ function SignUp() {
                     className="sm:w-[20px] sm:h-[20px]"
                   >
                     <path
-                      d="M12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9ZM12 17C10.6739 17 9.40215 16.4732 8.46447 15.5355C7.52678 14.5979 7 13.3261 7 12C7 10.6739 7.52678 9.40215 8.46447 8.46447C9.40215 7.52678 10.6739 7 12 7C13.3261 7 14.5979 7.52678 15.5355 8.46447C16.4732 9.40215 17 10.6739 17 12C17 13.3261 16.4732 14.5979 15.5355 15.5355C14.5979 16.4732 13.3261 17 12 17ZM12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z"
+                      d="M12 4C13.0609 4 14.0783 4.42143 14.8284 5.17157C15.5786 5.92172 16 6.93913 16 8C16 9.06087 15.5786 10.0783 14.8284 10.8284C14.0783 11.5786 13.0609 12 12 12C10.9391 12 9.92172 11.5786 9.17157 10.8284C8.42143 10.0783 8 9.06087 8 8C8 6.93913 8.42143 5.92172 9.17157 5.17157C9.92172 4.42143 10.9391 4 12 4ZM12 14C16.42 14 20 15.79 20 18V20H4V18C4 15.79 7.58 14 12 14Z"
                       fill="#D6D6D6"
                     />
                   </svg>
-                ) : (
-                  <svg
-                    width="22"
-                    height="19"
-                    viewBox="0 0 22 19"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="sm:w-[20px] sm:h-[20px]"
-                  >
-                    <path
-                      d="M10.83 6L14 9.16V9C14 8.20435 13.6839 7.44129 13.1213 6.87868C12.5587 6.31607 11.7956 6 11 6H10.83ZM6.53 6.8L8.08 8.35C8.03 8.56 8 8.77 8 9C8 9.79565 8.31607 10.5587 8.87868 11.1213C9.44129 11.6839 10.2044 12 11 12C11.22 12 11.44 11.97 11.65 11.92L13.2 13.47C12.53 13.8 11.79 14 11 14C9.67392 14 8.40215 13.4732 7.46447 12.5355C6.52678 11.5979 6 10.3261 6 9C6 8.21 6.2 7.47 6.53 6.8ZM1 1.27L3.28 3.55L3.73 4C2.08 5.3 0.78 7 0 9C1.73 13.39 6 16.5 11 16.5C12.55 16.5 14.03 16.2 15.38 15.66L15.81 16.08L18.73 19L20 17.73L2.27 0M11 4C12.3261 4 13.5979 4.52678 14.5355 5.46447C15.4732 6.40215 16 7.67392 16 9C16 9.64 15.87 10.26 15.64 10.82L18.57 13.75C20.07 12.5 21.27 10.86 22 9C20.27 4.61 16 1.5 11 1.5C9.6 1.5 8.26 1.75 7 2.2L9.17 4.35C9.74 4.13 10.35 4 11 4Z"
-                      fill="#D6D6D6"
-                    />
-                  </svg>
-                )}
+                </div>
               </div>
+              {errors.username && (
+                <p className="text-red-500 text-[3vw] sm:text-xs mt-1 ml-2">
+                  {errors.username}
+                </p>
+              )}
             </div>
-
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm Password"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
-              />
-              <div
-                className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
-                onClick={toggleConfirmPasswordVisibility}
-                aria-label={
-                  showConfirmPassword
-                    ? "Hide confirmed password"
-                    : "Show confirmed password"
-                }
-              >
-                {showConfirmPassword ? (
+            <div className="flex flex-col">
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  className={`${baseInputClass} ${
+                    errors.email ? "border-red-400" : "border-gray-300"
+                  }`}
+                />
+                <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
                   <svg
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="sm:w-[20px] sm:h-[20px]"
+                    className="w-[5vw] h-[5vw] max-w-[20px] max-h-[20px] sm:w-[20px] sm:h-[20px]"
                   >
                     <path
-                      d="M12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9ZM12 17C10.6739 17 9.40215 16.4732 8.46447 15.5355C7.52678 14.5979 7 13.3261 7 12C7 10.6739 7.52678 9.40215 8.46447 8.46447C9.40215 7.52678 10.6739 7 12 7C13.3261 7 14.5979 7.52678 15.5355 8.46447C16.4732 9.40215 17 10.6739 17 12C17 13.3261 16.4732 14.5979 15.5355 15.5355C14.5979 16.4732 13.3261 17 12 17ZM12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z"
+                      d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"
                       fill="#D6D6D6"
                     />
                   </svg>
-                ) : (
-                  <svg
-                    width="22"
-                    height="19"
-                    viewBox="0 0 22 19"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="sm:w-[20px] sm:h-[20px]"
-                  >
-                    <path
-                      d="M10.83 6L14 9.16V9C14 8.20435 13.6839 7.44129 13.1213 6.87868C12.5587 6.31607 11.7956 6 11 6H10.83ZM6.53 6.8L8.08 8.35C8.03 8.56 8 8.77 8 9C8 9.79565 8.31607 10.5587 8.87868 11.1213C9.44129 11.6839 10.2044 12 11 12C11.22 12 11.44 11.97 11.65 11.92L13.2 13.47C12.53 13.8 11.79 14 11 14C9.67392 14 8.40215 13.4732 7.46447 12.5355C6.52678 11.5979 6 10.3261 6 9C6 8.21 6.2 7.47 6.53 6.8ZM1 1.27L3.28 3.55L3.73 4C2.08 5.3 0.78 7 0 9C1.73 13.39 6 16.5 11 16.5C12.55 16.5 14.03 16.2 15.38 15.66L15.81 16.08L18.73 19L20 17.73L2.27 0M11 4C12.3261 4 13.5979 4.52678 14.5355 5.46447C15.4732 6.40215 16 7.67392 16 9C16 9.64 15.87 10.26 15.64 10.82L18.57 13.75C20.07 12.5 21.27 10.86 22 9C20.27 4.61 16 1.5 11 1.5C9.6 1.5 8.26 1.75 7 2.2L9.17 4.35C9.74 4.13 10.35 4 11 4Z"
-                      fill="#D6D6D6"
-                    />
-                  </svg>
-                )}
+                </div>
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-[3vw] sm:text-xs mt-1 ml-2">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  className={`${baseInputClass} ${
+                    errors.password ? "border-red-400" : "border-gray-300"
+                  }`}
+                />
+                <div
+                  className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    // Open eye icon
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="sm:w-[20px] sm:h-[20px]"
+                    >
+                      <path
+                        d="M12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9ZM12 17C10.6739 17 9.40215 16.4732 8.46447 15.5355C7.52678 14.5979 7 13.3261 7 12C7 10.6739 7.52678 9.40215 8.46447 8.46447C9.40215 7.52678 10.6739 7 12 7C13.3261 7 14.5979 7.52678 15.5355 8.46447C16.4732 9.40215 17 10.6739 17 12C17 13.3261 16.4732 14.5979 15.5355 15.5355C14.5979 16.4732 13.3261 17 12 17ZM12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z"
+                        fill="#D6D6D6"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="22"
+                      height="19"
+                      viewBox="0 0 22 19"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="sm:w-[20px] sm:h-[20px]"
+                    >
+                      <path
+                        d="M10.83 6L14 9.16V9C14 8.20435 13.6839 7.44129 13.1213 6.87868C12.5587 6.31607 11.7956 6 11 6H10.83ZM6.53 6.8L8.08 8.35C8.03 8.56 8 8.77 8 9C8 9.79565 8.31607 10.5587 8.87868 11.1213C9.44129 11.6839 10.2044 12 11 12C11.22 12 11.44 11.97 11.65 11.92L13.2 13.47C12.53 13.8 11.79 14 11 14C9.67392 14 8.40215 13.4732 7.46447 12.5355C6.52678 11.5979 6 10.3261 6 9C6 8.21 6.2 7.47 6.53 6.8ZM1 1.27L3.28 3.55L3.73 4C2.08 5.3 0.78 7 0 9C1.73 13.39 6 16.5 11 16.5C12.55 16.5 14.03 16.2 15.38 15.66L15.81 16.08L18.73 19L20 17.73L2.27 0M11 4C12.3261 4 13.5979 4.52678 14.5355 5.46447C15.4732 6.40215 16 7.67392 16 9C16 9.64 15.87 10.26 15.64 10.82L18.57 13.75C20.07 12.5 21.27 10.86 22 9C20.27 4.61 16 1.5 11 1.5C9.6 1.5 8.26 1.75 7 2.2L9.17 4.35C9.74 4.13 10.35 4 11 4Z"
+                        fill="#D6D6D6"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-[3vw] sm:text-xs mt-1 ml-2">
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm Password"
+                  className={`${baseInputClass} ${
+                    errors.confirmPassword
+                      ? "border-red-400"
+                      : "border-gray-300"
+                  }`}
+                />
+                <div
+                  className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
+                  onClick={toggleConfirmPasswordVisibility}
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirmed password"
+                      : "Show confirmed password"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="sm:w-[20px] sm:h-[20px]"
+                    >
+                      <path
+                        d="M12 9C11.2044 9 10.4413 9.31607 9.87868 9.87868C9.31607 10.4413 9 11.2044 9 12C9 12.7956 9.31607 13.5587 9.87868 14.1213C10.4413 14.6839 11.2044 15 12 15C12.7956 15 13.5587 14.6839 14.1213 14.1213C14.6839 13.5587 15 12.7956 15 12C15 11.2044 14.6839 10.4413 14.1213 9.87868C13.5587 9.31607 12.7956 9 12 9ZM12 17C10.6739 17 9.40215 16.4732 8.46447 15.5355C7.52678 14.5979 7 13.3261 7 12C7 10.6739 7.52678 9.40215 8.46447 8.46447C9.40215 7.52678 10.6739 7 12 7C13.3261 7 14.5979 7.52678 15.5355 8.46447C16.4732 9.40215 17 10.6739 17 12C17 13.3261 16.4732 14.5979 15.5355 15.5355C14.5979 16.4732 13.3261 17 12 17ZM12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z"
+                        fill="#D6D6D6"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="22"
+                      height="19"
+                      viewBox="0 0 22 19"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="sm:w-[20px] sm:h-[20px]"
+                    >
+                      <path
+                        d="M10.83 6L14 9.16V9C14 8.20435 13.6839 7.44129 13.1213 6.87868C12.5587 6.31607 11.7956 6 11 6H10.83ZM6.53 6.8L8.08 8.35C8.03 8.56 8 8.77 8 9C8 9.79565 8.31607 10.5587 8.87868 11.1213C9.44129 11.6839 10.2044 12 11 12C11.22 12 11.44 11.97 11.65 11.92L13.2 13.47C12.53 13.8 11.79 14 11 14C9.67392 14 8.40215 13.4732 7.46447 12.5355C6.52678 11.5979 6 10.3261 6 9C6 8.21 6.2 7.47 6.53 6.8ZM1 1.27L3.28 3.55L3.73 4C2.08 5.3 0.78 7 0 9C1.73 13.39 6 16.5 11 16.5C12.55 16.5 14.03 16.2 15.38 15.66L15.81 16.08L18.73 19L20 17.73L2.27 0M11 4C12.3261 4 13.5979 4.52678 14.5355 5.46447C15.4732 6.40215 16 7.67392 16 9C16 9.64 15.87 10.26 15.64 10.82L18.57 13.75C20.07 12.5 21.27 10.86 22 9C20.27 4.61 16 1.5 11 1.5C9.6 1.5 8.26 1.75 7 2.2L9.17 4.35C9.74 4.13 10.35 4 11 4Z"
+                        fill="#D6D6D6"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-[3vw] sm:text-xs mt-1 ml-2">
+                  {errors.confirmPassword}
+                </p>
+              )}
             </div>
 
             <div>
