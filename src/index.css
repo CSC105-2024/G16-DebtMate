@@ -2,11 +2,26 @@
 
 @font-face {
   font-family: "Hornbill";
-  src: url("./assets/fonts/Hornbill-Personal Use Black.otf") format("opentype");
+  src: url("/assets/fonts/Hornbill-Personal Use Black.otf") format("opentype");
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "Hornbill";
+  src: url("/assets/fonts/Hornbill-Personal Use Bold.otf") format("opentype");
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "Telegraf";
+  src: url("/assets/fonts/PPTelegraf-Regular.otf") format("opentype");
+  font-weight: normal;
 }
 
 @theme {
   --font-hornbill: "Hornbill", sans-serif;
+  --font-telegraf: "Telegraf", sans-serif;
+  --color-primary: #51508b;
 }
 
 :root {

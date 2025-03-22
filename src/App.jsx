@@ -1,3 +1,6 @@
+// TODO: Add protected routes once auth is implemented
+// TODO: Add a 404 page
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import SignUp from "./pages/SignUp";
