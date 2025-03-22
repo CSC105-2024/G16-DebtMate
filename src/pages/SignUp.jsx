@@ -220,7 +220,7 @@ function SignUp() {
             <div>
               <button
                 type="submit"
-                className="bg-twilight text-[5vw] sm:text-[18px] text-icy w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px]"
+                className="bg-twilight text-[5vw] sm:text-[18px] text-icy w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px] hover:bg-[#434273] active:bg-[#3b3b66]"
               >
                 Sign Up
               </button>
@@ -232,7 +232,7 @@ function SignUp() {
               to="/login"
               className="!text-black text-[3.5vw] sm:text-[14px] font-telegraf"
             >
-              Already have an account? <u className="!text-twilight">Login</u>
+              Already have an account? <u className="text-twilight hover:text-[#7775cc]">Login</u>
             </Link>
           </div>
         </div>
