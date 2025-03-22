@@ -32,8 +32,8 @@ function SignUp() {
 
   return (
     <>
-      <div className="flex flex-col items-center overflow-hidden bg-[#d5d4ff]">
-        <div className="w-full flex justify-center mt-4 sm:justify-start sm:ml-10">
+      <div className="flex flex-col items-center overflow-hidden mx-auto">
+        <div className="w-full flex justify-center mt-4">
           <div className="w-[10vw] h-[8vw] max-w-[12%] max-h-[12%] scale-[4] transform-gpu mt-[10vh] mb-[8vh] sm:w-[60px] sm:h-[60px] sm:scale-[1.5] sm:mt-[2vh] sm:mb-0">
             <svg
               width="100%"
@@ -58,12 +58,12 @@ function SignUp() {
           </div>
         </div>
 
-        <h1 className="font-hornbill text-[10vw] mb-[6vh] font-black sm:text-[48px] text-primary mt-[2vh] mb-[3vh] sm:mb-[2vh]">
+        <h1 className="font-hornbill text-[10vw] mb-[6vh] font-black sm:text-[48px] text-twilight mt-[2vh] mb-[3vh] sm:mb-[2vh]">
           Debt Mate
         </h1>
 
-        <div className="w-[99%] max-w-[100vw] mx-[20vw] px-[6%] py-[2vh] mb-[vh] -mt-[1vh] bg-white rounded-3xl shadow-lg sm:w-[500px] sm:mx-auto sm:px-[40px] sm:py-[30px]">
-          <h2 className="text-primary text-[9vw] px-2 pt-5 sm:text-[32px] font-hornbill font-bold pt-2 sm:px-0 sm:mb-[20px]">
+        <div className="w-[99%] max-w-[100vw] mx-[20vw] px-[6%] py-[2vh] mb-[vh] -mt-[1vh] bg-icy rounded-3xl sm:w-[500px] sm:mx-auto sm:px-[40px] sm:py-[30px]">
+          <h2 className="text-twilight text-[9vw] px-2 pt-5 sm:text-[32px] font-hornbill font-bold pt-2 sm:px-0 sm:mb-[20px]">
             Create Account
           </h2>
 
@@ -75,7 +75,7 @@ function SignUp() {
                 value={formData.username}
                 onChange={handleChange}
                 placeholder="Username"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px]"
+                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
               />
               <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
                 <svg
@@ -101,7 +101,7 @@ function SignUp() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Email"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px]"
+                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
               />
               <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
                 <svg
@@ -127,7 +127,7 @@ function SignUp() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px]"
+                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
               />
               <div
                 className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
@@ -174,7 +174,7 @@ function SignUp() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm Password"
-                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px]"
+                className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
               />
               <div
                 className="flex items-center justify-center absolute right-[6%] top-0 bottom-0 cursor-pointer"
@@ -220,7 +220,7 @@ function SignUp() {
             <div>
               <button
                 type="submit"
-                className="bg-primary text-[5vw] sm:text-[18px] text-white w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px]"
+                className="bg-twilight text-[5vw] sm:text-[18px] text-icy w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px]"
               >
                 Sign Up
               </button>
@@ -232,7 +232,7 @@ function SignUp() {
               to="/login"
               className="!text-black text-[3.5vw] sm:text-[14px] font-telegraf"
             >
-              Already have an account? <u className="!text-primary">Login</u>
+              Already have an account? <u className="!text-twilight">Login</u>
             </Link>
           </div>
         </div>

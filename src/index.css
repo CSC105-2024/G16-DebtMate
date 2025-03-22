@@ -21,7 +21,11 @@
 @theme {
   --font-hornbill: "Hornbill", sans-serif;
   --font-telegraf: "Telegraf", sans-serif;
-  --color-primary: #51508b;
+  --color-twilight: #51508b;
+  --color-dreamy: #8197e5;
+  --color-icy: #f2f5ff;
+  --color-pale: #d5d4ff;
+  --color-paid: #e0bc12;
 }
 
 :root {
