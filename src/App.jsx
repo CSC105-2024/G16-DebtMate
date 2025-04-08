@@ -6,6 +6,7 @@ import "./App.css";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import FriendList from "./pages/FriendList";
 
 function App() {
   const router = createBrowserRouter([
@@ -18,9 +19,13 @@ function App() {
       element: <Login />,
     },
     {
+      path: "/friendlist",
+      element: <FriendList />,
+    },
+    {
       path: "*",
       element: <NotFound />,
-    }
+    },
   ]);
 
   return (

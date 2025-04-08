@@ -187,6 +187,7 @@ function SignUp() {
           <form
             className="space-y-[3vh] mt-[3vh] sm:space-y-[20px] sm:mt-[20px]"
             onSubmit={handleSubmit}
+            noValidate
           >
             <div className="flex flex-col">
               <div className="relative">

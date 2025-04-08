@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import logo from "../../public/assets/icons/logo.svg";
-import email from "../../public/assets/icons/email.svg";
-import oeye from "../../public/assets/icons/oeye.svg";
-import ceye from "../../public/assets/icons/ceye.svg";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "/assets/icons/logo.svg";
+import email from "/assets/icons/email.svg";
+import oeye from "/assets/icons/oeye.svg";
+import ceye from "/assets/icons/ceye.svg";
 
 function Login() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,6 +24,12 @@ function Login() {
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    navigate("/friendlist");
   };
 
   return (
@@ -43,7 +50,11 @@ function Login() {
             Login
           </h2>
 
-          <form className="space-y-[3vh] mt-[3vh] sm:space-y-[20px] sm:mt-[15px]">
+          <form
+            className="space-y-[3vh] mt-[3vh] sm:space-y-[20px] sm:mt-[15px]"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             <div className="relative">
               <input
                 type="email"
@@ -52,6 +63,8 @@ function Login() {
                 onChange={handleChange}
                 placeholder="Email"
                 className="w-full py-[1vh] px-[6%] border border-gray-300 rounded-2xl placeholder-gray-300 text-gray-800 placeholder:text-[4vw] placeholder:font-telegraf sm:py-[10px] sm:placeholder:text-[14px] transition-all duration-300 ease-in-out hover:border-2 hover:border-pale focus:border focus:border-twilight focus:shadow-inner focus:outline-none"
+                autoComplete="email"
+                noValidate
               />
               <div className="flex items-center justify-center absolute right-[6%] top-0 bottom-0">
                 <img src={email} alt="Email Icon" />
