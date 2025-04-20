@@ -123,7 +123,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
       )}
 
       <div
-        className={`fixed top-0 left-0 h-full w-[70%] max-w-xs bg-white z-40 shadow-lg transition-transform duration-500 rounded-tr-4xl ${
+        className={`fixed top-0 left-0 h-full w-[320px] max-w-xs bg-white z-40 shadow-lg transition-transform duration-500 rounded-tr-4xl ${
           isDesktop ? "translate-x-0" : isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

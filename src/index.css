@@ -26,6 +26,7 @@
   --color-icy: #f2f5ff;
   --color-pale: #d5d4ff;
   --color-paid: #e0bc12;
+  --color-backg: rgba(242, 245, 255, 0.30);
 }
 
 :root {
