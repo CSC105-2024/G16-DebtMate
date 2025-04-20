@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 // icons for menu
@@ -38,31 +38,49 @@ MenuItem.propTypes = {
 
 export default function HamburgerMenu({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  //check screen size and set initial state
+  useEffect(() => {
+    const checkScreenSize = () => {
+    const desktop = window.innerWidth >= 1024;
+    setIsDesktop(desktop);
+
+    //if desktop, menu open
+    if (desktop) setIsOpen(true);
+    };
+
+    checkScreenSize();
+
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, [setIsOpen]);
 
   // handler functions for each menu item
   const handleCreateGroup = () => {
     navigate("/create-group");
-    setIsOpen(false); // close menu after clicking
+    if (!isDesktop) setIsOpen(false); // close menu after clicking
   };
 
   const handleFriends = () => {
     navigate("/friends");
-    setIsOpen(false);
+    if (!isDesktop) setIsOpen(false);
   };
 
   const handleGroups = () => {
     navigate("/groups");
-    setIsOpen(false);
+    if (!isDesktop) setIsOpen(false);
   };
 
   const handleAddFriend = () => {
     navigate("/add-friend");
-    setIsOpen(false);
+    if (!isDesktop) setIsOpen(false);
   };
 
   const handleSettings = () => {
     navigate("/settings");
-    setIsOpen(false);
+    if (!isDesktop) setIsOpen(false);
   };
 
   const menuItems = [
@@ -78,7 +96,11 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
       alt: "Friends",
       onClick: handleFriends,
     },
-    { icon: groupsIcon, text: "Groups", alt: "Groups", onClick: handleGroups },
+    { icon: groupsIcon, 
+      text: "Groups", 
+      alt: "Groups", 
+      onClick: handleGroups 
+    },
     {
       icon: addFriendIcon,
       text: "Add Friend",
@@ -96,13 +118,13 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
   return (
     <>
       {/* invisible layer to close sidebar when clicking outside */}
-      {isOpen && (
+      {!isDesktop && isOpen && (
         <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
       )}
 
       <div
         className={`fixed top-0 left-0 h-full w-[70%] max-w-xs bg-white z-40 shadow-lg transition-transform duration-500 rounded-tr-4xl ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isDesktop ? "translate-x-0" : isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* main sidebar stuff */}
