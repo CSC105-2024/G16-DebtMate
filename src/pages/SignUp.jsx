@@ -108,7 +108,7 @@ function SignUp() {
     setShowConfirmPassword((prev) => !prev);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = Object.fromEntries(
@@ -123,43 +123,43 @@ function SignUp() {
     }
 
     try {
-      // check if user already exists in localStg
-      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+      const response = await fetch("http://localhost:3000/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
+        credentials: "include",
+      });
 
-      if (existingUsers.some((user) => user.username === formData.username)) {
-        setErrors((prev) => ({
-          ...prev,
-          username: "Username already exists",
-        }));
-        return;
+      const data = await response.json();
+
+      if (data.success) {
+        // Save current user (for session)
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+        // Redirect to home
+        navigate("/friendlist");
+      } else {
+        if (data.message.includes("User already exists")) {
+          // Handle username/email already exists
+          if (data.message.includes("username")) {
+            setErrors((prev) => ({
+              ...prev,
+              username: "Username already exists",
+            }));
+          } else {
+            setErrors((prev) => ({
+              ...prev,
+              email: "Email already exists",
+            }));
+          }
+        }
       }
-
-      if (existingUsers.some((user) => user.email === formData.email)) {
-        setErrors((prev) => ({
-          ...prev,
-          email: "Email already exists",
-        }));
-        return;
-      }
-
-      const newUser = {
-        _id: Date.now().toString(),
-        ...formData,
-        createdAt: new Date().toISOString(),
-      };
-
-      // save to localStg
-      localStorage.setItem(
-        "users",
-        JSON.stringify([...existingUsers, newUser])
-      );
-
-      // save current user (for session)
-      const { password, confirmPassword, ...userSession } = newUser;
-      localStorage.setItem("currentUser", JSON.stringify(userSession));
-
-      // Redirect to home
-      navigate("/home");
     } catch (err) {
       console.error(err);
     }

@@ -26,10 +26,32 @@ function Login() {
     setShowPassword((prev) => !prev);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    navigate("/friendlist");
+    try {
+      const response = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Store user in localStorage for session
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+        navigate("/friendlist");
+      } else {
+        // Handle login failure (you could add an error state to display this)
+        console.error(data.message);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
