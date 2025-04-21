@@ -55,14 +55,16 @@ function FriendList() {
     <div className="flex min-h-screen bg-color-dreamy">
       {/* Desktop Menu - only visible on large screens */}
       {isDesktop && (
-        <div className={`fixed inset-y-0 left-0 z-50 ${menuWidth} min-h-screen`}>
+        <div
+          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} min-h-screen`}
+        >
           <HamburgerMenu isOpen={true} setIsOpen={setIsMenuOpen} />
         </div>
       )}
 
       {/* Mobile Menu - only visible on mobile when menu is open */}
       {!isDesktop && (
-        <div 
+        <div
           className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ease-in-out ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
@@ -79,7 +81,9 @@ function FriendList() {
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`p-3 border border-twilight rounded-md ${isMenuOpen ? 'invisible' : 'visible'} transition-opacity duration-300`}
+              className={`p-3 border border-twilight rounded-md ${
+                isMenuOpen ? "invisible" : "visible"
+              } transition-opacity duration-300`}
             >
               <Menu className="w-5 h-5 text-black" />
             </button>
@@ -117,10 +121,7 @@ function FriendList() {
 
       {/* Overlay to close menu when clicking outside - mobile only */}
       {!isDesktop && isMenuOpen && (
-        <div 
-          className="fixed inset-0"
-          onClick={() => setIsMenuOpen(false)}
-        />
+        <div className="fixed inset-0" onClick={() => setIsMenuOpen(false)} />
       )}
     </div>
   );
