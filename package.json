@@ -8,13 +8,17 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "tsx backend/src/server.ts",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server\""
+    "server": "cd backend && npm run dev",
+    "setup": "npm install && cd backend && npm install",
+    "docker:up": "docker-compose up -d --remove-orphans",
+    "docker:down": "docker-compose down",
+    "docker:rebuild": "docker-compose down -v && docker-compose up -d --remove-orphans",
+    "docker:restart": "docker restart debtmate-postgres",
+    "docker:logs": "docker-compose logs -f",
+    "start": "npm run docker:up && npm run setup && echo \"Database is running at localhost:5432 with username 'postgres' and password 'debtmate'\" && concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.1",
     "@tailwindcss/vite": "^4.0.14",
-    "hono": "^4.7.7",
     "lucide-react": "^0.487.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
