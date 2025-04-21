@@ -13,7 +13,7 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
         >
           <Menu className="h-6 w-6 text-twilight" />
         </button>
-        
+
         {/* Centered search bar */}
         <div className="flex-1">
           <SearchBar />

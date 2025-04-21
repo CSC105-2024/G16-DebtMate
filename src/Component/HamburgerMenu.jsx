@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // icons for menu
 import createGroupIcon from "/assets/icons/CreateGroups.svg";
 import friendsIcon from "/assets/icons/Friends.svg";
@@ -40,21 +40,21 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
   const [isDesktop, setIsDesktop] = useState(false);
 
-  //check screen size and set initial state
+  // check screen size and set initial state
   useEffect(() => {
     const checkScreenSize = () => {
-    const desktop = window.innerWidth >= 1024;
-    setIsDesktop(desktop);
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
 
-    //if desktop, menu open
-    if (desktop) setIsOpen(true);
+      // if desktop, menu open
+      if (desktop) setIsOpen(true);
     };
 
     checkScreenSize();
 
-    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
 
-    return () => window.removeEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, [setIsOpen]);
 
   // handler functions for each menu item
@@ -96,10 +96,11 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
       alt: "Friends",
       onClick: handleFriends,
     },
-    { icon: groupsIcon, 
-      text: "Groups", 
-      alt: "Groups", 
-      onClick: handleGroups 
+    {
+      icon: groupsIcon,
+      text: "Groups",
+      alt: "Groups",
+      onClick: handleGroups,
     },
     {
       icon: addFriendIcon,
@@ -124,7 +125,11 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
 
       <div
         className={`fixed top-0 left-0 h-full w-[320px] max-w-xs bg-white z-40 shadow-lg transition-transform duration-500 rounded-tr-4xl ${
-          isDesktop ? "translate-x-0" : isOpen ? "translate-x-0" : "-translate-x-full"
+          isDesktop
+            ? "translate-x-0"
+            : isOpen
+            ? "translate-x-0"
+            : "-translate-x-full"
         }`}
       >
         {/* main sidebar stuff */}

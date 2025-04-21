@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+import React from "react";
+import { Search } from "lucide-react";
 
 function SearchBar({ value, onChange, onSearch }) {
   return (
@@ -7,7 +7,7 @@ function SearchBar({ value, onChange, onSearch }) {
       <input
         type="text"
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         placeholder="Enter Username"
         className="flex-grow outline-none bg-transparent text-twilight placeholder-twilight"
       />
