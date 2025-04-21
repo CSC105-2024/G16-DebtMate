@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { AuthContext } from "../context/AuthContext";
 import logo from "/assets/icons/logo.svg";
 import username from "/assets/icons/username.svg";
 import email from "/assets/icons/email.svg";
@@ -16,6 +17,7 @@ const baseInputClass = `w-full py-[1vh] px-[6%] border rounded-2xl placeholder-g
 
 function SignUp() {
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -141,6 +143,9 @@ function SignUp() {
       if (data.success) {
         // Save current user (for session)
         localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+        // Update authentication state
+        setIsAuthenticated(true);
 
         // Redirect to home
         navigate("/friendlist");

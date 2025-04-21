@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "/assets/icons/logo.svg";
 import email from "/assets/icons/email.svg";
 import oeye from "/assets/icons/oeye.svg";
 import ceye from "/assets/icons/ceye.svg";
+import { AuthContext } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,6 +23,7 @@ function Login() {
       ...prev,
       [name]: value,
     }));
+    if (loginError) setLoginError("");
   };
 
   const togglePasswordVisibility = () => {
@@ -28,6 +32,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError("");
 
     try {
       const response = await fetch("http://localhost:3000/api/login", {
@@ -42,15 +47,17 @@ function Login() {
       const data = await response.json();
 
       if (data.success) {
-        // Store user in localStorage for session
         localStorage.setItem("currentUser", JSON.stringify(data.user));
+        setIsAuthenticated(true);
         navigate("/friendlist");
       } else {
-        // Handle login failure (you could add an error state to display this)
-        console.error(data.message);
+        setLoginError(
+          data.message || "Login failed. Please check your credentials."
+        );
       }
     } catch (error) {
       console.error("Login failed:", error);
+      setLoginError("Network error. Please try again.");
     }
   };
 
@@ -126,9 +133,13 @@ function Login() {
             </div>
           </form>
 
+          {loginError && (
+            <p className="text-red-500 text-sm mt-2">{loginError}</p>
+          )}
+
           <div className="mt-[2vh] sm:mt-[15px]">
             <Link
-              to="/"
+              to="/signup"
               className="!text-black text-[3.5vw] sm:text-[14px] font-telegraf"
             >
               Don't have an account?{" "}
