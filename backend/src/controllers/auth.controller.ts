@@ -2,6 +2,7 @@
 
 import { Context } from 'hono';
 import { UserModel } from '../models/user';
+import { generateToken } from '../utils/jwt';
 
 const AuthController = {
   // User signup handler
@@ -11,36 +12,43 @@ const AuthController = {
       const { username, email, password } = body;
       
       // check if user already exists
-      if (UserModel.exists(username, email)) {
+      const userExists = await UserModel.exists(username, email);
+      if (userExists) {
         return c.json({ 
           success: false, 
           message: 'User already exists' 
         }, 400);
       }
       
-      const newUser = UserModel.create(username, email, password);
+      // create user with hashed password
+      const newUser = await UserModel.create(username, email, password);
       
-      const { password: _, ...userWithoutPassword } = newUser;
+      // generate JWT token
+      const token = generateToken(newUser.id);
+      
+      // Set JWT as HTTP-only cookie
+      c.header('Set-Cookie', `auth_token=${token}; HttpOnly; Path=/; Max-Age=${60*60*24*7}; SameSite=Lax`);
       
       return c.json({ 
         success: true, 
-        user: userWithoutPassword 
+        user: newUser
       }, 201);
     } catch (error) {
+      console.error('Signup error:', error);
       return c.json({ 
         success: false, 
-        message: error.message 
+        message: 'An error occurred during signup' 
       }, 500);
     }
   },
   
-  // User login handler
+  // to handle user login handler
   login: async (c: Context) => {
     try {
       const body = await c.req.json();
       const { email, password } = body;
       
-      const user = UserModel.findByCredentials(email, password);
+      const user = await UserModel.findByEmail(email);
       
       if (!user) {
         return c.json({ 
@@ -49,6 +57,22 @@ const AuthController = {
         }, 401);
       }
       
+      // Validate pass
+      const isPasswordValid = await UserModel.validatePassword(password, user.password);
+      
+      if (!isPasswordValid) {
+        return c.json({ 
+          success: false, 
+          message: 'Invalid credentials' 
+        }, 401);
+      }
+      
+      // make JWT token
+      const token = generateToken(user.id);
+      
+      // Set JWT as HTTP-only cookie
+      c.header('Set-Cookie', `auth_token=${token}; HttpOnly; Path=/; Max-Age=${60*60*24*7}; SameSite=Lax`);
+      
       const { password: _, ...userWithoutPassword } = user;
       
       return c.json({ 
@@ -56,7 +80,7 @@ const AuthController = {
         user: userWithoutPassword 
       });
     } catch (error) {
-        // oops smt went wrong
+      console.error('Login error:', error);
       return c.json({ 
         success: false, 
         message: error.message 
