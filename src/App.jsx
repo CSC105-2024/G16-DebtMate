@@ -29,7 +29,7 @@ function App() {
   ]);
 
   return (
-    <div className="app-container">
+    <div className="app-container bg-pale">
       <RouterProvider router={router} />
     </div>
   );

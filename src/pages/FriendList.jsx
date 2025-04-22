@@ -12,24 +12,18 @@ function FriendList() {
 
   // Mock data
   const friends = [
-    {
-      id: 1,
-      name: "Alan",
-      balance: 100,
-      avatarUrl: defaultprofile,
-    },
-    {
-      id: 2,
-      name: "Beauz",
-      balance: -100,
-      avatarUrl: defaultprofile,
-    },
-    {
-      id: 3,
-      name: "Colde",
-      balance: 0,
-      avatarUrl: defaultprofile,
-    },
+    {id: 1, name: "Alan", balance: 100, avatarUrl: defaultprofile,},
+    {id: 2, name: "Beauz", balance: -100, avatarUrl: defaultprofile,},
+    {id: 4, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 5, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 6, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 7, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 8, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 9, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 10, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 11, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 12, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
+    {id: 13, name: "Colde", balance: 0,avatarUrl: defaultprofile,},
   ];
 
   const handleSearch = () => {
@@ -52,7 +46,7 @@ function FriendList() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-color-dreamy">
+    <div className="flex  bg-color-dreamy ">
       {/* Desktop Menu - only visible on large screens */}
       {isDesktop && (
         <div className={`fixed inset-y-0 left-0 z-50 ${menuWidth} min-h-screen`}>
@@ -72,7 +66,7 @@ function FriendList() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-72">
         {/* Top Bar with Menu Button and Search */}
         <div className="flex items-center justify-center gap-3 px-4 pt-4">
           {/* Menu button - only on mobile */}
@@ -86,7 +80,7 @@ function FriendList() {
           )}
 
           {/* Search Bar */}
-          <div className="flex-grow max-w-md">
+          <div className="flex-grow max-w-md mx-auto">
             <SearchBar
               value={searchTerm}
               onChange={setSearchTerm}
@@ -99,7 +93,7 @@ function FriendList() {
         {/* Friend List */}
         <div className="flex justify-center px-4 pt-8">
           <div className="w-full max-w-md">
-            <h1 className="text-2xl font-bold mb-6 text-center">Friend List</h1>
+            <h1 className="text-2xl font-hornbill text-twilight mb-6 text-center">Friend List</h1>
             <div className="space-y-4">
               {friends.map((friend) => (
                 <FriendCard

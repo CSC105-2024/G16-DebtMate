@@ -2,7 +2,7 @@ import Avatar from './Avatar';
 
 const FriendCard = ({ name, balance, avatarUrl, onClick }) => {
   return (
-    <div className="w-[390px] h-[71px] rounded-[13px] border border-twilight bg-backg hover:bg-gray-200 hover:shadow-lg hover:backdrop-blur-[18px] transition-all duration-300 p-[13px] box-border flex items-center justify-between cursor-pointer"
+    <div className="w-[324px] md:w-[390px] h-[71px] rounded-[13px] border border-twilight bg-backg hover:bg-gray-200 hover:shadow-lg hover:backdrop-blur-[18px] transition-all duration-300 p-[13px] box-border flex items-center justify-between cursor-pointer"
     onClick={onClick}
     >
       
