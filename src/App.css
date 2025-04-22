@@ -47,3 +47,16 @@ li {
 }
 
 
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e0ddff; /* light dreamy tone */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #5c4b8c; /* twilight tone */
+  border-radius: 8px;
+  border: 2px solid transparent;
+}
