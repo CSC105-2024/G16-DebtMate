@@ -3,7 +3,6 @@ import pool from '../config/db.config';
 import bcrypt from 'bcrypt';
 interface User {
   id: number;
-  name: string;
   username: string;
   email: string;
   password: string;

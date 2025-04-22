@@ -4,7 +4,6 @@ DROP TABLE IF EXISTS users;
 -- Create users table only
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  nickname VARCHAR(255) NOT NULL,
   username VARCHAR(255) UNIQUE NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
 
