@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @font-face {
   font-family: "Hornbill";
   src: url("/assets/fonts/Hornbill-Personal Use Black.otf") format("opentype");
@@ -16,6 +17,18 @@
   font-family: "Telegraf";
   src: url("/assets/fonts/PPTelegraf-Regular.otf") format("opentype");
   font-weight: normal;
+}
+
+@font-face {
+  font-family: "Telegraf";
+  src: url("/assets/fonts/Telegraf-UltraBold.otf") format("opentype");
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "Telegraf";
+  src: url("/assets/fonts/Telegraf-UltraLight.otf") format("opentype");
+  font-weight: lighter;
 }
 
 @theme {
@@ -54,11 +67,11 @@ a:hover {
 }
 
 body {
-  margin: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  margin: 0;
   background-color: #d5d4ff;
 }
 

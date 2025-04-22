@@ -8,6 +8,7 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import FriendList from "./pages/FriendList";
+import AddFriends from "./pages/AddFriends";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 
@@ -46,6 +47,14 @@ function AppRoutes() {
         <Navigate to="/friendlist" replace />
       ) : (
         <Login />
+      ),
+    },
+    {
+      path: "/add-friend",
+      element: (
+        <ProtectedRoute>
+          <AddFriends />
+        </ProtectedRoute>
       ),
     },
     {

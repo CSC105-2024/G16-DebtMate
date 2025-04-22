@@ -64,7 +64,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
   };
 
   const handleFriends = () => {
-    navigate("/friends");
+    navigate("/friendlist");
     if (!isDesktop) setIsOpen(false);
   };
 
@@ -82,7 +82,10 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
     navigate("/settings");
     if (!isDesktop) setIsOpen(false);
   };
-
+  const user = JSON.parse(localStorage.getItem("currentUser")) || {
+    username: "User",
+    email: "",
+  };
   const menuItems = [
     {
       icon: createGroupIcon,
@@ -155,7 +158,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
               <h2
                 className={`font-hornbill font-black text-[30px] text-twilight text-left w-full max-[${XS}]:text-[24px]`}
               >
-                Mike Wazowski
+                {user.username}
               </h2>
               <h3
                 className={`font-telegraf font-black text-[17px] text-twilight text-left w-full max-[${XS}]:text-[14px]`}

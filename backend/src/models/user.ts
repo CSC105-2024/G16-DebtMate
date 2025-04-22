@@ -3,6 +3,7 @@ import pool from '../config/db.config';
 import bcrypt from 'bcrypt';
 interface User {
   id: number;
+  name: string;
   username: string;
   email: string;
   password: string;
@@ -23,6 +24,18 @@ const UserModel = {
     }
   },
   
+  findByName: async (username: string): Promise<User | null> => {
+    try {
+      const result = await pool.query(
+        'SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)',
+        [username]
+      );
+      return result.rows[0].exists;
+    } catch (error) {
+      console.error('Error checking if user exists:', error);
+      throw error;
+    }
+  },
   exists: async (username: string, email: string): Promise<boolean> => {
     try {
       const result = await pool.query(
@@ -56,6 +69,19 @@ const UserModel = {
   
   validatePassword: async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
     return bcrypt.compare(plainPassword, hashedPassword);
+  },
+
+  findByUsernamePattern: async (pattern: string, limit: number = 5): Promise<User[]> => {
+    try {
+      const result = await pool.query(
+        'SELECT id, username, email, created_at FROM users WHERE username ILIKE $1 ORDER BY username LIMIT $2',
+        [`${pattern}%`, limit]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error('Error finding users by username pattern:', error);
+      throw error;
+    }
   }
 };
 
