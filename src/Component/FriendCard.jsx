@@ -16,9 +16,9 @@ const FriendCard = ({ name, balance, avatarUrl, onClick }) => {
       <div
         className={`font-telegraf font-black text-[20px] min-w-[70px] text-right ${
           balance > 0
-            ? "text-[#4CAF50]"
+            ? "text-twilight"
             : balance < 0
-            ? "text-[#F44336]"
+            ? "text-dreamy"
             : "text-paid"
         }`}
       >
