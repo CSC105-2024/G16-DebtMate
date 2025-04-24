@@ -1,4 +1,9 @@
-// auth routes for login and signup stuff
+/**
+ * defines authentication-related API endpoints.
+ * handles user signup, login, and session verification.
+ * connects frontend auth requests to the auth controller.
+ * used by server.ts as part of the main API routes.
+ */
 
 import { Hono } from 'hono';
 import AuthController from '../controllers/auth.controller';
@@ -17,7 +22,6 @@ authRoutes.post('/login', AuthController.login);
 // route to check if user is logged in and get their info
 authRoutes.get('/me', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  // could grab more user details here if needed
   return c.json({ 
     success: true, 
     userId
