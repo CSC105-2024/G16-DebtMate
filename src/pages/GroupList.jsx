@@ -10,25 +10,47 @@ function FriendList() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const friendsPerPage = 5;
+  const [sortAsc, setSortAsc] = useState(true);
+  const friendsPerPage = 14;
 
-  // Sample friend data
-  const friends = Array.from({ length: 20 }, (_, i) => ({
-    id: i + 1,
-    name: `Friend ${i + 1}`,
-    balance: Math.floor(Math.random() * 200 - 100),
-    avatarUrl: defaultprofile,
-  }));
+  // Mock data
+  const friends = [
+    { id: 1, name: "Alan", balance: 100, avatarUrl: defaultprofile },
+    { id: 2, name: "Beauz", balance: -100, avatarUrl: defaultprofile },
+    { id: 4, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 5, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 6, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 7, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 8, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 9, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 10, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 11, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 12, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 13, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 14, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 15, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 16, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 17, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 18, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 19, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 20, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 21, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 22, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 23, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+  ];
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
   };
 
+  // Menu width consistent between mobile and desktop
+  const menuWidth = "w-72"; // Tailwind class for width
+
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
       setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
+      setIsMenuOpen(desktop); // Auto-open on desktop
     };
 
     checkScreenSize();
@@ -36,14 +58,12 @@ function FriendList() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Pagination logic (for desktop)
+  // Pagination for desktop
   const totalPages = Math.ceil(friends.length / friendsPerPage);
   const paginatedFriends = friends.slice(
     (currentPage - 1) * friendsPerPage,
     currentPage * friendsPerPage
   );
-
-  const menuWidth = "w-72";
 
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
@@ -84,9 +104,24 @@ function FriendList() {
               />
             </div>
           </div>
-          <h1 className="text-2xl font-hornbill text-twilight mt-4 text-center">
-            Friend List
-          </h1>
+          <div className="mt-4 flex items-center justify-between">
+            <h1 className="text-2xl font-hornbill text-twilight">Friends</h1>
+
+            <button
+              onClick={() => setSortAsc(!sortAsc)}
+              className="p-2 hover:bg-slate-200 rounded transition"
+            >
+              <img
+                src={
+                  sortAsc
+                    ? "/assets/icons/12-order.svg"
+                    : "/assets/icons/az-order.svg"
+                }
+                alt="Sort toggle"
+                className="w-5 h-5"
+              />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable List (Mobile/Tablet) */}
@@ -105,25 +140,27 @@ function FriendList() {
         </div>
 
         {/* Paginated List (Desktop only) */}
-        <div className="hidden lg:flex flex-col items-center flex-1 overflow-hidden px-4 pt-6">
-          <div className="w-full max-w-md space-y-4">
+        <div className="hidden lg:flex flex-col flex-1 overflow-hidden px-4 pt-6">
+          <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
             {paginatedFriends.map((friend) => (
-              <FriendCard
-                key={friend.id}
-                name={friend.name}
-                balance={friend.balance}
-                avatarUrl={friend.avatarUrl}
-                onClick={() => console.log("View profile:", friend.name)}
-              />
+              <div key={friend.id} className="mb-4 break-inside-avoid">
+                <FriendCard
+                  key={friend.id}
+                  name={friend.name}
+                  balance={friend.balance}
+                  avatarUrl={friend.avatarUrl}
+                  onClick={() => console.log("View profile:", friend.name)}
+                />
+              </div>
             ))}
           </div>
 
           {/* Pagination controls */}
-          <div className="flex gap-2 mt-6">
+          <div className="py-4 w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 bg-twilight text-white rounded disabled:opacity-50"
+              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
             >
               Prev
             </button>
@@ -135,7 +172,7 @@ function FriendList() {
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-twilight text-white rounded disabled:opacity-50"
+              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
             >
               Next
             </button>
@@ -145,7 +182,10 @@ function FriendList() {
 
       {/* Overlay (Mobile only) */}
       {!isDesktop && isMenuOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsMenuOpen(false)}
+        />
       )}
     </div>
   );

@@ -52,11 +52,11 @@ li {
 }
 
 ::-webkit-scrollbar-track {
-  background: #e0ddff; /* light dreamy tone */
+  background: #e0ddff; /* dreamy color */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #5c4b8c; /* twilight tone */
+  background-color: #5c4b8c; /* twilight color */
   border-radius: 8px;
   border: 2px solid transparent;
 }
