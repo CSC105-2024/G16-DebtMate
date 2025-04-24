@@ -1,23 +1,40 @@
+/**
+ * database configuration that supports both postgres and in-memory modes.
+ * loads database connection info from environment variables.
+ * provides standardized query methods used by models for data access.
+ * automatically selects implementation based on DB_MODE.
+ */
+
 import pg from 'pg';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-dotenv.config();
+// setup environment variables
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, '../../.env') });
+
+// database configuration from environment
+const DB_MODE = process.env.DB_MODE || 'memory';
+const DB_USER = process.env.DB_USER || 'admin';
+const DB_PASSWORD = process.env.DB_PASSWORD || 'admin';
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_PORT = parseInt(process.env.DB_PORT || '5433');
+const DB_NAME = process.env.DB_NAME || 'debtmate';
 
 const { Pool } = pg;
 
-// Check if using PostgreSQL or in-memory mode
-const DB_MODE = process.env.DB_MODE || 'memory';
-
-// Database interface to standardize operations between memory and postgres
+// standard interface for database operations
 export interface Database {
   query: (text: string, params?: any[]) => Promise<any>;
   connect: () => Promise<any>;
 }
 
-// Real PostgreSQL pool
+// postgres connection pool
 let pgPool: pg.Pool | null = null;
 
-// In-memory representation of database tables
+// in-memory database storage (for development/testing)
 const memoryDb = {
   users: [],
   friends: [],
@@ -25,36 +42,27 @@ const memoryDb = {
   group_members: []
 };
 
-// Initialize PostgreSQL pool if needed
+// initialize postgres connection if needed
 if (DB_MODE === 'postgres') {
-  console.log('Initializing PostgreSQL connection...');
+  const dbConfig = {
+    user: DB_USER,
+    password: DB_PASSWORD,
+    host: DB_HOST,
+    port: DB_PORT,
+    database: DB_NAME
+  };
   
-  pgPool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_NAME || 'debtmate'
-  });
+  pgPool = new Pool(dbConfig);
   
-  // Test connection
-  pgPool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-      console.error('PostgreSQL connection error:', err.message);
-    } else {
-      console.log('Connected to PostgreSQL successfully');
-    }
-  });
+  // log connection attempt
+  console.log('Initializing PostgreSQL connection to:', `${DB_HOST}:${DB_PORT}/${DB_NAME}`);
 }
 
-// Create mock database operations
+// in-memory database implementation
 const mockDb: Database = {
   query: async (text, params) => {
-    console.log('Memory DB operation:', { text, params });
-    
-    // Very simple mock implementation - extend as needed
+    // simplified query handling for memory mode
     if (text.toUpperCase().startsWith('SELECT')) {
-      // Handle basic SELECT operations
       if (text.includes('users')) {
         return { rows: memoryDb.users };
       } else if (text.includes('friends')) {
@@ -64,22 +72,20 @@ const mockDb: Database = {
       }
       return { rows: [] };
     } else if (text.toUpperCase().startsWith('INSERT')) {
-      // Handle INSERT operations (simplified)
       return { rows: [{ id: Date.now() }] }; 
     }
     
     return { rows: [] };
   },
   connect: async () => {
-    console.log('Connected to in-memory database');
     return {
       query: mockDb.query,
-      release: () => console.log('Released in-memory connection')
+      release: () => {}
     };
   }
 };
 
-// Return the appropriate database interface
+// select database implementation based on mode
 const db: Database = DB_MODE === 'postgres' && pgPool 
   ? {
       query: (text, params) => pgPool!.query(text, params),
@@ -87,12 +93,6 @@ const db: Database = DB_MODE === 'postgres' && pgPool
     }
   : mockDb;
 
-if (DB_MODE === 'memory') {
-  console.log('Using in-memory database implementation');
-} else if (DB_MODE === 'postgres') {
-  console.log('Using PostgreSQL database implementation');
-} else {
-  console.warn(`Unknown DB_MODE: ${DB_MODE}. Defaulting to in-memory database.`);
-}
+console.log(`Using ${DB_MODE === 'postgres' ? 'PostgreSQL' : 'in-memory'} database implementation`);
 
 export default db;

@@ -1,75 +1,91 @@
 # DebtMate Backend
 
-## Database Modes
+## Architecture Overview
 
-This backend supports two database modes:
+The DebtMate backend is built with Hono.js and follows a modular architecture:
 
-- **memory**: In-memory database for development (no PostgreSQL needed)
-- **postgres**: PostgreSQL database for production and testing
+- **Server**: Entry point that initializes the application (`server.ts`)
+- **Models**: Data access layer with abstraction for both database modes (`models/`)
+- **Controllers**: Business logic for processing requests (`controllers/`)
+- **Routes**: API endpoint definitions (`routes/`)
+- **Middleware**: Request processing functionality (`middleware/`)
+- **Utils**: Shared utility functions (`utils/`)
+- **Config**: Application configuration (`config/`)
 
-## Quick Start
+## Database Architecture
 
-### Development Mode (No Docker Required)
+### Dual Database Implementation
 
-For quick development without Docker:
+The backend supports two database modes through a unified interface:
 
-```bash
-# In root directory
-npm run dev:memory
+- **Memory Mode**: In-memory JavaScript objects for quick development
+- **PostgreSQL Mode**: Persistent database for production environments
+
+Both implementations expose the same interface through the `Database` type defined in `db.config.ts`:
+
+```typescript
+interface Database {
+  query: (text: string, params?: any[]) => Promise<any>;
+  connect: () => Promise<any>;
+}
 ```
 
-This runs the app with an in-memory database that doesn't require any setup.
+### Models Layer
 
-### PostgreSQL Mode (With Docker)
+All database operations go through model files that automatically switch between implementations based on the `DB_MODE` environment variable. For example, `UserModel` in `user.ts` provides methods for:
 
-For development with real PostgreSQL:
+- User creation with password hashing
+- User authentication
+- User search functionality
+- Profile management
 
-```bash
-# In root directory
-npm run dev:postgres
-```
+### Database Schema
 
-This:
+When using PostgreSQL mode, the database includes the following tables:
 
-1. Starts a PostgreSQL container using Docker
-2. Runs the app connected to PostgreSQL
-3. Persists data between restarts
+- **users**: User accounts with authentication information
+- **friends**: Friend relationships between users
+- **groups**: Group information for shared expenses
+- **group_members**: Members associated with groups
 
-## Configuration
+## Authentication System
 
-Database mode is controlled by the `DB_MODE` environment variable in `.env`:
+Authentication is handled through JWT (JSON Web Tokens):
 
-```
-DB_MODE=memory  # Options: memory, postgres
-```
+- **Token Generation**: `jwt.ts` creates tokens on login/signup
+- **Token Storage**: HTTP-only cookies for secure client storage
+- **Middleware Protection**: `auth.middleware.ts` verifies tokens
+- **Routes Protection**: Protected routes require valid authentication
 
-## Docker Commands
+## API Endpoints
 
-```bash
-# Start Docker containers in background
-npm run docker:up
+The API provides the following primary endpoints:
 
-# Stop Docker containers
-npm run docker:down
+- `/api/signup`: Create a new user account
+- `/api/login`: Authenticate a user and get session token
+- `/api/me`: Verify authentication and get current user info
+- `/api/search/users`: Search for users to add as friends
 
-# View Docker logs
-npm run docker:logs
+## Custom Middleware
 
-# Rebuild database (CAUTION: Deletes all data)
-npm run docker:rebuild
+- **CORS**: Enables cross-origin requests from the frontend
+- **Authentication**: Verifies user identity for protected routes
 
-# Connect to PostgreSQL CLI
-npm run docker:postgres
-```
+## Environment Configuration
 
-## Database Structure
+The backend loads configuration from environment variables in `.env`:
 
-The PostgreSQL database is initialized with:
+- **Database Settings**: Control database connection parameters
+- **JWT Settings**: Configure token generation and validation
+- **Mode Selection**: Switch between memory and PostgreSQL modes
 
-- users - User accounts
-- friends - Friend relationships
-- groups - Group information
-- group_members - Members of groups
+## Development Workflow
 
-Additional tables can be added by editing the initialization script at:
-`database/init/01-schema.sql`
+When developing the backend:
+
+1. **Models** define all database operations with dual implementations.
+2. **Controllers** implement business logic using the models.
+3. **Routes** connect HTTP endpoints to controllers.
+4. **Server** ties everything together and applies middleware.
+
+This layered architecture makes it easy to extend functionality while maintaining separation of concerns.
