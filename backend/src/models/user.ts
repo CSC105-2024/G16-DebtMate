@@ -1,11 +1,20 @@
+/**
+ * user model that handles all user-related database operations.
+ * provides methods for finding, creating, and validating users.
+ * supports both postgres and in-memory storage modes based on DB_MODE env variable.
+ * used by auth.controller.ts for authentication and search.ts for user lookups.
+ */
+
 import bcrypt from 'bcrypt';
 import db from '../config/db.config';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+// control which database implementation to use
 const DB_MODE = process.env.DB_MODE || 'memory';
 
+// user model interface
 interface User {
   id: number;
   name: string;
@@ -15,11 +24,11 @@ interface User {
   created_at: Date;
 }
 
-// In-memory storage only used in memory mode
+// in-memory storage (only used when DB_MODE='memory')
 const users: User[] = [];
 let nextId = 1;
 
-// Helper functions for PostgreSQL operations
+// postgres database operations
 const pgUserModel = {
   async findByEmail(email: string): Promise<User | null> {
     const result = await db.query(
@@ -66,7 +75,7 @@ const pgUserModel = {
   }
 };
 
-// In-memory user model implementation
+// in-memory implementation for development
 const memoryUserModel = {
   findByEmail: async (email: string): Promise<User | null> => {
     return users.find(user => user.email === email) || null;
@@ -81,7 +90,6 @@ const memoryUserModel = {
   },
   
   create: async (username: string, email: string, password: string): Promise<Omit<User, 'password'>> => {
-    // Hash password 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
@@ -108,14 +116,14 @@ const memoryUserModel = {
   }
 };
 
-// Common operations that work with both implementations
+// common operations shared between both implementations
 const commonUserModel = {
   validatePassword: async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 };
 
-// Choose the appropriate implementation based on DB_MODE
+// export the appropriate implementation based on DB_MODE
 const UserModel = DB_MODE === 'postgres' 
   ? { ...pgUserModel, ...commonUserModel }
   : { ...memoryUserModel, ...commonUserModel };
