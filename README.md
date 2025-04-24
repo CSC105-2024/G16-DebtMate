@@ -1,6 +1,6 @@
 # DebtMate 💸
 
-## what's this?
+## What's This?
 
 DebtMate helps you:
 
@@ -8,77 +8,120 @@ DebtMate helps you:
 - Create groups
 - Keep tabs without the drama
 
-## getting started
+## Getting Started
 
-### prerequisites
+### Prerequisites
 
 Before starting, make sure you have the following installed:
 
 1. **Node.js & npm** - [Download here](https://nodejs.org/)
 2. **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
-   - Required for running PostgreSQL database
-   - Make sure Docker service is running before you start
+   - Required for PostgreSQL mode (optional for memory mode)
+   - Make sure Docker service is running before using PostgreSQL mode
 
-### one-command setup (easiest way)
+### Database Modes
 
-Just want to get up and running? After installing the prerequisites:
+DebtMate supports two database modes:
+
+1. **Memory Mode** - In-memory database for quick development (no Docker required)
+2. **PostgreSQL Mode** - Persistent database for full-featured development and production
+
+#### Choosing a Mode
+
+Set the database mode in `/backend/.env`:
 
 ```bash
-# clone it
-git clone https://github.com/CSC105-2024/G16-DebtMate.git
-cd G16-DebtMate
-
-# copy example environment file manually (one-time setup)
-cd backend
-cp .env.example .env
-cd ..
-
-# run everything with just one command
-npm start
+DB_MODE=memory # Options: memory, postgres
 ```
 
-The `npm start` command:
+The mode is also controlled by which startup script you use (see below).
 
-1. Starts Docker container with PostgreSQL
-2. Installs all dependencies (frontend + backend)
-3. Launches both frontend and backend concurrently
+### Quick Start Options
 
-### what's happening under the hood
+#### Memory Mode (No Docker Required)
 
-When using `npm start`, DebtMate:
-
-- Launches PostgreSQL in Docker at localhost:5432
-- Sets up database with username `postgres` and password `debtmate`
-- Runs database initialization scripts
-- Starts React frontend (Vite) at http://localhost:5173
-- Starts Hono backend at http://localhost:3000
-
-### manual setup (if you prefer more control)
+For quick development without setting up PostgreSQL:
 
 ```bash
-# clone it
+# Clone the repository
 git clone https://github.com/CSC105-2024/G16-DebtMate.git
 cd G16-DebtMate
 
-# set up environment file
+# Copy example environment file
 cd backend
-cp .env.example .env
+cp .env.example .env  # DB_MODE=memory is default
 cd ..
 
-# install dependencies for frontend and backend
+# Start the app with in-memory database
+npm run dev:memory
+```
+
+#### PostgreSQL Mode (With Docker)
+
+For development with persistent data storage:
+
+```bash
+# Clone the repository
+git clone https://github.com/CSC105-2024/G16-DebtMate.git
+cd G16-DebtMate
+
+# Copy example environment file
+cd backend
+cp .env.example .env
+# Edit .env to set DB_MODE=postgres if you want (optional - script handles it)
+cd ..
+
+# Start with PostgreSQL database
+npm run dev:postgres
+```
+
+### What's Happening Under the Hood?
+
+When running in Memory Mode (`npm run dev:memory`):
+
+- Uses an in-memory database that resets when the server restarts
+- No PostgreSQL or Docker required
+- Faster startup, simpler configuration
+- Data is lost when the server restarts
+
+When running in PostgreSQL Mode (`npm run dev:postgres`):
+
+- Starts a PostgreSQL container in Docker (port 5433)
+- Sets up database with username `admin` and password `admin`
+- Runs database initialization scripts from `init`
+- Data persists between restarts
+- Starts React frontend (Vite) at `http://localhost:5173`
+- Starts Hono backend at `http://localhost:3000`
+
+### Manual Setup
+
+If you prefer more control over the setup process:
+
+```bash
+# Clone the repository
+git clone https://github.com/CSC105-2024/G16-DebtMate.git
+cd G16-DebtMate
+
+# Set up environment file
+cd backend
+cp .env.example .env
+# Edit .env to set DB_MODE=memory or DB_MODE=postgres
+cd ..
+
+# Install dependencies for frontend and backend
 npm run setup
 
-# start the database with Docker
-npm run docker:up
+# For PostgreSQL Mode only:
+npm run docker:up  # Start PostgreSQL container
 
-# in two separate terminals:
-npm run dev      # frontend (terminal 1)
-npm run server   # backend (terminal 2)
+# In two separate terminals:
+npm run dev      # Frontend (terminal 1)
+npm run server   # Backend (terminal 2)
 ```
 
-### environment setup
+### Environment Setup
 
-The backend needs environment variables to work. These are stored in `/backend/.env`:
+The backend needs environment variables to work. These are stored in `.env`:
 
 ```bash
 # Make sure you've created the .env file
@@ -88,12 +131,16 @@ cp .env.example .env
 
 The default values in `.env.example` are:
 
-```
-DB_USER=postgres
-DB_PASSWORD=debtmate
+```bash
+# Database Configuration
+DB_USER=admin
+DB_PASSWORD=admin
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=5433
 DB_NAME=debtmate
+DB_MODE=memory  # Options: memory, postgres
+
+# JWT Configuration
 JWT_SECRET=21541661356
 JWT_EXPIRES_IN=7d
 ```
@@ -101,11 +148,12 @@ JWT_EXPIRES_IN=7d
 For development, these defaults work fine. For production:
 
 - Change the `JWT_SECRET` to a strong random string
+- Set `DB_MODE=postgres` for persistent data
 - Update database credentials as needed
 
-### docker commands
+### Docker Commands
 
-Docker manages the PostgreSQL database. Here are useful commands:
+Docker manages the PostgreSQL database (only needed for PostgreSQL mode):
 
 ```bash
 # Start Docker containers
@@ -117,93 +165,115 @@ npm run docker:down
 # Rebuild database (WILL DELETE ALL DATA!)
 npm run docker:rebuild
 
-# Just restart the database
-npm run docker:restart
+# Complete reset (removes all volumes, images, and containers)
+npm run docker:reset
 
 # View Docker logs
 npm run docker:logs
+
+# Connect to PostgreSQL CLI
+npm run docker:postgres
+
+# List database tables
+npm run docker:list-tables
+
+# List all users in the database
+npm run docker:list-users
 ```
 
-## accessing the app
+### Accessing the App
 
 When everything is running:
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
-- PostgreSQL: localhost:5432 (username: `postgres`, password: `debtmate`)
+- **Frontend:** `http://localhost:5173`
+- **Backend API:** `http://localhost:3000`
+- **PostgreSQL (if using postgres mode):** `localhost:5433`
+  - **Username:** `admin`
+  - **Password:** `admin`
+  - **Database:** `debtmate`
 
-## tech stack
+### Tech Stack
 
-- **frontend**: react 19, tailwind, vite
-- **backend**: hono (express-like), PostgreSQL
-- **infrastructure**: Docker, Docker Compose
-- **tooling**: eslint, concurrently
+- **Frontend:** React 19, Tailwind, Vite
+- **Backend:** Hono (Express-like), PostgreSQL/In-memory
+- **Infrastructure:** Docker, Docker Compose
+- **Tooling:** ESLint, Concurrently, Cross-env
 
-## database info
+### Database Info
 
-We're using PostgreSQL for data persistence:
+DebtMate supports two database implementations:
 
+#### In-Memory Database:
+
+- Simple JavaScript objects that reset on server restart
+- No setup required, great for quick development
+- Data is lost when the server restarts
+
+#### PostgreSQL Database:
+
+- Persistent data storage
 - User accounts and authentication
 - Groups and members
 - Expenses and debts tracking
 - Transaction history
 
-The database is automatically initialized when using Docker through SQL scripts in the `database/init` folder.
+The PostgreSQL database is automatically initialized when using Docker through SQL scripts in the `init` folder.
 
 If you need to connect directly:
 
 ```bash
 # Connect to PostgreSQL when using Docker
-docker exec -it debtmate-postgres psql -U postgres -d debtmate
+npm run docker:postgres
 
 # Or use your favorite PostgreSQL client:
 # Host: localhost
-# Port: 5432
-# User: postgres
-# Password: debtmate
+# Port: 5433
+# User: admin
+# Password: admin
 # Database: debtmate
 ```
 
-## folder structure
+### Folder Structure
 
 ```
 /
-├── src/                  # frontend code
-│   ├── Component/        # reusable components
-│   ├── pages/            # page components
-│   └── App.jsx           # main app component
+├── src/                  # Frontend code
+│   ├── Component/        # Reusable components
+│   ├── pages/            # Page components
+│   └── App.jsx           # Main app component
 │
-├── backend/              # backend api
+├── backend/              # Backend API
 │   ├── src/
-│   │   ├── models/       # data models
-│   │   ├── routes/       # api routes
-│   │   ├── controllers/  # business logic
-│   │   ├── middleware/   # request middleware
-│   │   ├── utils/        # utility functions
-│   │   ├── config/       # configuration files
-│   │   └── server.ts     # entry point
-│   ├── .env              # backend config (must be created)
-│   └── .env.example      # example environment variables
+│   │   ├── models/       # Data models
+│   │   ├── routes/       # API routes
+│   │   ├── controllers/  # Business logic
+│   │   ├── middleware/   # Request middleware
+│   │   ├── utils/        # Utility functions
+│   │   ├── config/       # Configuration files
+│   │   └── server.ts     # Entry point
+│   ├── .env              # Backend config (must be created)
+│   └── .env.example      # Example environment variables
 │
-├── database/             # database setup
-│   └── init/             # initialization SQL scripts
+├── database/             # Database setup
+│   └── init/             # Initialization SQL scripts
 │
-├── package.json          # project dependencies and scripts
-└── docker-compose.yml    # docker configuration
+├── package.json          # Project dependencies and scripts
+└── docker-compose.yml    # Docker configuration
 ```
 
-## todo list
+### Todo List
 
-- [x] replace in-memory user store with PostgreSQL database
-- [x] add Docker setup for easy development
-- [x] add JWT auth
-- [ ] implement group creation
-- [ ] add expense features
+- [x] Replace in-memory user store with PostgreSQL database
+- [x] Add Docker setup for easy development
+- [x] Add JWT auth
+- [x] Support both in-memory and PostgreSQL modes
+- [ ] Implement group creation
+- [ ] Add expense features
 
-## contributing
+### Contributing
 
-just make it work ¯\_(ツ)\_/¯
+Just make it work ¯\\\_(ツ)\_/¯
 
-## license
+### License
 
-mit, do whatever
+MIT, do whatever
