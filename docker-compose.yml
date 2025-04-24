@@ -1,23 +1,25 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:16
     container_name: debtmate-postgres
-    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: debtmate
-      POSTGRES_DB: debtmate
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-debtmate}
+      # Pass the DB_MODE to the container to control seed data
+      DB_MODE: ${DB_MODE:-development}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
-    networks:
-      - debtmate-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
-
-networks:
-  debtmate-network:
-    driver: bridge

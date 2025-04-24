@@ -10,12 +10,15 @@
     "preview": "vite preview",
     "server": "cd backend && npm run dev",
     "setup": "npm install && cd backend && npm install",
-    "docker:up": "docker-compose up -d --remove-orphans",
+    "start": "concurrently \"npm run dev\" \"npm run server\"",
+    "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:rebuild": "docker-compose down -v && docker-compose up -d --remove-orphans",
-    "docker:restart": "docker restart debtmate-postgres",
     "docker:logs": "docker-compose logs -f",
-    "start": "npm run docker:up && npm run setup && echo \"Database is running at localhost:5432 with username 'postgres' and password 'debtmate'\" && concurrently \"npm run dev\" \"npm run server\""
+    "docker:rebuild": "docker-compose down -v && docker-compose up -d",
+    "db:reset": "bash ./scripts/reset-db.sh",
+    "docker:postgres": "docker exec -it debtmate-postgres psql -U postgres -d debtmate",
+    "dev:memory": "cross-env DB_MODE=memory concurrently \"npm run dev\" \"npm run server\"",
+    "dev:postgres": "cross-env DB_MODE=postgres concurrently \"npm run docker:up\" \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.14",
@@ -33,6 +36,7 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
