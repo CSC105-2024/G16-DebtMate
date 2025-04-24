@@ -12,14 +12,18 @@ The DebtMate backend is built with Hono.js and follows a modular architecture:
 - **Utils**: Shared utility functions (`utils/`)
 - **Config**: Application configuration (`config/`)
 
+---
+
 ## Database Architecture
 
 ### Dual Database Implementation
 
-The backend supports two database modes through a unified interface:
+DebtMate supports two database modes through a unified interface:
 
-- **Memory Mode**: In-memory JavaScript objects for quick development
-- **PostgreSQL Mode**: Persistent database for production environments
+| Mode                | Description                                        |
+| ------------------- | -------------------------------------------------- |
+| **Memory Mode**     | In-memory JavaScript objects for quick development |
+| **PostgreSQL Mode** | Persistent database for production environments    |
 
 Both implementations expose the same interface through the `Database` type defined in `db.config.ts`:
 
@@ -30,62 +34,121 @@ interface Database {
 }
 ```
 
-### Models Layer
+---
 
-All database operations go through model files that automatically switch between implementations based on the `DB_MODE` environment variable. For example, `UserModel` in `user.ts` provides methods for:
+## Models Layer
+
+Each model file contains dual implementations (in-memory and PostgreSQL) and selects the appropriate one based on the `DB_MODE` environment variable. This encapsulation allows the rest of the application to interact with a consistent interface regardless of the storage mode.
+
+For example, `UserModel` in `user.ts` provides methods for:
 
 - User creation with password hashing
 - User authentication
 - User search functionality
 - Profile management
 
-### Database Schema
+The implementation looks like this:
+
+```typescript
+// Define both implementations
+const pgUserModel = {
+  /* PostgreSQL-specific implementations */
+};
+const memoryUserModel = {
+  /* In-memory implementations */
+};
+const commonUserModel = {
+  /* Shared functionality */
+};
+
+// Export the appropriate implementation based on DB_MODE
+const UserModel =
+  DB_MODE === "postgres"
+    ? { ...pgUserModel, ...commonUserModel }
+    : { ...memoryUserModel, ...commonUserModel };
+```
+
+---
+
+## Database Schema
 
 When using PostgreSQL mode, the database includes the following tables:
 
-- **users**: User accounts with authentication information
-- **friends**: Friend relationships between users
-- **groups**: Group information for shared expenses
-- **group_members**: Members associated with groups
+| Table             | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| **users**         | Stores user accounts with authentication information |
+| **friends**       | Manages friend relationships between users           |
+| **groups**        | Stores group information for shared expenses         |
+| **group_members** | Tracks members associated with groups                |
+
+---
 
 ## Authentication System
 
-Authentication is handled through JWT (JSON Web Tokens):
+DebtMate uses **JWT (JSON Web Tokens)** for authentication:
 
 - **Token Generation**: `jwt.ts` creates tokens on login/signup
 - **Token Storage**: HTTP-only cookies for secure client storage
 - **Middleware Protection**: `auth.middleware.ts` verifies tokens
 - **Routes Protection**: Protected routes require valid authentication
 
+---
+
 ## API Endpoints
 
 The API provides the following primary endpoints:
 
-- `/api/signup`: Create a new user account
-- `/api/login`: Authenticate a user and get session token
-- `/api/me`: Verify authentication and get current user info
-- `/api/search/users`: Search for users to add as friends
+| Endpoint            | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `/api/signup`       | Create a new user account                       |
+| `/api/login`        | Authenticate a user and get session token       |
+| `/api/me`           | Verify authentication and get current user info |
+| `/api/search/users` | Search for users to add as friends              |
+
+---
 
 ## Custom Middleware
+
+DebtMate includes middleware for request processing:
 
 - **CORS**: Enables cross-origin requests from the frontend
 - **Authentication**: Verifies user identity for protected routes
 
+---
+
 ## Environment Configuration
 
-The backend loads configuration from environment variables in `.env`:
+The backend loads configuration from environment variables stored in `.env`:
 
-- **Database Settings**: Control database connection parameters
-- **JWT Settings**: Configure token generation and validation
-- **Mode Selection**: Switch between memory and PostgreSQL modes
+```bash
+# Database Configuration
+DB_USER=admin
+DB_PASSWORD=admin
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=debtmate
+DB_MODE=memory  # Options: memory, postgres
+
+# JWT Configuration
+JWT_SECRET=21541661356
+JWT_EXPIRES_IN=7d
+```
+
+### Production Recommendations:
+
+- **Change** `JWT_SECRET` to a strong random string
+- **Set** `DB_MODE=postgres` for persistent data
+- **Update** database credentials as needed
+
+---
 
 ## Development Workflow
 
-When developing the backend:
+DebtMate follows a structured development workflow:
 
 1. **Models** define all database operations with dual implementations.
 2. **Controllers** implement business logic using the models.
 3. **Routes** connect HTTP endpoints to controllers.
 4. **Server** ties everything together and applies middleware.
 
-This layered architecture makes it easy to extend functionality while maintaining separation of concerns.
+This layered architecture ensures modularity and scalability while keeping concerns separated.

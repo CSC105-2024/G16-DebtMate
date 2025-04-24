@@ -1,16 +1,16 @@
 # DebtMate 💸
 
-## What's This?
+## 🚀 What's This?
 
 DebtMate helps you:
 
-- Track who owes what
-- Create groups
-- Keep tabs without the drama
+- 💰 Track who owes what
+- 👥 Create groups
+- ✅ Keep tabs without the drama
 
-## Getting Started
+## 🛠 Getting Started
 
-### Prerequisites
+### 📌 Prerequisites
 
 Before starting, make sure you have the following installed:
 
@@ -19,14 +19,18 @@ Before starting, make sure you have the following installed:
    - Required for PostgreSQL mode (optional for memory mode)
    - Make sure Docker service is running before using PostgreSQL mode
 
-### Database Modes
+---
+
+## 📂 Database Modes
 
 DebtMate supports two database modes:
 
-1. **Memory Mode** - In-memory database for quick development (no Docker required)
-2. **PostgreSQL Mode** - Persistent database for full-featured development and production
+| Mode                | Description                                                      |
+| ------------------- | ---------------------------------------------------------------- |
+| **Memory Mode**     | In-memory database for quick development (no Docker required)    |
+| **PostgreSQL Mode** | Persistent database for full-featured development and production |
 
-#### Choosing a Mode
+#### 🏗 Choosing a Mode
 
 Set the database mode in `/backend/.env`:
 
@@ -36,9 +40,11 @@ DB_MODE=memory # Options: memory, postgres
 
 The mode is also controlled by which startup script you use (see below).
 
-### Quick Start Options
+---
 
-#### Memory Mode (No Docker Required)
+## 🚀 Quick Start Options
+
+### 🔹 Memory Mode (No Docker Required)
 
 For quick development without setting up PostgreSQL:
 
@@ -56,7 +62,7 @@ cd ..
 npm run dev:memory
 ```
 
-#### PostgreSQL Mode (With Docker)
+### 🔹 PostgreSQL Mode (With Docker)
 
 For development with persistent data storage:
 
@@ -75,25 +81,31 @@ cd ..
 npm run dev:postgres
 ```
 
-### What's Happening Under the Hood?
+---
 
-When running in Memory Mode (`npm run dev:memory`):
+## ⚙️ What's Happening Under the Hood?
+
+### 🛑 Memory Mode (`npm run dev:memory`)
 
 - Uses an in-memory database that resets when the server restarts
 - No PostgreSQL or Docker required
 - Faster startup, simpler configuration
-- Data is lost when the server restarts
+- **Data is lost when the server restarts**
 
-When running in PostgreSQL Mode (`npm run dev:postgres`):
+### ✅ PostgreSQL Mode (`npm run dev:postgres`)
 
 - Starts a PostgreSQL container in Docker (port 5433)
-- Sets up database with username `admin` and password `admin`
+- Sets up database with:
+  - **Username:** `admin`
+  - **Password:** `admin`
 - Runs database initialization scripts from `init`
-- Data persists between restarts
-- Starts React frontend (Vite) at `http://localhost:5173`
-- Starts Hono backend at `http://localhost:3000`
+- **Data persists between restarts**
+- Starts **React frontend** (Vite) at [`http://localhost:5173`](http://localhost:5173)
+- Starts **Hono backend** at [`http://localhost:3000`](http://localhost:3000)
 
-### Manual Setup
+---
+
+## 🔨 Manual Setup
 
 If you prefer more control over the setup process:
 
@@ -119,7 +131,9 @@ npm run dev      # Frontend (terminal 1)
 npm run server   # Backend (terminal 2)
 ```
 
-### Environment Setup
+---
+
+## ⚙️ Environment Setup
 
 The backend needs environment variables to work. These are stored in `.env`:
 
@@ -129,7 +143,7 @@ cd backend
 cp .env.example .env
 ```
 
-The default values in `.env.example` are:
+#### 🔑 Default values in `.env.example`:
 
 ```bash
 # Database Configuration
@@ -145,13 +159,15 @@ JWT_SECRET=21541661356
 JWT_EXPIRES_IN=7d
 ```
 
-For development, these defaults work fine. For production:
+**Production Recommendations:**
 
-- Change the `JWT_SECRET` to a strong random string
-- Set `DB_MODE=postgres` for persistent data
-- Update database credentials as needed
+- 🔐 Change the `JWT_SECRET` to a strong random string
+- 🔄 Set `DB_MODE=postgres` for persistent data
+- 🔎 Update database credentials as needed
 
-### Docker Commands
+---
+
+## 🐳 Docker Commands
 
 Docker manages the PostgreSQL database (only needed for PostgreSQL mode):
 
@@ -181,41 +197,53 @@ npm run docker:list-tables
 npm run docker:list-users
 ```
 
-### Accessing the App
+---
+
+## 🌐 Accessing the App
 
 When everything is running:
 
-- **Frontend:** `http://localhost:5173`
-- **Backend API:** `http://localhost:3000`
-- **PostgreSQL (if using postgres mode):** `localhost:5433`
-  - **Username:** `admin`
-  - **Password:** `admin`
-  - **Database:** `debtmate`
+| Service                                 | URL                                              |
+| --------------------------------------- | ------------------------------------------------ |
+| **Frontend**                            | [`http://localhost:5173`](http://localhost:5173) |
+| **Backend API**                         | [`http://localhost:3000`](http://localhost:3000) |
+| **PostgreSQL (if using postgres mode)** | `localhost:5433`                                 |
 
-### Tech Stack
+**Database Credentials:**
 
-- **Frontend:** React 19, Tailwind, Vite
-- **Backend:** Hono (Express-like), PostgreSQL/In-memory
-- **Infrastructure:** Docker, Docker Compose
-- **Tooling:** ESLint, Concurrently, Cross-env
+- **User**: `admin`
+- **Password**: `admin`
 
-### Database Info
+---
+
+## 🏗 Tech Stack
+
+| Component          | Tech Used                                 |
+| ------------------ | ----------------------------------------- |
+| **Frontend**       | React 19, Tailwind, Vite                  |
+| **Backend**        | Hono (Express-like), PostgreSQL/In-memory |
+| **Infrastructure** | Docker, Docker Compose                    |
+| **Tooling**        | ESLint, Concurrently, Cross-env           |
+
+---
+
+## 📦 Database Info
 
 DebtMate supports two database implementations:
 
-#### In-Memory Database:
+### 🛑 In-Memory Database:
 
-- Simple JavaScript objects that reset on server restart
-- No setup required, great for quick development
-- Data is lost when the server restarts
+✔ Simple JavaScript objects that reset on server restart  
+✔ No setup required, great for quick development  
+❌ **Data is lost when the server restarts**
 
-#### PostgreSQL Database:
+### ✅ PostgreSQL Database:
 
-- Persistent data storage
-- User accounts and authentication
-- Groups and members
-- Expenses and debts tracking
-- Transaction history
+✔ Persistent data storage  
+✔ User accounts and authentication  
+✔ Groups and members  
+✔ Expenses and debts tracking  
+✔ Transaction history
 
 The PostgreSQL database is automatically initialized when using Docker through SQL scripts in the `init` folder.
 
@@ -233,9 +261,11 @@ npm run docker:postgres
 # Database: debtmate
 ```
 
-### Folder Structure
+---
 
-```
+## 📂 Folder Structure
+
+```bash
 /
 ├── src/                  # Frontend code
 │   ├── Component/        # Reusable components
@@ -261,7 +291,9 @@ npm run docker:postgres
 └── docker-compose.yml    # Docker configuration
 ```
 
-### Todo List
+---
+
+## ✅ Todo List
 
 - [x] Replace in-memory user store with PostgreSQL database
 - [x] Add Docker setup for easy development
@@ -270,10 +302,14 @@ npm run docker:postgres
 - [ ] Implement group creation
 - [ ] Add expense features
 
-### Contributing
+---
+
+## 🤝 Contributing
 
 Just make it work ¯\\\_(ツ)\_/¯
 
-### License
+---
 
-MIT, do whatever
+## 📜 License
+
+MIT - Do whatever
