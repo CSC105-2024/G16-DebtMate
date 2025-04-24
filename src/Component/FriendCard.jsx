@@ -1,3 +1,10 @@
+/**
+ * displays friend information in a card format.
+ * shows avatar, name, and balance with color-coded display.
+ * used by FriendList and AddFriends pages to show friend data.
+ * clickable design for navigation to friend details.
+ */
+
 import Avatar from "./Avatar";
 
 const FriendCard = ({ name, balance, avatarUrl, onClick }) => {
@@ -26,7 +33,7 @@ const FriendCard = ({ name, balance, avatarUrl, onClick }) => {
           ? `+$${balance}`
           : balance < 0
           ? `-$${Math.abs(balance)}`
-          : "0"}
+          : "$0"}
       </div>
     </div>
   );
