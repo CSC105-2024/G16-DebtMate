@@ -11,6 +11,8 @@ import FriendList from "./pages/FriendList";
 import AddFriends from "./pages/AddFriends";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
+import GroupList from "./pages/GroupList";
+import { Group } from "lucide-react";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -68,6 +70,10 @@ function AppRoutes() {
     {
       path: "*",
       element: <NotFound />,
+    },
+    {
+      path: "/groups",
+      element: <GroupList />,
     },
   ]);
 
