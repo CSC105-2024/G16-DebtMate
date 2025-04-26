@@ -107,8 +107,6 @@ function AppRoutes() {
       path: "*",
       element: <NotFound />,
     },
-<<<<<<< HEAD
-=======
     {
       path: "/groups",
       element: <GroupList />,
@@ -117,7 +115,6 @@ function AppRoutes() {
       path: "/settings",
       element: <SettingsPage />,
     },
->>>>>>> 571cfb3edca1c860553cddda7ebb7b9518a06dc8
   ]);
 
   return <RouterProvider router={router} />;
