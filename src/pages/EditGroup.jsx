@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../styles/EditGroup.css"; // Assuming you have CSS for this page
 
 const EditGroup = () => {
   const { groupId } = useParams();

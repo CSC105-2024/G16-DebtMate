@@ -14,6 +14,7 @@ import { useContext } from "react";
 import GroupList from "./pages/GroupList";
 import CreateGroup from "./pages/CreateGroup";
 import ItemList from "./pages/ItemList";
+import EditGroup from "./pages/EditGroup";
 import AddMember from "./Component/AddMember";
 
 function AppRoutes() {
@@ -93,6 +94,15 @@ function AppRoutes() {
         </ProtectedRoute>
       ),
     },
+    {
+      path: "/edit-group/:groupId",
+      element: (
+        <ProtectedRoute>
+          <EditGroup />
+        </ProtectedRoute>
+      ),
+    },
+
     {
       path: "*",
       element: <NotFound />,

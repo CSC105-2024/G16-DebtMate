@@ -21,4 +21,6 @@ groupRoutes.get('/', authMiddleware, GroupController.getUserGroups);
 // Get single group with details
 groupRoutes.get('/:id', authMiddleware, GroupController.getGroupDetails);
 
+
+
 export default groupRoutes;
