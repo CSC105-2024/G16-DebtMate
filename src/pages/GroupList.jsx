@@ -17,45 +17,19 @@ function GroupList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const groupsPerPage = 14;
-  // Fetch groups from API
+  // Fetch groups from localStorage
   useEffect(() => {
-    const fetchGroups = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
+    try {
+      const savedGroups = JSON.parse(localStorage.getItem("groups") || "[]");
+      setGroups(savedGroups);
       setError(null);
-
-      try {
-        const response = await fetch("http://localhost:3000/api/groups", {
-          credentials: "include", // Send auth token cookie
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server responded with status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          // Transform API results to component-friendly format
-          const transformedGroups = data.groups.map((group) => ({
-            id: group.id,
-            name: group.name,
-            balance: 0, // You might calculate this based on group transactions
-            avatarUrl: defaultprofile,
-          }));
-
-          setGroups(transformedGroups);
-        } else {
-          setError(data.message || "Failed to fetch groups");
-        }
-      } catch (err) {
-        console.error("Error fetching groups:", err);
-        setError("Failed to connect to the server");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGroups();
+    } catch (err) {
+      console.error("Error loading groups:", err);
+      setError("Failed to load groups");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   // Filter groups based on search term

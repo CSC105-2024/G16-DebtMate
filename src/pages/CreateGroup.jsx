@@ -60,58 +60,29 @@ function CreateGroup() {
     setError("");
 
     try {
-      // Get current user or create a mock one for development
-      let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      // Create a simple group object
+      const newGroup = {
+        id: Date.now(), // Simple unique ID
+        name: groupName,
+        description: groupDescription,
+        members: selectedMembers,
+        createdAt: new Date().toISOString(),
+      };
 
-      // Remove this mock user creation block
-      if (!currentUser || !currentUser.id) {
-        // For development, create a mock user
-        currentUser = { id: 12, name: "Mock Developer" };
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        console.log("Created mock user for development");
-      }
+      // Get existing groups or initialize empty array
+      const existingGroups = JSON.parse(localStorage.getItem("groups") || "[]");
 
-      // Create the group with the selected members
-      const response = await fetch("http://localhost:3000/api/groups/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: groupName,
-          description: groupDescription,
-          members: selectedMembers.map((member) => ({ id: member.id })),
-          userId: currentUser.id, // Explicitly send the userId for development
-        }),
-        credentials: "include",
-      });
+      // Add new group
+      existingGroups.push(newGroup);
 
-      if (!response.ok) {
-        // Session might be invalid
-        if (response.status === 401) {
-          // Redirect to login
-          navigate("/login");
-          return;
-        }
+      // Save to localStorage
+      localStorage.setItem("groups", JSON.stringify(existingGroups));
 
-        // Extract error message from response if possible
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Server error: ${response.status}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Navigate to the new group's items page
-        navigate(`/groups/${data.group.id}/items`);
-      } else {
-        setError(data.message || "Failed to create group");
-      }
+      // Navigate to the new group's items page
+      navigate(`/groups/${newGroup.id}/items`);
     } catch (error) {
       console.error("Create group error:", error);
-      setError(error.message || "Network error. Please try again.");
+      setError("Failed to create group. Please try again.");
     } finally {
       setIsCreating(false);
     }

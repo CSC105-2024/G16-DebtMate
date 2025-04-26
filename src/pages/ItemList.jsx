@@ -30,27 +30,24 @@ function ItemList() {
   const menuWidth = "w-72";
   // Fetch group details
   useEffect(() => {
-    const fetchGroupDetails = async () => {
+    const fetchGroupDetails = () => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/groups/${groupId}`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
+        // Get groups from localStorage
+        const groups = JSON.parse(localStorage.getItem("groups") || "[]");
+        const groupData = groups.find((g) => g.id === parseInt(groupId));
 
-        if (data.success) {
-          setGroup(data.group);
-          // In the future, also fetch items for this group
-          setItems([]);
+        if (groupData) {
+          setGroup(groupData);
+          // Set items from group data if it exists
+          setItems(groupData.items || []);
+          setError(null);
         } else {
-          setError(data.message || "Failed to load group details");
+          setError("Group not found");
         }
       } catch (err) {
-        console.error("Error fetching group:", err);
-        setError("Failed to connect to the server");
+        console.error("Error loading group:", err);
+        setError("Failed to load group data");
       } finally {
         setIsLoading(false);
       }
@@ -78,7 +75,7 @@ function ItemList() {
   }, []);
 
   const handleAddItem = () => {
-    navigate(`/groups/${groupId}/add-item`);
+    navigate(`/groups/${groupId}/items/add`);
   };
 
   const handleSplitBill = () => {
@@ -182,7 +179,8 @@ function ItemList() {
                     {item.name}
                   </span>
                   <span className="font-telegraf font-bold text-twilight">
-                    {currency}{parseFloat(item.amount).toFixed(2)}
+                    {currency}
+                    {parseFloat(item.amount).toFixed(2)}
                   </span>
                 </div>
               ))}

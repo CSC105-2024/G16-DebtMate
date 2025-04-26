@@ -18,6 +18,7 @@ import EditGroup from "./pages/EditGroup";
 import AddMember from "./Component/AddMember";
 import { Group, Settings } from "lucide-react";
 import SettingsPage from "./pages/SettingsPage";
+import AddItems from "./pages/AddItems";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -116,6 +117,10 @@ function AppRoutes() {
     {
       path: "/settings",
       element: <SettingsPage />,
+    },
+    {
+      path: "/groups/:groupId/items/add",
+      element: <AddItems />,
     },
   ]);
 

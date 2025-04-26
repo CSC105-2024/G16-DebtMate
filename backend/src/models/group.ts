@@ -124,42 +124,53 @@ const pgGroupModel = {
   },
   
   async getGroupDetails(groupId: number, userId: number): Promise<any> {
-    // make sure they're allowed to see this group
-    const accessCheck = await db.query(
-      `SELECT 1 FROM groups g
-       LEFT JOIN group_members gm ON g.id = gm.group_id
-       WHERE (g.id = $1 AND (g.created_by = $2 OR gm.user_id = $2))
-       LIMIT 1`,
-      [groupId, userId]
-    );
-    
-    if (accessCheck.rows.length === 0) {
-      return null; // nope, no access for you
+    try {
+      // First check if user has access to this group
+      const accessCheck = await db.query(
+        `SELECT 1 FROM groups g
+         LEFT JOIN group_members gm ON g.id = gm.group_id
+         WHERE (g.id = $1 AND (g.created_by = $2 OR gm.user_id = $2))
+         LIMIT 1`,
+        [groupId, userId]
+      );
+      
+      if (accessCheck.rows.length === 0) {
+        return null;
+      }
+
+      // Get group details
+      const groupResult = await db.query(
+        'SELECT * FROM groups WHERE id = $1',
+        [groupId]
+      );
+
+      if (groupResult.rows.length === 0) {
+        return null;
+      }
+
+      // Get all members of the group with their user details
+      const membersResult = await db.query(
+        `SELECT DISTINCT u.id, u.username, u.email, u.name
+         FROM users u
+         INNER JOIN group_members gm ON u.id = gm.user_id
+         WHERE gm.group_id = $1`,
+        [groupId]
+      );
+
+      // Return combined group and members data
+      return {
+        ...groupResult.rows[0],
+        members: membersResult.rows.map(member => ({
+          id: member.id,
+          username: member.username,
+          name: member.name,
+          email: member.email
+        }))
+      };
+    } catch (error) {
+      console.error('Error getting group details:', error);
+      throw error;
     }
-    
-    // get the basic group info
-    const groupResult = await db.query(
-      'SELECT * FROM groups WHERE id = $1',
-      [groupId]
-    );
-    
-    if (groupResult.rows.length === 0) {
-      return null; // group doesn't exist anymore?
-    }
-    
-    // get all the people in this group
-    const membersResult = await db.query(
-      `SELECT u.id, u.name, u.username, u.email
-       FROM users u
-       JOIN group_members gm ON u.id = gm.user_id
-       WHERE gm.group_id = $1`,
-      [groupId]
-    );
-    
-    return {
-      ...groupResult.rows[0],
-      members: membersResult.rows
-    };
   }
 };
 
