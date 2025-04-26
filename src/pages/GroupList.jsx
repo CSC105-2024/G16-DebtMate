@@ -5,9 +5,9 @@ import { Menu, Plus } from "lucide-react";
 import FriendCard from "../Component/FriendCard"; // Or replace with GroupCard if available
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
+import Avatar from "../Component/Avatar";
 
 function GroupList() {
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,7 +17,7 @@ function GroupList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const groupsPerPage = 14;
-  // Fetch groups from localStorage
+  // fetch groups from localStorage
   useEffect(() => {
     setIsLoading(true);
     try {
@@ -32,12 +32,12 @@ function GroupList() {
     }
   }, []);
 
-  // Filter groups based on search term
+  // filter groups based on search term
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort groups by name if needed
+  // sort groups alphabetically
   const sortedGroups = [...filteredGroups].sort((a, b) => {
     return sortAsc
       ? a.name.localeCompare(b.name)
@@ -46,19 +46,9 @@ function GroupList() {
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
-    // Search is handled by the filteredGroups already
   };
 
-  const handleCreateGroup = () => {
-    navigate("/create-group");
-  };
-
-  const handleGroupClick = (groupId) => {
-    navigate(`/groups/${groupId}/items`);
-  };
-
-  // Menu width consistent between mobile and desktop
-  const menuWidth = "w-72"; // Tailwind class for width
+  const menuWidth = "w-72";
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -77,6 +67,16 @@ function GroupList() {
     (currentPage - 1) * groupsPerPage,
     currentPage * groupsPerPage
   );
+
+  const navigate = useNavigate();
+
+  const handleGroupClick = (groupId) => {
+    navigate(`/groups/${groupId}/items`);
+  };
+
+  const handleCreateGroup = () => {
+    navigate("/create-group"); // Navigates to the create group page
+  };
 
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
@@ -160,30 +160,40 @@ function GroupList() {
             </div>
           ) : (
             <>
-              {/* Mobile/Tablet List */}
-              <div className="lg:hidden w-full max-w-md mx-auto space-y-4">
-                {sortedGroups.map((group) => (
-                  <FriendCard
-                    key={group.id}
-                    name={group.name}
-                    balance={group.balance}
-                    avatarUrl={group.avatarUrl}
-                    onClick={() => handleGroupClick(group.id)}
-                  />
-                ))}
-              </div>
-
               {/* Desktop List with Pagination */}
               <div className="hidden lg:flex flex-col flex-1">
                 <div className="flex-1 w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
                   {paginatedGroups.map((group) => (
                     <div key={group.id} className="mb-4 break-inside-avoid">
-                      <FriendCard
-                        name={group.name}
-                        balance={group.balance}
-                        avatarUrl={group.avatarUrl}
+                      <div
+                        className="md:w-[390px] sm:w-[145px] h-[71px] rounded-[13px] border border-twilight bg-backg hover:bg-gray-500 hover:shadow-lg hover:backdrop-blur-[18px] transition-all duration-300 p-[13px] box-border flex items-center justify-between cursor-pointer"
                         onClick={() => handleGroupClick(group.id)}
-                      />
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
+                          <Avatar
+                            src={group.avatarUrl || defaultprofile}
+                            alt={group.name}
+                          />
+                          <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">
+                            {group.name}
+                          </span>
+                        </div>
+                        <div
+                          className={`font-telegraf font-black text-[20px] min-w-[70px] text-right ${
+                            group.balance > 0
+                              ? "text-twilight"
+                              : group.balance < 0
+                              ? "text-dreamy"
+                              : "text-paid"
+                          }`}
+                        >
+                          {group.balance > 0
+                            ? `+$${group.balance}`
+                            : group.balance < 0
+                            ? `-$${Math.abs(group.balance)}`
+                            : "0"}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -214,6 +224,42 @@ function GroupList() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Mobile/Tablet List */}
+              <div className="lg:hidden w-full max-w-md mx-auto space-y-4">
+                {sortedGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="md:w-[390px] sm:w-[145px] h-[71px] rounded-[13px] border border-twilight bg-backg hover:bg-gray-500 hover:shadow-lg hover:backdrop-blur-[18px] transition-all duration-300 p-[13px] box-border flex items-center justify-between cursor-pointer"
+                    onClick={() => handleGroupClick(group.id)}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
+                      <Avatar
+                        src={group.avatarUrl || defaultprofile}
+                        alt={group.name}
+                      />
+                      <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">
+                        {group.name}
+                      </span>
+                    </div>
+                    <div
+                      className={`font-telegraf font-black text-[20px] min-w-[70px] text-right ${
+                        group.balance > 0
+                          ? "text-twilight"
+                          : group.balance < 0
+                          ? "text-dreamy"
+                          : "text-paid"
+                      }`}
+                    >
+                      {group.balance > 0
+                        ? `+$${group.balance}`
+                        : group.balance < 0
+                        ? `-$${Math.abs(group.balance)}`
+                        : "0"}
+                    </div>
+                  </div>
+                ))}
               </div>
             </>
           )}
