@@ -11,16 +11,7 @@
     "server": "cd backend && npm run dev",
     "setup": "npm install && cd backend && npm install",
     "start": "concurrently \"npm run dev\" \"npm run server\"",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f",
-    "docker:rebuild": "docker-compose down -v && docker-compose up -d",
-    "docker:reset": "docker-compose down -v && docker volume rm -f g16-debtmate_postgres_data && docker rmi -f postgres:16 && docker system prune -af --volumes",
-    "docker:postgres": "docker exec -it debtmate-postgres psql -U admin -d debtmate",
-    "docker:list-tables": "docker-compose up -d && docker exec -it debtmate-postgres psql -U admin -d debtmate -c \"SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;\"",
-    "docker:list-users": "docker-compose up -d && docker exec -it debtmate-postgres psql -U admin -d debtmate -c \"SELECT * FROM users ORDER BY id;\"",
-    "dev:memory": "npm run setup && cross-env DB_MODE=memory concurrently \"npm run dev\" \"npm run server\"",
-    "dev:postgres": "npm run setup && cross-env DB_MODE=postgres concurrently \"npm run docker:up\" \"npm run dev\" \"npm run server\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

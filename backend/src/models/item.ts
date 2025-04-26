@@ -1,16 +1,13 @@
 /**
  * item model that handles all item-related database operations.
  * provides methods for creating and retrieving items in groups.
- * supports both postgres and in-memory storage modes.
+ * supports in-memory storage mode.
  */
 
 import db from '../config/db.config';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-// control which database implementation to use
-const DB_MODE = process.env.DB_MODE || 'memory';
 
 // item model interface
 interface Item {
@@ -22,110 +19,64 @@ interface Item {
   created_at: Date;
 }
 
-// postgres database operations
-const pgItemModel = {
-  // Create a new item in a group
-  async createItem(groupId: number, name: string, amount: number, addedBy: number): Promise<Item> {
-    const query = `
-      INSERT INTO items (group_id, name, amount, added_by)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `;
-    
-    const result = await db.query(query, [groupId, name, amount, addedBy]);
-    return result.rows[0];
-  },
-  
-  // Get all items for a specific group
-  async getGroupItems(groupId: number): Promise<Item[]> {
-    const query = `
-      SELECT * FROM items
-      WHERE group_id = $1
-      ORDER BY created_at DESC
-    `;
-    
-    const result = await db.query(query, [groupId]);
-    return result.rows;
-  },
-  
-  // Update an item
-  async updateItem(itemId: number, name: string, amount: number): Promise<Item> {
-    const query = `
-      UPDATE items
-      SET name = $2, amount = $3
-      WHERE id = $1
-      RETURNING *
-    `;
-    
-    const result = await db.query(query, [itemId, name, amount]);
-    return result.rows[0];
-  },
-  
-  // Delete an item
-  async deleteItem(itemId: number): Promise<boolean> {
-    const query = `
-      DELETE FROM items
-      WHERE id = $1
-    `;
-    
-    const result = await db.query(query, [itemId]);
-    return result.rowCount > 0;
-  }
-};
+// In-memory storage for items
+const items: Item[] = [];
+let nextItemId = 1;
 
-// in-memory storage for items
+// memory implementation
 const memoryItemModel = {
   // Create a new item in a group
   async createItem(groupId: number, name: string, amount: number, addedBy: number): Promise<Item> {
-    const query = `
-      INSERT INTO items (group_id, name, amount, added_by)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `;
+    const newItem: Item = {
+      id: nextItemId++,
+      group_id: groupId,
+      name,
+      amount,
+      added_by: addedBy,
+      created_at: new Date()
+    };
     
-    const result = await db.query(query, [groupId, name, amount, addedBy]);
-    return result.rows[0];
+    items.push(newItem);
+    return newItem;
   },
   
   // Get all items for a specific group
   async getGroupItems(groupId: number): Promise<Item[]> {
-    const query = `
-      SELECT * FROM items
-      WHERE group_id = $1
-    `;
-    
-    const result = await db.query(query, [groupId]);
-    return result.rows;
+    return items.filter(item => item.group_id === groupId);
   },
   
   // Update an item
   async updateItem(itemId: number, name: string, amount: number): Promise<Item> {
-    const query = `
-      UPDATE items
-      SET name = $2, amount = $3
-      WHERE id = $1
-      RETURNING *
-    `;
+    const index = items.findIndex(item => item.id === itemId);
     
-    const result = await db.query(query, [itemId, name, amount]);
-    return result.rows[0];
+    if (index === -1) {
+      throw new Error('Item not found');
+    }
+    
+    items[index] = {
+      ...items[index],
+      name,
+      amount
+    };
+    
+    return items[index];
   },
   
   // Delete an item
   async deleteItem(itemId: number): Promise<boolean> {
-    const query = `
-      DELETE FROM items
-      WHERE id = $1
-    `;
+    const initialLength = items.length;
+    const filtered = items.filter(item => item.id !== itemId);
     
-    const result = await db.query(query, [itemId]);
-    return result.rowCount > 0;
+    if (initialLength === filtered.length) {
+      return false;
+    }
+    
+    items.splice(0, items.length, ...filtered);
+    return true;
   }
 };
 
-// Export the appropriate model based on DB_MODE
-const ItemModel = DB_MODE === 'postgres' 
-  ? pgItemModel
-  : memoryItemModel;
+// Export the model
+const ItemModel = memoryItemModel;
 
 export { Item, ItemModel };

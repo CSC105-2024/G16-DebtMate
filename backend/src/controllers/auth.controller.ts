@@ -28,7 +28,7 @@ const AuthController = {
       }
       
       // make the new user with hashed pw
-      const newUser = await UserModel.create(username, email, password);
+      const newUser = await UserModel.create(username, email, username, password);
       
       // create token for auth
       const token = generateToken(newUser.id);
@@ -66,6 +66,12 @@ const AuthController = {
       }
       
       // check if password matches
+      if (!user.password) {
+        return c.json({ 
+          success: false, 
+          message: 'Invalid credentials' 
+        }, 401);
+      }
       const isPasswordValid = await UserModel.validatePassword(password, user.password);
       
       if (!isPasswordValid) {

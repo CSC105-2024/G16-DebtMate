@@ -1,8 +1,7 @@
 /**
- * user model that handles all user-related database operations.
- * provides methods for finding, creating, and validating users.
- * supports both postgres and in-memory storage modes based on DB_MODE env variable.
- * used by auth.controller.ts for authentication and search.ts for user lookups.
+ * User model that handles all user-related database operations.
+ * Provides methods for finding, creating, and validating users.
+ * Uses in-memory storage mode.
  */
 
 import bcrypt from 'bcrypt';
@@ -11,89 +10,79 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// control which database implementation to use
-const DB_MODE = process.env.DB_MODE || 'memory';
-
-// user model interface
+// User model interface
 interface User {
   id: number;
   name: string;
   username: string;
   email: string;
-  password: string;
-  created_at: Date;
+  password?: string;
+  created_at?: Date;
 }
 
-// in-memory storage (only used when DB_MODE='memory')
+// In-memory storage
 const users: User[] = [];
 let nextId = 1;
 
-// postgres database operations
-const pgUserModel = {
+// User model implementation
+const UserModel = {
+  // Find a user by email
   async findByEmail(email: string): Promise<User | null> {
-    const result = await db.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
-    return result.rows[0] || null;
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return result.rows.length > 0 ? result.rows[0] : null;
   },
   
+  // Check if a username exists
   async findByName(username: string): Promise<boolean> {
-    const result = await db.query(
-      'SELECT id FROM users WHERE username = $1',
-      [username]
-    );
+    const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     return result.rows.length > 0;
   },
   
+  // Check if username or email exists
   async exists(username: string, email: string): Promise<boolean> {
     const result = await db.query(
-      'SELECT id FROM users WHERE username = $1 OR email = $2',
+      'SELECT * FROM users WHERE username = $1 OR email = $2',
       [username, email]
     );
     return result.rows.length > 0;
   },
   
-  async create(username: string, email: string, password: string): Promise<Omit<User, 'password'>> {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+  // Find user by ID
+  async findById(id: number): Promise<User | null> {
+    const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
     
-    const result = await db.query(
-      'INSERT INTO users (name, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, name, username, email, created_at',
-      [username, username, email, hashedPassword]
-    );
+    if (result.rows.length === 0) {
+      return null;
+    }
     
-    return result.rows[0];
+    const { password, ...userWithoutPassword } = result.rows[0];
+    return userWithoutPassword as User;
   },
   
-  async findByUsernamePattern(pattern: string, limit: number = 5): Promise<User[]> {
-    const result = await db.query(
-      'SELECT id, name, username, email, created_at FROM users WHERE username ILIKE $1 LIMIT $2',
-      [`${pattern}%`, limit]
-    );
-    return result.rows;
-  }
-};
-
-// in-memory implementation for development
-const memoryUserModel = {
-  findByEmail: async (email: string): Promise<User | null> => {
-    return users.find(user => user.email === email) || null;
-  },
-  
-  findByName: async (username: string): Promise<boolean> => {
-    return users.some(user => user.username === username);
-  },
-
-  exists: async (username: string, email: string): Promise<boolean> => {
-    return users.some(user => user.username === username || user.email === email);
-  },
-  
-  create: async (username: string, email: string, password: string): Promise<Omit<User, 'password'>> => {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+  // Find user by username and password for authentication
+  async findByUsernameAndPassword(username: string, password: string): Promise<User | null> {
+    const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     
-    const newUser: User = {
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    const user = result.rows[0];
+    const passwordMatch = await UserModel.validatePassword(password, user.password);
+    
+    if (!passwordMatch) {
+      return null;
+    }
+    
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword as User;
+  },
+  
+  // Create a new user
+  async create(username: string, email: string, name: string, password: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newUser = {
       id: nextId++,
       name: username,
       username,
@@ -108,24 +97,18 @@ const memoryUserModel = {
     return userWithoutPassword;
   },
   
-  findByUsernamePattern: async (pattern: string, limit: number = 5): Promise<User[]> => {
+  // Find users by username pattern
+  async findByUsernamePattern(pattern: string, limit: number = 5): Promise<User[]> {
     return users
       .filter(user => user.username.toLowerCase().startsWith(pattern.toLowerCase()))
       .slice(0, limit)
       .map(({ password, ...user }) => user as User);
-  }
-};
-
-// common operations shared between both implementations
-const commonUserModel = {
-  validatePassword: async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
+  },
+  
+  // Validate password
+  async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 };
-
-// export the appropriate implementation based on DB_MODE
-const UserModel = DB_MODE === 'postgres' 
-  ? { ...pgUserModel, ...commonUserModel }
-  : { ...memoryUserModel, ...commonUserModel };
 
 export { User, UserModel };
