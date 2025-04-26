@@ -3,6 +3,8 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+
+// importing pages and components for routing
 import "./App.css";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
@@ -19,6 +21,8 @@ import AddMember from "./Component/AddMember";
 import { Group, Settings } from "lucide-react";
 import SettingsPage from "./pages/SettingsPage";
 import AddItems from "./pages/AddItems";
+import SplitBill from "./pages/SplitBill";
+import GroupForm from "./pages/GroupForm";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -83,11 +87,7 @@ function AppRoutes() {
     },
     {
       path: "/create-group",
-      element: (
-        <ProtectedRoute>
-          <CreateGroup />
-        </ProtectedRoute>
-      ),
+      element: <GroupForm />,
     },
     {
       path: "/groups/:groupId/items",
@@ -99,11 +99,7 @@ function AppRoutes() {
     },
     {
       path: "/edit-group/:groupId",
-      element: (
-        <ProtectedRoute>
-          <EditGroup />
-        </ProtectedRoute>
-      ),
+      element: <GroupForm />,
     },
 
     {
@@ -121,6 +117,10 @@ function AppRoutes() {
     {
       path: "/groups/:groupId/items/add",
       element: <AddItems />,
+    },
+    {
+      path: "/groups/:groupId/split",
+      element: <SplitBill />,
     },
   ]);
 
