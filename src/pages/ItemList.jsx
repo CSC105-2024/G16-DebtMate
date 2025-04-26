@@ -25,10 +25,9 @@ function ItemList() {
   const serviceChargeAmount = itemsTotal * (parseFloat(serviceCharge) / 100);
   const taxAmount = itemsTotal * (parseFloat(tax) / 100);
   const total = itemsTotal + serviceChargeAmount + taxAmount;
-
+  const currency = localStorage.getItem("currency");
   // Menu width consistent between mobile and desktop
   const menuWidth = "w-72";
-
   // Fetch group details
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -183,7 +182,7 @@ function ItemList() {
                     {item.name}
                   </span>
                   <span className="font-telegraf font-bold text-twilight">
-                    ${parseFloat(item.amount).toFixed(2)}
+                    {currency}{parseFloat(item.amount).toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -232,7 +231,7 @@ function ItemList() {
               Total:
             </span>
             <span className="font-telegraf font-bold text-twilight text-lg">
-              ${total.toFixed(2)}
+              {currency} {total.toFixed(2)}
             </span>
           </div>
 
