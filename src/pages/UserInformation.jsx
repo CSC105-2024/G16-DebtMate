@@ -13,7 +13,7 @@ function UserInformation() {
   };
 
   return (
-    <div className="flex flex-col items-center bg-color-dreamy min-h-screen p-6 relative">
+    <div className="flex flex-col items-center bg-color-dreamy min-h-screen p-4 relative">
       {/* Top Buttons */}
       <div className="w-full flex justify-between items-center mb-6">
         <button
