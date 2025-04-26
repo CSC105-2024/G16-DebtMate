@@ -17,7 +17,6 @@ function GroupList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const groupsPerPage = 14;
-
   // Fetch groups from API
   useEffect(() => {
     const fetchGroups = async () => {

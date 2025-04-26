@@ -126,6 +126,8 @@ function SettingsPage() {
   onSelect={(selectedCurrency) => {
     setCurrency(selectedCurrency);
     console.log("Selected:", selectedCurrency); 
+    localStorage.setItem("currency", selectedCurrency);
+    
   }}
 />
 
