@@ -78,9 +78,18 @@ function ItemList() {
     navigate(`/groups/${groupId}/items/add`);
   };
 
+  // handle split bill navigation with bill data
   const handleSplitBill = () => {
-    // Implement split bill functionality here
-    console.log("Split bill clicked");
+    // save current bill data to localStorage before navigation
+    const billData = {
+      serviceCharge: parseFloat(serviceCharge),
+      tax: parseFloat(tax),
+      total: total,
+    };
+    localStorage.setItem(`bill_${groupId}`, JSON.stringify(billData));
+
+    // navigate to split bill page
+    navigate(`/groups/${groupId}/split`);
   };
 
   return (
@@ -127,6 +136,7 @@ function ItemList() {
               <h2 className="text-2xl font-hornbill text-twilight font-black">
                 {group?.name || "Group Items"}
               </h2>
+              {/* Update the edit button onClick handler */}
               <button
                 onClick={() => navigate(`/edit-group/${groupId}`)}
                 className="p-2 rounded-full hover:bg-gray-100"
