@@ -12,6 +12,7 @@ import placeImg from "/assets/icons/imgtemp.png";
 // breakpoint for Iphone-SE
 const XS = "400px";
 
+
 // updated MenuItem with onClick handler
 const MenuItem = ({ icon, text, alt, onClick }) => (
   <li
@@ -151,7 +152,8 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
               <img
                 src={placeImg}
                 alt="User Profile"
-                className="w-full h-full rounded-full object-cover"
+                className="w-full h-full rounded-full object-cover cursor-pointer"
+                onClick={() => navigate("/user-info")}
               />
             </div>
             <div className="flex flex-col w-full text-left">

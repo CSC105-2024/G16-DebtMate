@@ -18,6 +18,8 @@ import EditGroup from "./pages/EditGroup";
 import AddMember from "./Component/AddMember";
 import { Group, Settings } from "lucide-react";
 import SettingsPage from "./pages/SettingsPage";
+import UserInformation from "./pages/UserInformation";
+import UserInformationEdit from "./pages/UserInformationEdit";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -104,6 +106,23 @@ function AppRoutes() {
         </ProtectedRoute>
       ),
     },
+    {
+      path: "/user-info",
+      element: (
+        <ProtectedRoute>
+          <UserInformation />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/user-info-edit",
+      element: (
+        <ProtectedRoute>
+          <UserInformationEdit />
+        </ProtectedRoute>
+      ),
+    },
+
 
     {
       path: "*",
