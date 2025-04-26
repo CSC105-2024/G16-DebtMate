@@ -23,6 +23,8 @@ import SettingsPage from "./pages/SettingsPage";
 import AddItems from "./pages/AddItems";
 import SplitBill from "./pages/SplitBill";
 import GroupForm from "./pages/GroupForm";
+import UserInformation from "./pages/UserInformation";
+import UserInformationEdit from "./pages/UserInformationEdit";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -101,6 +103,23 @@ function AppRoutes() {
       path: "/edit-group/:groupId",
       element: <GroupForm />,
     },
+    {
+      path: "/user-info",
+      element: (
+        <ProtectedRoute>
+          <UserInformation />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/user-info-edit",
+      element: (
+        <ProtectedRoute>
+          <UserInformationEdit />
+        </ProtectedRoute>
+      ),
+    },
+
 
     {
       path: "*",
