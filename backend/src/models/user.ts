@@ -17,6 +17,7 @@ const DB_MODE = process.env.DB_MODE || 'memory';
 // user model interface
 interface User {
   id: number;
+  name: string;
   username: string;
   email: string;
   password: string;

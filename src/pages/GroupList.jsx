@@ -1,47 +1,87 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
-import { Menu } from "lucide-react";
+import { Menu, Plus } from "lucide-react";
 import FriendCard from "../Component/FriendCard"; // Or replace with GroupCard if available
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 
 function GroupList() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
+  const [groups, setGroups] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const groupsPerPage = 14;
 
-  // Mock data
-  const groups = [
-    { id: 1, name: "Alpha Group", balance: 100, avatarUrl: defaultprofile },
-    { id: 2, name: "Beta Buddies", balance: -100, avatarUrl: defaultprofile },
-    { id: 3, name: "Gamma Circle", balance: 0, avatarUrl: defaultprofile },
-    { id: 4, name: "Delta Team", balance: 0, avatarUrl: defaultprofile },
-    { id: 5, name: "Epsilon Crew", balance: 0, avatarUrl: defaultprofile },
-    { id: 6, name: "Zeta Zone", balance: 0, avatarUrl: defaultprofile },
-    { id: 7, name: "Eta Enclave", balance: 0, avatarUrl: defaultprofile },
-    { id: 8, name: "Theta Tribe", balance: 0, avatarUrl: defaultprofile },
-    { id: 9, name: "Iota League", balance: 0, avatarUrl: defaultprofile },
-    { id: 10, name: "Kappa Kin", balance: 0, avatarUrl: defaultprofile },
-    { id: 11, name: "Lambda Link", balance: 0, avatarUrl: defaultprofile },
-    { id: 12, name: "Mu Mob", balance: 0, avatarUrl: defaultprofile },
-    { id: 13, name: "Nu Nest", balance: 0, avatarUrl: defaultprofile },
-    { id: 14, name: "Xi Squad", balance: 0, avatarUrl: defaultprofile },
-    { id: 15, name: "Omicron Order", balance: 0, avatarUrl: defaultprofile },
-    { id: 16, name: "Pi Pack", balance: 0, avatarUrl: defaultprofile },
-    { id: 17, name: "Rho Ring", balance: 0, avatarUrl: defaultprofile },
-    { id: 18, name: "Sigma Set", balance: 0, avatarUrl: defaultprofile },
-    { id: 19, name: "Tau Team", balance: 0, avatarUrl: defaultprofile },
-    { id: 20, name: "Upsilon Union", balance: 0, avatarUrl: defaultprofile },
-    { id: 21, name: "Phi Force", balance: 0, avatarUrl: defaultprofile },
-    { id: 22, name: "Chi Chapter", balance: 0, avatarUrl: defaultprofile },
-    { id: 23, name: "Psi Posse", balance: 0, avatarUrl: defaultprofile },
-  ];
+  // Fetch groups from API
+  useEffect(() => {
+    const fetchGroups = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("http://localhost:3000/api/groups", {
+          credentials: "include", // Send auth token cookie
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Transform API results to component-friendly format
+          const transformedGroups = data.groups.map((group) => ({
+            id: group.id,
+            name: group.name,
+            balance: 0, // You might calculate this based on group transactions
+            avatarUrl: defaultprofile,
+          }));
+
+          setGroups(transformedGroups);
+        } else {
+          setError(data.message || "Failed to fetch groups");
+        }
+      } catch (err) {
+        console.error("Error fetching groups:", err);
+        setError("Failed to connect to the server");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, []);
+
+  // Filter groups based on search term
+  const filteredGroups = groups.filter((group) =>
+    group.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Sort groups by name if needed
+  const sortedGroups = [...filteredGroups].sort((a, b) => {
+    return sortAsc
+      ? a.name.localeCompare(b.name)
+      : b.name.localeCompare(a.name);
+  });
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
+    // Search is handled by the filteredGroups already
+  };
+
+  const handleCreateGroup = () => {
+    navigate("/create-group");
+  };
+
+  const handleGroupClick = (groupId) => {
+    navigate(`/groups/${groupId}/items`);
   };
 
   // Menu width consistent between mobile and desktop
@@ -59,8 +99,8 @@ function GroupList() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const totalPages = Math.ceil(groups.length / groupsPerPage);
-  const paginatedGroups = groups.slice(
+  const totalPages = Math.ceil(sortedGroups.length / groupsPerPage);
+  const paginatedGroups = sortedGroups.slice(
     (currentPage - 1) * groupsPerPage,
     currentPage * groupsPerPage
   );
@@ -124,59 +164,100 @@ function GroupList() {
           </div>
         </div>
 
-        {/* Scrollable List (Mobile/Tablet) */}
-        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 lg:hidden">
-          <div className="w-full max-w-md mx-auto space-y-4">
-            {groups.map((group) => (
-              <FriendCard
-                key={group.id}
-                name={group.name}
-                balance={group.balance}
-                avatarUrl={group.avatarUrl}
-                onClick={() => console.log("View group:", group.name)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Paginated List (Desktop only) */}
-        <div className="hidden lg:flex flex-col flex-1 overflow-hidden px-4 pt-6">
-          <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
-            {paginatedGroups.map((group) => (
-              <div key={group.id} className="mb-4 break-inside-avoid">
-                <FriendCard
-                  name={group.name}
-                  balance={group.balance}
-                  avatarUrl={group.avatarUrl}
-                  onClick={() => console.log("View group:", group.name)}
-                />
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-twilight">Loading groups...</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-red-500">{error}</p>
+            </div>
+          ) : sortedGroups.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-twilight">
+              <p className="mb-4">No groups created yet</p>
+              <button
+                onClick={handleCreateGroup}
+                className="px-6 py-3 rounded-[13px] bg-twilight text-white font-semibold flex items-center gap-2"
+              >
+                <Plus size={18} />
+                Create First Group
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Mobile/Tablet List */}
+              <div className="lg:hidden w-full max-w-md mx-auto space-y-4">
+                {sortedGroups.map((group) => (
+                  <FriendCard
+                    key={group.id}
+                    name={group.name}
+                    balance={group.balance}
+                    avatarUrl={group.avatarUrl}
+                    onClick={() => handleGroupClick(group.id)}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Pagination controls */}
-          <div className="py-4 w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
+              {/* Desktop List with Pagination */}
+              <div className="hidden lg:flex flex-col flex-1">
+                <div className="flex-1 w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
+                  {paginatedGroups.map((group) => (
+                    <div key={group.id} className="mb-4 break-inside-avoid">
+                      <FriendCard
+                        name={group.name}
+                        balance={group.balance}
+                        avatarUrl={group.avatarUrl}
+                        onClick={() => handleGroupClick(group.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination controls */}
+                {sortedGroups.length > groupsPerPage && (
+                  <div className="py-4 w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
+                    >
+                      Prev
+                    </button>
+                    <span className="px-4 py-1 text-twilight font-semibold">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Create Group Button (when groups exist) */}
+        {!isLoading && !error && sortedGroups.length > 0 && (
+          <div className="p-4 border-t border-gray-200">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
+              onClick={handleCreateGroup}
+              className="w-full max-w-md mx-auto py-3 rounded-[13px] bg-twilight text-white font-semibold flex items-center justify-center gap-2"
             >
-              Prev
-            </button>
-            <span className="px-4 py-1 text-twilight font-semibold">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
-            >
-              Next
+              <Plus size={18} />
+              Create New Group
             </button>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Overlay (Mobile only) */}

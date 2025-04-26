@@ -1,44 +1,37 @@
 /**
- * protects routes that require user authentication.
- * extracts and verifies the auth token from request cookies.
- * adds the user's ID to the request context for downstream handlers.
- * used by routes that need to identify the current user.
+ * keeps the sketchy users out of our protected routes lol
+ * grabs the auth token from cookies and makes sure it's legit
+ * sticks the user's ID into the request so we can use it later
+ * basically for any routes where we need to know who's logged in
  */
 
 import { Context, Next } from 'hono';
-import { verifyToken } from '../utils/jwt';
+import jwt from 'jsonwebtoken';
+import { getCookie } from 'hono/cookie';
 
 /**
- * Middleware to enforce authentication on protected routes
- * Extracts token from cookies, verifies it, and adds userId to context
+ * this middleware checks if ppl are logged in before letting them access stuff
+ * pulls token from cookies, makes sure it's valid, adds userId to context
  */
 export const authMiddleware = async (c: Context, next: Next) => {
   try {
-    // extract auth token from cookies
-    const cookies = c.req.header('Cookie') || '';
-    const tokenMatch = cookies.match(/auth_token=([^;]+)/);
+    // grab token from cookies
+    const token = getCookie(c, 'auth_token');
     
-    if (!tokenMatch) {
-      return c.json({ 
-        success: false, 
-        message: 'Authentication required' 
-      }, 401);
+    if (!token) {
+      return c.json({ success: false, message: 'Authentication required' }, 401);
     }
+
+    // make sure the token isn't fake
+    const secret = process.env.JWT_SECRET || 'your-default-secret-key';
+    const decoded = jwt.verify(token, secret) as { userId: number };
     
-    const token = tokenMatch[1];
-    
-    // verify token and extract user ID
-    const decoded = verifyToken(token);
-    
-    // add user ID to request context for route handlers
+    // pass the userId to whatever needs it next
     c.set('userId', decoded.userId.toString());
     
-    // continue to the protected route handler
     await next();
   } catch (error) {
-    return c.json({ 
-      success: false, 
-      message: 'Invalid or expired token' 
-    }, 401);
+    console.error('Auth middleware error:', error);
+    return c.json({ success: false, message: 'Invalid or expired token' }, 401);
   }
 };

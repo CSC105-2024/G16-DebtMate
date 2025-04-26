@@ -23,11 +23,15 @@
     "dev:postgres": "npm run setup && cross-env DB_MODE=postgres concurrently \"npm run docker:up\" \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "@iconify-icons/lucide": "^1.2.135",
+    "@iconify/react": "^5.2.1",
     "@tailwindcss/vite": "^4.0.14",
     "lucide-react": "^0.487.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.1",
     "react-router-dom": "^7.4.0",
     "tailwindcss": "^4.0.14",
     "zod": "^3.24.2"

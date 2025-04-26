@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
-import { Menu } from "lucide-react";
+import { Menu, Plus, User } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
+import { useNavigate } from "react-router-dom";
+import AddMember from "../Component/AddMember";
 
 function CreateGroup() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
+  const [groupName, setGroupName] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState("");
   const friendsPerPage = 14;
 
   // Mock data
@@ -18,29 +27,94 @@ function CreateGroup() {
     { id: 1, name: "Alan", balance: 100, avatarUrl: defaultprofile },
     { id: 2, name: "Beauz", balance: -100, avatarUrl: defaultprofile },
     { id: 4, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 5, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 6, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 7, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 8, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 9, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 10, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 11, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 12, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 13, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 14, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 15, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 16, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 17, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 18, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 19, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 20, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 21, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 22, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 23, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 5, name: "Diana", balance: 75, avatarUrl: defaultprofile },
+    { id: 6, name: "Eduardo", balance: -50, avatarUrl: defaultprofile },
+    { id: 7, name: "Fiona", balance: 125, avatarUrl: defaultprofile },
+    { id: 8, name: "George", balance: -25, avatarUrl: defaultprofile },
   ];
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
+  };
+
+  const handleGroupNameChange = (value) => {
+    setGroupName(value);
+  };
+
+  const handleGroupDescriptionChange = (value) => {
+    setGroupDescription(value);
+  };
+
+  const handleAddMembers = () => {
+    // Open the AddMember overlay instead of navigating
+    setIsAddMemberOpen(true);
+  };
+
+  // New function to handle adding members from the overlay
+  const handleSaveMembers = (members) => {
+    setSelectedMembers(members);
+  };
+
+  const handleCreateGroup = async () => {
+    setIsCreating(true);
+    setError("");
+
+    try {
+      // Get current user or create a mock one for development
+      let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      // Remove this mock user creation block
+      if (!currentUser || !currentUser.id) {
+        // For development, create a mock user
+        currentUser = { id: 12, name: "Mock Developer" };
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        console.log("Created mock user for development");
+      }
+
+      // Create the group with the selected members
+      const response = await fetch("http://localhost:3000/api/groups/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: groupName,
+          description: groupDescription,
+          members: selectedMembers.map((member) => ({ id: member.id })),
+          userId: currentUser.id, // Explicitly send the userId for development
+        }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        // Session might be invalid
+        if (response.status === 401) {
+          // Redirect to login
+          navigate("/login");
+          return;
+        }
+
+        // Extract error message from response if possible
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Server error: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Navigate to the new group's items page
+        navigate(`/groups/${data.group.id}/items`);
+      } else {
+        setError(data.message || "Failed to create group");
+      }
+    } catch (error) {
+      console.error("Create group error:", error);
+      setError(error.message || "Network error. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   // Menu width consistent between mobile and desktop
@@ -51,12 +125,17 @@ function CreateGroup() {
       const desktop = window.innerWidth >= 1024;
       setIsDesktop(desktop);
       setIsMenuOpen(desktop); // Auto-open on desktop
+
+      // If switching to desktop, automatically show AddMember section
+      if (desktop && !isDesktop) {
+        setIsAddMemberOpen(true);
+      }
     };
 
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
+  }, [isDesktop]);
 
   // Pagination for desktop
   const totalPages = Math.ceil(friends.length / friendsPerPage);
@@ -83,110 +162,238 @@ function CreateGroup() {
       )}
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col ${isDesktop ? "ml-72" : ""}`}>
-        {/* Top Sticky Header */}
-        <div className="sticky top-0 z-30 bg-color-dreamy px-4 pt-4 pb-2">
-          <div className="flex items-center justify-center gap-3">
-            {!isDesktop && (
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-3 border border-twilight rounded-md"
-              >
-                <Menu className="w-5 h-5 text-black" />
-              </button>
-            )}
-            <div className="flex-grow max-w-md">
-              <SearchBar
-                value={searchTerm}
-                onChange={setSearchTerm}
-                onSearch={handleSearch}
-                placeholder="Search friends..."
-              />
+      <div
+        className={`flex-1 flex ${isDesktop ? "ml-72 flex-row" : "flex-col"}`}
+      >
+        {/* Create Group Form */}
+        <div className={`${isDesktop ? "w-1/2" : "w-full"} flex flex-col`}>
+          {/* Top Sticky Header */}
+          <div className="sticky pr-4 z-30 bg-color-dreamy w-full px-4 pt-0 pb-2">
+            <div className="flex items-center w-full">
+              {!isDesktop && (
+                <div className="flex-none mr-auto">
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-3 border border-twilight rounded-md"
+                  >
+                    <Menu className="w-5 h-5 text-black" />
+                  </button>
+                </div>
+              )}
+              <div className="flex-grow flex justify-center">
+                {/* Any centered content goes here */}
+              </div>
+              <div className="flex-none ml-auto">
+                {/* No edit button here since we're creating a new group */}
+              </div>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between">
-            <h1 className="text-2xl font-hornbill text-twilight">Friends</h1>
 
-            <button
-              onClick={() => setSortAsc(!sortAsc)}
-              className="p-2 hover:bg-slate-200 rounded transition"
-            >
-              <img
-                src={
-                  sortAsc
-                    ? "/assets/icons/12-order.svg"
-                    : "/assets/icons/az-order.svg"
-                }
-                alt="Sort toggle"
-                className="w-5 h-5"
-              />
-            </button>
-          </div>
-        </div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="flex items-center justify-between pl-4 pr-4 pt-4">
+              <h2 className="text-4xl font-hornbill text-twilight text-left font-black">
+                Create Group
+              </h2>
+              {/* Remove duplicate edit button here too */}
+            </div>
+            <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
+              Group Name
+            </h2>
 
-        {/* Scrollable List (Mobile/Tablet) */}
-        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 lg:hidden">
-          <div className="w-full max-w-md mx-auto space-y-4">
-            {friends.map((friend) => (
-              <FriendCard
-                key={friend.id}
-                name={friend.name}
-                balance={friend.balance}
-                avatarUrl={friend.avatarUrl}
-                onClick={() => console.log("View profile:", friend.name)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Paginated List (Desktop only) */}
-        <div className="hidden lg:flex flex-col flex-1 overflow-hidden px-4 pt-6">
-          <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
-            {paginatedFriends.map((friend) => (
-              <div key={friend.id} className="mb-4 break-inside-avoid">
-                <FriendCard
-                  key={friend.id}
-                  name={friend.name}
-                  balance={friend.balance}
-                  avatarUrl={friend.avatarUrl}
-                  onClick={() => console.log("View profile:", friend.name)}
+            {/* Group Name Text Input */}
+            <div className="pl-4 pr-4 pt-2 pb-0 max-w-md">
+              <div className="flex items-center rounded-[13px] border border-twilight px-4 py-2 bg-transparent">
+                <input
+                  type="text"
+                  value={groupName}
+                  onChange={(e) => handleGroupNameChange(e.target.value)}
+                  placeholder="Enter group name"
+                  className="flex-grow outline-none bg-transparent text-twilight placeholder-twilight"
                 />
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Pagination controls */}
-          <div className="py-4 w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <span className="px-4 py-1 text-twilight font-semibold">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
-            >
-              Next
-            </button>
+            <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
+              Description
+            </h2>
+
+            {/* Description Text Input */}
+            <div className="pl-4 pr-4 pt-2 pb-4 max-w-md">
+              <div className="flex items-center rounded-[13px] border border-twilight px-4 py-2 bg-transparent">
+                <input
+                  type="text"
+                  value={groupDescription}
+                  onChange={(e) => handleGroupDescriptionChange(e.target.value)}
+                  placeholder="Enter group description"
+                  className="flex-grow outline-none bg-transparent text-twilight placeholder-twilight"
+                />
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
+              Members
+            </h2>
+
+            {/* Members List */}
+            <div className="pl-4 pr-4 pt-2 pb-4 max-h-60 overflow-y-auto">
+              {selectedMembers.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {selectedMembers.map((member) => (
+                    <FriendCard
+                      key={member.id}
+                      name={member.name}
+                      balance={member.balance}
+                      avatarUrl={member.avatarUrl}
+                      onClick={() =>
+                        console.log("Member clicked:", member.name)
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-twilight text-opacity-60">
+                  <User
+                    size={48}
+                    className="mb-2 text-twilight text-opacity-40"
+                  />
+                  <p>No members added yet</p>
+                  <p className="text-sm">
+                    {isDesktop
+                      ? "Select friends from the panel on the right"
+                      : 'Click "Add Member" to add people to this group'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Add Member Button - Mobile Only */}
+            {!isDesktop && (
+              <div className="pl-4 pr-4 pt-2 pb-8">
+                <button
+                  onClick={handleAddMembers}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-[13px] border border-twilight text-twilight hover:bg-twilight hover:text-white transition-colors"
+                >
+                  <Plus size={16} />
+                  <span>Add Member</span>
+                </button>
+              </div>
+            )}
+
+            {/* Error message if there's an error */}
+            {error && (
+              <div className="pl-4 pr-4 pt-2 pb-2">
+                <p className="text-red-500">{error}</p>
+              </div>
+            )}
+
+            {/* Create Group Button */}
+            <div className="pl-4 pr-4 pt-4 pb-8 sticky bottom-0 bg-color-dreamy">
+              <button
+                onClick={handleCreateGroup}
+                disabled={
+                  !groupName || selectedMembers.length === 0 || isCreating
+                }
+                className="w-full max-w-md py-3 rounded-[13px] bg-twilight text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCreating ? "Creating..." : "Create Group"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+        {/* Add Member Panel - Desktop Only */}
+        {isDesktop && (
+          <div className="w-1/2 h-screen bg-pale bg-opacity-20 overflow-y-auto">
+            <div className="w-full h-full flex flex-col">
+              <div className="flex-1 p-6">
+                <h2 className="text-4xl font-hornbill text-twilight text-left font-black pb-6">
+                  Add Members
+                </h2>
+                <div className="mb-6">
+                  <SearchBar
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    onSearch={handleSearch}
+                    placeholder="Search friends"
+                  />
+                </div>
+                <div className="pb-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    {friends.map((friend) => {
+                      const isSelected = selectedMembers.some(
+                        (member) => member.id === friend.id
+                      );
+                      return (
+                        <div
+                          key={friend.id}
+                          className={`relative cursor-pointer ${
+                            isSelected
+                              ? "ring-2 ring-twilight rounded-[13px]"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedMembers(
+                                selectedMembers.filter(
+                                  (member) => member.id !== friend.id
+                                )
+                              );
+                            } else {
+                              setSelectedMembers([...selectedMembers, friend]);
+                            }
+                          }}
+                        >
+                          <FriendCard
+                            name={friend.name}
+                            balance={friend.balance}
+                            avatarUrl={friend.avatarUrl}
+                          />
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-twilight rounded-full p-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-white"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-      {/* Overlay (Mobile only) */}
-      {!isDesktop && isMenuOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsMenuOpen(false)}
-        />
-      )}
+        {/* Add Member Overlay - Mobile Only */}
+        {!isDesktop && (
+          <AddMember
+            isOpen={isAddMemberOpen}
+            onClose={() => setIsAddMemberOpen(false)}
+            friends={friends}
+            selectedMembers={selectedMembers}
+            onAddMembers={handleSaveMembers}
+          />
+        )}
+
+        {/* Overlay (Mobile only) */}
+        {!isDesktop && isMenuOpen && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+      </div>
     </div>
   );
 }

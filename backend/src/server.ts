@@ -9,13 +9,12 @@ import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { fileURLToPath } from 'node:url';
 
-// initialize database first
-import db from './config/db.config';
 
 // import middleware and routes
 import corsMiddleware from './middleware/cors.middleware';
 import authRoutes from './routes/auth.routes';
 import searchRoutes from './routes/search.routes';
+import groupRoutes from './routes/group.routes';
 import config from './config/app.config';
 
 // create the main application
@@ -27,6 +26,7 @@ app.use('*', corsMiddleware);
 // register API routes
 app.route('/api', authRoutes);  // /api/signup, /api/login, /api/me
 app.route('/api/search', searchRoutes);  // /api/search/users
+app.route('/api/groups', groupRoutes);  // /api/groups/*
 
 // start server when run directly (not imported)
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

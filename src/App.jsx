@@ -12,7 +12,9 @@ import AddFriends from "./pages/AddFriends";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 import GroupList from "./pages/GroupList";
-import { Group } from "lucide-react";
+import CreateGroup from "./pages/CreateGroup";
+import ItemList from "./pages/ItemList";
+import AddMember from "./Component/AddMember";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -68,12 +70,32 @@ function AppRoutes() {
       ),
     },
     {
-      path: "*",
-      element: <NotFound />,
+      path: "/groups",
+      element: (
+        <ProtectedRoute>
+          <GroupList />
+        </ProtectedRoute>
+      ),
     },
     {
-      path: "/groups",
-      element: <GroupList />,
+      path: "/create-group",
+      element: (
+        <ProtectedRoute>
+          <CreateGroup />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/groups/:groupId/items",
+      element: (
+        <ProtectedRoute>
+          <ItemList />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "*",
+      element: <NotFound />,
     },
   ]);
 
