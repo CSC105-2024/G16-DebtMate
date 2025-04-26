@@ -8,7 +8,8 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import FriendList from "./pages/FriendList";
 import GroupList from "./pages/GroupList";
-import { Group } from "lucide-react";
+import { Group, Settings } from "lucide-react";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -31,7 +32,11 @@ function App() {
     {
       path: "/groups",
       element: <GroupList />,
-    }
+    },
+    {
+      path: "/settings",
+      element: <SettingsPage />,
+    },
   ]);
 
   return (
