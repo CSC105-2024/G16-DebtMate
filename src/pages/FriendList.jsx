@@ -84,8 +84,8 @@ function FriendList() {
 
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${isDesktop ? "ml-72" : ""}`}>
-        {/* Top Sticky Header */}
-        <div className="sticky top-0 z-30 bg-color-dreamy px-4 pt-4 pb-2">
+        {/* Top Sticky Header - reduced padding */}
+        <div className="sticky top-0 z-30 bg-color-dreamy px-4 pb-1">
           <div className="flex items-center justify-center gap-3">
             {!isDesktop && (
               <button
@@ -95,7 +95,7 @@ function FriendList() {
                 <Menu className="w-5 h-5 text-black" />
               </button>
             )}
-            <div className="flex-grow max-w-md">
+            <div className="flex-grow max-w-md relative ">
               <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
@@ -104,7 +104,7 @@ function FriendList() {
               />
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between">
             <h1 className="text-2xl font-hornbill text-twilight">Friends</h1>
 
             <button
@@ -156,7 +156,7 @@ function FriendList() {
           </div>
 
           {/* Pagination controls */}
-          <div className="py-4 w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
+          <div className="py-[3rem] w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}

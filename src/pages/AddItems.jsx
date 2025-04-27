@@ -225,7 +225,7 @@ function AddItems() {
                           name={member.name}
                           balance={0}
                           avatarUrl={member.avatarUrl || defaultprofile}
-                          className="w-full"
+                          className="w-full lg:!w-full"
                         />
                       </div>
                     ))}

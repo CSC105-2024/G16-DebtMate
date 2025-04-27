@@ -103,16 +103,29 @@ function EditItem() {
 
   return (
     <div className="flex h-screen bg-color-dreamy">
-      <div
-        className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
-        <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
-      </div>
+      {isDesktop ? (
+        <div
+          className={`fixed inset-y-0 left-0 z-[150] ${menuWidth} bg-[#d5d4ff]`}
+        >
+          <HamburgerMenu isOpen={true} setIsOpen={setIsMenuOpen} />
+        </div>
+      ) : (
+        <div
+          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+            isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+        </div>
+      )}
 
-      <div className="fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col lg:pl-72">
-        <div className="p-4 flex items-center justify-between">
+      <div
+        className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
+          isDesktop ? "ml-72" : ""
+        }`}
+      >
+        {/* Header */}
+        <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -130,98 +143,124 @@ function EditItem() {
           </button>
         </div>
 
+        {/* Group Info Section */}
+        <div className="px-6 pb-2">
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            <div className="flex items-center gap-3 mb-2">
+              <Avatar
+                src={group?.avatarUrl || defaultprofile}
+                alt={group?.name || "Group"}
+                size="lg"
+              />
+              <div className="flex items-center justify-between flex-1">
+                <h2 className="text-2xl font-hornbill text-twilight font-black">
+                  {group?.name || "Edit Item"}
+                </h2>
+              </div>
+            </div>
+            <div className="border-b border-twilight my-4 lg:my-2"></div>
+          </div>
+        </div>
+
+        {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
-          <h2 className="text-2xl font-hornbill text-twilight font-black mb-6">
-            Edit Item
-          </h2>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-twilight">Loading...</p>
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-red-500">{error}</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <label className="font-telegraf text-twilight font-bold">
-                  Item Name
-                </label>
-                <input
-                  type="text"
-                  value={itemName}
-                  onChange={(e) => setItemName(e.target.value)}
-                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none mt-2"
-                  placeholder="Enter item name"
-                />
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-twilight">Loading...</p>
               </div>
-
-              <div>
-                <label className="font-telegraf text-twilight font-bold">
-                  Amount
-                </label>
-                <input
-                  type="number"
-                  value={itemPrice}
-                  onChange={(e) => setItemPrice(e.target.value)}
-                  step="0.01"
-                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none mt-2"
-                  placeholder="Enter amount"
-                />
+            ) : error ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-red-500">{error}</p>
               </div>
+            ) : (
+              <div className="space-y-6 lg:max-w-xl lg:mx-auto">
+                <div className="space-y-2">
+                  <h3 className="font-telegraf text-twilight font-bold">
+                    Item
+                  </h3>
+                  <input
+                    type="text"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                    placeholder="Enter item name"
+                    className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 lg:py-2 text-twilight outline-none"
+                  />
+                </div>
 
-              <div>
-                <label className="font-telegraf text-twilight font-bold">
-                  Split Between
-                </label>
-                <div className="space-y-2 mt-2">
-                  {group?.members?.map((member) => (
-                    <div key={member.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`member-${member.id}`}
-                        checked={selectedMembers.includes(member.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedMembers([...selectedMembers, member.id]);
-                          } else {
+                <div className="space-y-2">
+                  <h3 className="font-telegraf text-twilight font-bold">
+                    Price
+                  </h3>
+                  <input
+                    type="number"
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                    step="0.01"
+                    className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 lg:py-2 text-twilight outline-none"
+                    placeholder="Enter price"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-telegraf text-twilight font-bold">
+                    Split Between
+                  </h3>
+                  <div className="space-y-2">
+                    {group?.members?.map((member) => (
+                      <div
+                        key={member.id}
+                        className={`block w-full cursor-pointer ${
+                          selectedMembers.includes(member.id)
+                            ? "ring-2 ring-twilight rounded-[13px]"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          if (selectedMembers.includes(member.id)) {
                             setSelectedMembers(
                               selectedMembers.filter((id) => id !== member.id)
                             );
+                          } else {
+                            setSelectedMembers([...selectedMembers, member.id]);
                           }
                         }}
-                        className="rounded border-twilight"
-                      />
-                      <label htmlFor={`member-${member.id}`}>
+                      >
+                        {/* Use normal div without extra styles */}
                         <FriendCard
                           name={member.name}
                           balance={0}
-                          avatarUrl={defaultprofile}
+                          avatarUrl={member.avatarUrl || defaultprofile}
+                          className="w-full lg:!w-full"
                         />
-                      </label>
-                    </div>
-                  ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+            )}
+          </div>
+        </div>
 
-              <div className="flex gap-4 pt-4">
+        {/* Bottom Button */}
+        <div className="px-6 py-4">
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            <div className="lg:max-w-xl lg:mx-auto">
+              <div className="flex gap-4">
                 <button
                   onClick={handleUpdateItem}
-                  className="flex-1 bg-twilight text-white px-4 py-3 rounded-[13px] font-semibold"
+                  className="flex-1 py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold"
                 >
                   Save Changes
                 </button>
                 <button
                   onClick={() => navigate(`/groups/${groupId}/items`)}
-                  className="flex-1 border border-twilight text-twilight px-4 py-3 rounded-[13px] font-semibold"
+                  className="flex-1 py-3 lg:py-2 rounded-[13px] border border-twilight text-twilight font-semibold"
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

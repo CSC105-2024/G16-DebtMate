@@ -47,17 +47,6 @@ function AddMember({
     onClose();
   };
 
-  useEffect(() => {
-    // For development, ensure a mock user exists
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-    if (!currentUser || !currentUser.id) {
-      // Create a mock user for development purposes
-      const mockUser = { id: 999, name: "Mock Developer" };
-      localStorage.setItem("currentUser", JSON.stringify(mockUser));
-      console.log("Created mock user for development");
-    }
-  }, []);
-
   if (!isOpen) return null;
 
   return (

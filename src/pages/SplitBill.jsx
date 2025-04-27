@@ -105,18 +105,30 @@ function SplitBill() {
   return (
     <div className="flex h-screen bg-color-dreamy">
       {/* hamburger menu */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
-        <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
-      </div>
+      {isDesktop ? (
+        <div
+          className={`fixed inset-y-0 left-0 z-[150] ${menuWidth} bg-[#d5d4ff]`}
+        >
+          <HamburgerMenu isOpen={true} setIsOpen={setIsMenuOpen} />
+        </div>
+      ) : (
+        <div
+          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+            isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+        </div>
+      )}
 
       {/* main content */}
-      <div className="fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col lg:pl-72">
+      <div
+        className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
+          isDesktop ? "ml-72" : ""
+        }`}
+      >
         {/* header */}
-        <div className="p-4 flex items-center justify-between">
+        <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -136,96 +148,98 @@ function SplitBill() {
 
         {/* group info */}
         <div className="px-6 pb-2">
-          <div className="flex items-center gap-3 mb-2">
-            <Avatar
-              src={defaultprofile}
-              alt={group?.name || "Group"}
-              size="lg"
-            />
-            <div className="flex items-center justify-between flex-1">
-              <h2 className="text-2xl font-hornbill text-twilight font-black">
-                {group?.name || "Group"}
-              </h2>
-              <button
-                onClick={() => navigate(`/edit-group/${groupId}`)}
-                className="p-2 rounded-full hover:bg-gray-100"
-                aria-label="Edit group"
-              >
-                <img
-                  src="/assets/icons/esIcon.svg"
-                  alt="Edit"
-                  className="w-5 h-5"
-                />
-              </button>
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            <div className="flex items-center gap-3 mb-2">
+              <Avatar
+                src={group?.avatarUrl || defaultprofile}
+                alt={group?.name || "Group"}
+                size="lg"
+              />
+              <div className="flex items-center justify-between flex-1">
+                <h2 className="text-2xl font-hornbill text-twilight font-black">
+                  {group?.name || "Group"}
+                </h2>
+              </div>
             </div>
+            <div className="border-b border-twilight my-4 lg:my-2"></div>
           </div>
-          <div className="border-b border-gray-300 my-3"></div>
         </div>
 
         {/* split bill content */}
         <div className="flex-1 overflow-y-auto px-6">
-          <h2 className="text-2xl font-hornbill text-twilight font-bold mb-6">
-            Split Bill
-          </h2>
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-twilight">Loading...</p>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-red-500">{error}</p>
+              </div>
+            ) : (
+              <div className="space-y-6 lg:max-w-xl lg:mx-auto">
+                <h2 className="text-3xl font-hornbill text-twilight font-black">
+                  Split Bill
+                </h2>
 
-          {/* total amount */}
-          <div className="flex justify-between items-center mb-6">
-            <span className="font-telegraf text-twilight text-lg">Total:</span>
-            <span className="font-telegraf font-bold text-twilight text-lg">
-              {currency} {grandTotal.toFixed(2)}
-            </span>
-          </div>
+                {/* member list */}
+                <div className="space-y-4">
+                  {group?.members?.map((member) => (
+                    <div
+                      key={member.id}
+                      className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={member.avatarUrl || defaultprofile}
+                          alt={member.name}
+                          size="sm"
+                        />
+                        <span className="font-telegraf text-twilight">
+                          {member.name}
+                        </span>
+                      </div>
+                      <span className="font-telegraf font-bold text-twilight">
+                        {currency}{" "}
+                        {memberTotals[member.id]?.toFixed(2) || "0.00"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
 
-          {/* member list */}
-          <div className="space-y-4 mb-6">
-            {group?.members?.map((member) => (
-              <div
-                key={member.id}
-                className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar
-                    src={member.avatarUrl || defaultprofile}
-                    alt={member.name}
-                    size="sm"
-                  />
-                  <span className="font-telegraf text-twilight">
-                    {member.name}
+                {/* separator */}
+                <div className="border-t border-twilight my-4 lg:block lg:border-t lg:border-twilight lg:my-6"></div>
+
+                {/* left to settle */}
+                <div className="flex justify-between items-center">
+                  <span className="font-telegraf text-twilight font-bold">
+                    Left to Settle:
+                  </span>
+                  <span className="font-telegraf font-bold text-twilight">
+                    {currency} {grandTotal.toFixed(2)}
                   </span>
                 </div>
-                <span className="font-telegraf font-bold text-twilight">
-                  {currency} {memberTotals[member.id]?.toFixed(2) || "0.00"}
-                </span>
               </div>
-            ))}
+            )}
           </div>
+        </div>
 
-          {/* separator */}
-          <div className="border-t border-gray-300 my-6"></div>
-
-          {/* left to settle */}
-          <div className="flex justify-between items-center mb-6">
-            <span className="font-telegraf text-twilight font-bold">
-              Left to Settle:
-            </span>
-            <span className="font-telegraf font-bold text-twilight">
-              {currency} {grandTotal.toFixed(2)}
-            </span>
-          </div>
-
-          {/* exit button */}
-          <div className="mb-6">
-            <button
-              onClick={() => navigate("/groups")}
-              className="w-full py-3 rounded-[13px] bg-twilight text-white font-semibold"
-            >
-              Exit
-            </button>
+        {/* exit button */}
+        <div className="px-6 py-4">
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            <div className="lg:max-w-xl lg:mx-auto">
+              <button
+                onClick={() => navigate("/groups")}
+                className="w-full py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold"
+              >
+                Exit
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* mobile overlay */}
+      {/* mobile overlay - unchanged */}
       {!isDesktop && isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-40 lg:hidden"
