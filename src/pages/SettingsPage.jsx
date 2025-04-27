@@ -44,10 +44,12 @@ function SettingsPage() {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
     } else if (type === "Logout") {
-      localStorage.removeItem("currentUser");
+      localStorage.setItem("isLoggedIn", "false");
 
+      // Navigate to the login page
       navigate("/");
 
+      // Refresh the window to ensure all state is reset
       window.location.reload();
     }
   };

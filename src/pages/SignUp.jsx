@@ -143,6 +143,8 @@ function SignUp() {
       if (data.success) {
         // Save current user (for session)
         localStorage.setItem("currentUser", JSON.stringify(data.user));
+        // Set logged in flag
+        localStorage.setItem("isLoggedIn", "true");
 
         // Update authentication state
         setIsAuthenticated(true);

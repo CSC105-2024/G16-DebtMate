@@ -21,41 +21,28 @@ export const AuthProvider = ({ children }) => {
   /**
    * Verifies if the user is authenticated
    * First checks local storage, then validates with the backend
-   * @returns {Promise<boolean>} Authentication status
    */
   const checkAuth = async () => {
     try {
-      // Check localStorage first for faster initial state
+      // Check if user data exists and isLoggedIn is true
       const userStr = localStorage.getItem("currentUser");
-      const initialAuth = Boolean(userStr);
-      setIsAuthenticated(initialAuth);
+      const isLoggedIn = localStorage.getItem("isLoggedIn") !== "false";
 
-      // Skip server check if not logged in
-      if (!initialAuth) {
+      // Set authentication state based on both conditions
+      setIsAuthenticated(Boolean(userStr) && isLoggedIn);
+
+      // No need to check with backend if user is not logged in
+      if (!isLoggedIn) {
         setIsLoading(false);
         return false;
       }
 
-      // Verify with backend
-      const response = await fetch("http://localhost:3000/api/me", {
-        credentials: "include",
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        return true;
-      }
-
-      // Invalid session - clear storage
-      localStorage.removeItem("currentUser");
-      setIsAuthenticated(false);
-      return false;
+      setIsLoading(false);
+      return Boolean(userStr) && isLoggedIn;
     } catch (error) {
       console.error("Auth check failed:", error);
-      return Boolean(localStorage.getItem("currentUser"));
-    } finally {
       setIsLoading(false);
+      return false;
     }
   };
 

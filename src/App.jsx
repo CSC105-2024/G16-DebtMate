@@ -35,7 +35,12 @@ function AppRoutes() {
 
   // quick little wrapper to handle auth protection
   const ProtectedRoute = ({ children }) => {
-    return isAuthenticated ? children : <Navigate to="/login" replace />;
+    const isLoggedIn = localStorage.getItem("isLoggedIn") !== "false";
+    return isAuthenticated && isLoggedIn ? (
+      children
+    ) : (
+      <Navigate to="/login" replace />
+    );
   };
 
   const router = createBrowserRouter([
@@ -89,7 +94,11 @@ function AppRoutes() {
     },
     {
       path: "/create-group",
-      element: <GroupForm />,
+      element: (
+        <ProtectedRoute>
+          <GroupForm />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/groups/:groupId/items",
@@ -101,11 +110,19 @@ function AppRoutes() {
     },
     {
       path: "/edit-group/:groupId",
-      element: <GroupForm />,
+      element: (
+        <ProtectedRoute>
+          <GroupForm />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/groups/:groupId/items/:itemId/edit",
-      element: <EditItem />,
+      element: (
+        <ProtectedRoute>
+          <EditItem />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/user-info",
@@ -123,26 +140,33 @@ function AppRoutes() {
         </ProtectedRoute>
       ),
     },
-
     {
       path: "*",
       element: <NotFound />,
     },
     {
-      path: "/groups",
-      element: <GroupList />,
-    },
-    {
       path: "/settings",
-      element: <SettingsPage />,
+      element: (
+        <ProtectedRoute>
+          <SettingsPage />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/groups/:groupId/items/add",
-      element: <AddItems />,
+      element: (
+        <ProtectedRoute>
+          <AddItems />
+        </ProtectedRoute>
+      ),
     },
     {
       path: "/groups/:groupId/split",
-      element: <SplitBill />,
+      element: (
+        <ProtectedRoute>
+          <SplitBill />
+        </ProtectedRoute>
+      ),
     },
   ]);
 
