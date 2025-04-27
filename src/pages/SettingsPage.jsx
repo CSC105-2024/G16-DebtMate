@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
-import { Menu, DollarSign, RefreshCcw, MessageSquare, Info, LogOut } from "lucide-react";
+import {
+  Menu,
+  DollarSign,
+  RefreshCcw,
+  MessageSquare,
+  Info,
+  LogOut,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CurrencySelect from "../Component/CurrencySelect";
-
 
 function SettingsPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const navigate = useNavigate();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
-  const [currency, setCurrency] = useState("USD"); 
-
+  const [currency, setCurrency] = useState("USD");
 
   const menuWidth = "w-72"; // Same sidebar width as FriendList
-
-  
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -41,10 +44,13 @@ function SettingsPage() {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
     } else if (type === "Logout") {
-      navigate('/');
+      localStorage.removeItem("currentUser");
+
+      navigate("/");
+
+      window.location.reload();
     }
-  }
-  
+  };
 
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
@@ -76,9 +82,7 @@ function SettingsPage() {
                 <Menu className="w-5 h-5 text-black" />
               </button>
             )}
-            <h1 className="text-2xl font-hornbill text-twilight">
-              Settings
-            </h1>
+            <h1 className="text-2xl font-hornbill text-twilight">Settings</h1>
           </div>
         </div>
 
@@ -87,17 +91,18 @@ function SettingsPage() {
           {/* Mobile layout */}
           <div className="w-full max-w-md mx-auto grid grid-cols-2 gap-4 lg:hidden">
             {settingsOptions.map((option, index) => (
-            <button
-              key={index}
-              className="flex flex-col items-center justify-center aspect-square border-2 border-twilight rounded-xl hover:bg-slate-200 transition bg-color-dreamy"
-              onClick={() => handleClick(option.label)}
-            >
-            <option.icon className="w-8 h-8 text-twilight" />
-            <span className="mt-2 font-bold text-twilight text-sm">{option.label} </span>
-            </button>
+              <button
+                key={index}
+                className="flex flex-col items-center justify-center aspect-square border-2 border-twilight rounded-xl hover:bg-slate-200 transition bg-color-dreamy"
+                onClick={() => handleClick(option.label)}
+              >
+                <option.icon className="w-8 h-8 text-twilight" />
+                <span className="mt-2 font-bold text-twilight text-sm">
+                  {option.label}{" "}
+                </span>
+              </button>
             ))}
-            </div>
-
+          </div>
 
           {/* Desktop layout */}
           <div className="hidden lg:grid grid-cols-2 gap-6 w-full max-w-4xl mx-auto pt-4">
@@ -108,7 +113,9 @@ function SettingsPage() {
                 onClick={() => handleClick(option.label)}
               >
                 <option.icon className="w-8 h-8 text-twilight" />
-                <span className="mt-3 font-bold text-twilight">{option.label}</span>
+                <span className="mt-3 font-bold text-twilight">
+                  {option.label}
+                </span>
               </button>
             ))}
           </div>
@@ -117,23 +124,22 @@ function SettingsPage() {
 
       {/* Overlay for Mobile */}
       {!isDesktop && isMenuOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsMenuOpen(false)}
+        />
       )}
 
-<CurrencySelect
-  open={isCurrencyModalOpen}
-  onClose={() => setIsCurrencyModalOpen(false)}
-  onSelect={(selectedCurrency) => {
-    setCurrency(selectedCurrency);
-    console.log("Selected:", selectedCurrency); 
-    localStorage.setItem("currency", selectedCurrency);
-    
-  }}
-/>
-
+      <CurrencySelect
+        open={isCurrencyModalOpen}
+        onClose={() => setIsCurrencyModalOpen(false)}
+        onSelect={(selectedCurrency) => {
+          setCurrency(selectedCurrency);
+          console.log("Selected:", selectedCurrency);
+          localStorage.setItem("currency", selectedCurrency);
+        }}
+      />
     </div>
-
-    
   );
 }
 
