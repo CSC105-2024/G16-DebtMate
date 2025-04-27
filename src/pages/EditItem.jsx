@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
-import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import FriendCard from "../Component/FriendCard";
 
 function EditItem() {
   const { groupId, itemId } = useParams();
@@ -46,6 +46,19 @@ function EditItem() {
       setIsLoading(false);
     }
   }, [groupId, itemId]);
+
+  // Handle responsive layout
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      setIsMenuOpen(desktop);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   const handleUpdateItem = () => {
     if (!itemName || !itemPrice || selectedMembers.length === 0) {
@@ -99,17 +112,39 @@ function EditItem() {
       </div>
 
       <div className="fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col lg:pl-72">
-        <div className="p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Edit Item</h1>
+        <div className="p-4 flex items-center justify-between">
+          {!isDesktop && (
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-full hover:bg-gray-100"
+            >
+              <Menu size={24} className="text-twilight" />
+            </button>
+          )}
+          <div className="flex-1"></div>
+          <button
+            onClick={() => navigate(`/groups/${groupId}/items`)}
+            className="p-2 rounded-full hover:bg-gray-100"
+          >
+            <X size={24} className="text-twilight" />
+          </button>
+        </div>
 
-            {error && (
-              <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-                {error}
-              </div>
-            )}
+        <div className="flex-1 overflow-y-auto px-6">
+          <h2 className="text-2xl font-hornbill text-twilight font-black mb-6">
+            Edit Item
+          </h2>
 
-            <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <p className="text-twilight">Loading...</p>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-32">
+              <p className="text-red-500">{error}</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
               <div>
                 <label className="font-telegraf text-twilight font-bold">
                   Item Name
@@ -118,7 +153,7 @@ function EditItem() {
                   type="text"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
-                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none"
+                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none mt-2"
                   placeholder="Enter item name"
                 />
               </div>
@@ -132,7 +167,7 @@ function EditItem() {
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
                   step="0.01"
-                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none"
+                  className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 text-twilight outline-none mt-2"
                   placeholder="Enter amount"
                 />
               </div>
@@ -141,7 +176,7 @@ function EditItem() {
                 <label className="font-telegraf text-twilight font-bold">
                   Split Between
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-2 mt-2">
                   {group?.members?.map((member) => (
                     <div key={member.id} className="flex items-center gap-2">
                       <input
@@ -171,24 +206,31 @@ function EditItem() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-4 pt-4">
                 <button
                   onClick={handleUpdateItem}
-                  className="flex-1 bg-twilight text-white px-4 py-2 rounded-[13px]"
+                  className="flex-1 bg-twilight text-white px-4 py-3 rounded-[13px] font-semibold"
                 >
-                  Update Item
+                  Save Changes
                 </button>
                 <button
                   onClick={() => navigate(`/groups/${groupId}/items`)}
-                  className="flex-1 border border-twilight text-twilight px-4 py-2 rounded-[13px]"
+                  className="flex-1 border border-twilight text-twilight px-4 py-3 rounded-[13px] font-semibold"
                 >
                   Cancel
                 </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {!isDesktop && isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import ItemCard from "../Component/ItemCard";
 
 function ItemList() {
   const { groupId } = useParams();
@@ -92,30 +93,53 @@ function ItemList() {
     navigate(`/groups/${groupId}/split`);
   };
 
+  // Add totalPages calculation
+  const itemsPerPage = 8; // Showing 8 items per page on desktop
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Get paginated items for desktop view
+  const paginatedItems = items.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="flex h-screen bg-color-dreamy">
-      {/* Hamburger Menu */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
-        <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
-      </div>
+      {/* Hamburger Menu - Modified for consistent desktop behavior */}
+      {isDesktop ? (
+        <div
+          className={`fixed inset-y-0 left-0 z-[150] ${menuWidth} bg-[#d5d4ff]`}
+        >
+          <HamburgerMenu isOpen={true} setIsOpen={setIsMenuOpen} />
+        </div>
+      ) : (
+        <div
+          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+            isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+        </div>
+      )}
 
       {/* Main Content - Using Fixed Position Layout */}
-      <div className="fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col lg:pl-72">
+      <div
+        className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
+          isDesktop ? "ml-72" : ""
+        }`}
+      >
         {/* Header with close button */}
-        <div className="p-4 flex items-center justify-between">
+        <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-lg hover:bg-gray-100 border border-twilight"
             >
               <Menu size={24} className="text-twilight" />
             </button>
           )}
-          <div className="flex-1"></div> {/* Spacer */}
+          <div className="flex-1"></div>
           <button
             onClick={() => navigate("/groups")}
             className="p-2 rounded-full hover:bg-gray-100"
@@ -125,47 +149,51 @@ function ItemList() {
         </div>
 
         {/* Group Info Section */}
-        <div className="px-6 pb-2">
-          <div className="flex items-center gap-3 mb-2">
-            <Avatar
-              src={defaultprofile}
-              alt={group?.name || "Group"}
-              size="lg"
-            />
-            <div className="flex items-center justify-between flex-1">
-              <h2 className="text-2xl font-hornbill text-twilight font-black">
-                {group?.name || "Group Items"}
-              </h2>
-              {/* Update the edit button onClick handler */}
-              <button
-                onClick={() => navigate(`/edit-group/${groupId}`)}
-                className="p-2 rounded-full hover:bg-gray-100"
-                aria-label="Edit group"
-              >
-                <img
-                  src="/assets/icons/esIcon.svg"
-                  alt="Edit"
-                  className="w-5 h-5"
-                />
-              </button>
+        <div className="px-6 pb-2 lg:pb-1">
+          <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
+            <div className="flex items-center gap-3 mb-2">
+              <Avatar
+                src={defaultprofile}
+                alt={group?.name || "Group"}
+                size="lg"
+              />
+              <div className="flex items-center justify-between flex-1">
+                <h2 className="text-3xl font-hornbill text-twilight font-black pl-2">
+                  {group?.name || "Group Items"}
+                </h2>
+                <button
+                  onClick={() => navigate(`/edit-group/${groupId}`)}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                  aria-label="Edit group"
+                >
+                  <img
+                    src="/assets/icons/esIcon.svg"
+                    alt="Edit"
+                    className="w-6 h-6"
+                  />
+                </button>
+              </div>
             </div>
+            {/* Separator line */}
+            <div className="border-b border-twilight my-4 lg:my-2"></div>
           </div>
-          <div className="border-b border-gray-300 my-3"></div>
         </div>
 
-        {/* Add Item Button at Top */}
-        <div className="px-6 mb-4">
-          <button
-            onClick={handleAddItem}
-            className="w-full py-3 rounded-[13px] bg-twilight text-white font-semibold flex items-center justify-center gap-2"
-          >
-            <Plus size={18} />
-            Add Item
-          </button>
+        {/* Add Item Button - Make smaller in desktop mode */}
+        <div className="px-6 mb-4 lg:mb-2">
+          <div className="w-full lg:max-w-4xl lg:mx-auto">
+            <button
+              onClick={handleAddItem}
+              className="w-full text-2xl lg:text-lg font-telegraf font-black py-5 lg:py-2 rounded-[13px] border border-twilight bg-backg text-twilight font-semibold flex items-center justify-center gap-2 hover:bg-gray-100"
+            >
+              <Plus size={18} className="lg:w-4 lg:h-4" />
+              Add Item
+            </button>
+          </div>
         </div>
 
-        {/* Items List - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-6">
+        {/* Modified Items List Section */}
+        <div className="flex-1 overflow-y-auto px-6 lg:overflow-visible lg:flex lg:flex-col">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-twilight">Loading...</p>
@@ -175,82 +203,129 @@ function ItemList() {
               <p className="text-red-500">{error}</p>
             </div>
           ) : items.length === 0 ? (
-            <div className="flex items-center justify-center h-32 text-twilight text-opacity-60">
+            <div className="w-full lg:max-w-4xl lg:mx-auto flex items-center justify-center h-32 text-twilight text-opacity-60">
               <p>No items added yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {items.map((item, index) => (
-                <div
-                  key={index}
-                  className="rounded-[13px] border border-twilight bg-backg p-3 flex justify-between items-center"
-                >
-                  <span className="font-telegraf font-semibold text-twilight">
-                    {item.name}
-                  </span>
-                  <span className="font-telegraf font-bold text-twilight">
-                    {currency}
-                    {parseFloat(item.amount).toFixed(2)}
-                  </span>
+            <>
+              {/* Mobile/Tablet View */}
+              <div className="lg:hidden space-y-3 pt-4">
+                {items.map((item, index) => (
+                  <ItemCard
+                    key={index}
+                    item={item}
+                    currency={currency}
+                    onClick={() =>
+                      navigate(`/groups/${groupId}/items/${item.id}/edit`)
+                    }
+                  />
+                ))}
+              </div>
+
+              {/* Desktop View - Two Column Layout */}
+              <div className="hidden lg:block lg:flex-1 lg:overflow-y-auto max-h-[calc(100vh-380px)]">
+                <div className="w-full max-w-4xl mx-auto columns-2 gap-2 pr-2 pt-4">
+                  {paginatedItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="mb-2 break-inside-avoid lg:scale-85 lg:transform lg:-translate-y-3"
+                    >
+                      <ItemCard
+                        item={item}
+                        currency={currency}
+                        onClick={() =>
+                          navigate(`/groups/${groupId}/items/${item.id}/edit`)
+                        }
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {/* Desktop Pagination - Outside scroll area */}
+              {items.length > itemsPerPage && (
+                <div className="hidden lg:flex py-2 w-full max-w-4xl mx-auto justify-center gap-2">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 bg-twilight text-white text-sm rounded-[13px] disabled:opacity-50"
+                  >
+                    Prev
+                  </button>
+                  <span className="px-3 py-1 text-twilight text-sm font-semibold">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-2 py-1 bg-twilight text-white text-sm rounded-[13px] disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* Divider line after items list */}
-        <div className="px-6 mt-4">
-          <div className="border-t border-gray-300 my-3"></div>
-        </div>
-
         {/* Bottom section with service charge, tax and total */}
-        <div className="px-6 mt-2">
-          {/* Service Charge Row */}
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-telegraf text-twilight">
-              Service Charges (%)
-            </span>
-            <div className="w-20 rounded-[13px] border border-twilight bg-backg px-4 py-2">
-              <input
-                type="text"
-                value={serviceCharge}
-                onChange={(e) => setServiceCharge(e.target.value)}
-                className="w-full bg-transparent text-twilight text-right outline-none"
-              />
+        <div className="px-6 mt-1">
+          <div className="w-full lg:max-w-4xl lg:mx-auto">
+            {/* Service Charge Row */}
+            <div className="flex justify-between items-center mb-3 lg:mb-1">
+              <span className="font-telegraf text-xl lg:text-base text-twilight">
+                Service Charges (%)
+              </span>
+              <div className="w-20 lg:w-16 rounded-[13px] border border-twilight bg-backg px-4 lg:px-2 py-2 lg:py-1 flex items-center">
+                <input
+                  type="text"
+                  value={serviceCharge}
+                  onChange={(e) => setServiceCharge(e.target.value)}
+                  className="w-full bg-transparent text-twilight text-right outline-none"
+                />
+                <span className="text-twilight ml-1">%</span>
+              </div>
             </div>
-          </div>
 
-          {/* Tax Row */}
-          <div className="flex justify-between items-center mb-3">
-            <span className="font-telegraf text-twilight">Tax (%)</span>
-            <div className="w-20 rounded-[13px] border border-twilight bg-backg px-4 py-2">
-              <input
-                type="text"
-                value={tax}
-                onChange={(e) => setTax(e.target.value)}
-                className="w-full bg-transparent text-twilight text-right outline-none"
-              />
+            {/* Tax Row */}
+            <div className="flex justify-between items-center mb-3 lg:mb-1">
+              <span className="font-telegraf text-xl lg:text-base text-twilight">
+                Tax (%)
+              </span>
+              <div className="w-20 lg:w-16 rounded-[13px] border border-twilight bg-backg px-4 lg:px-2 py-2 lg:py-1 flex items-center">
+                <input
+                  type="text"
+                  value={tax}
+                  onChange={(e) => setTax(e.target.value)}
+                  className="w-full bg-transparent text-twilight text-right outline-none"
+                />
+                <span className="text-twilight ml-1">%</span>
+              </div>
             </div>
-          </div>
 
-          {/* Total Row */}
-          <div className="flex justify-between items-center mb-5">
-            <span className="font-telegraf font-bold text-twilight text-lg">
-              Total:
-            </span>
-            <span className="font-telegraf font-bold text-twilight text-lg">
-              {currency} {total.toFixed(2)}
-            </span>
-          </div>
+            {/* Total Row */}
+            <div className="flex justify-between items-center mb-5 lg:mb-2">
+              <span className="font-hornbill font-bold text-twilight text-2xl lg:text-lg">
+                Total:
+              </span>
+              <span className="font-telegraf font-bold text-twilight text-2xl lg:text-lg">
+                {currency} {total.toFixed(2)}
+              </span>
+            </div>
 
-          {/* Split Button */}
-          <div className="mb-5">
-            <button
-              onClick={handleSplitBill}
-              className="w-full py-3 rounded-[13px] bg-twilight text-white font-semibold"
-            >
-              Split
-            </button>
+            {/* Split Button */}
+            <div className="mb-5 lg:mb-2">
+              <button
+                onClick={handleSplitBill}
+                className="w-[50%] py-3 lg:py-1.5 rounded-[13px] bg-twilight text-white text-2xl lg:text-lg font-hornbill"
+              >
+                Split
+              </button>
+            </div>
           </div>
         </div>
       </div>

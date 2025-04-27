@@ -23,6 +23,7 @@ import SettingsPage from "./pages/SettingsPage";
 import AddItems from "./pages/AddItems";
 import SplitBill from "./pages/SplitBill";
 import GroupForm from "./pages/GroupForm";
+import EditItem from "./pages/EditItem";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -101,7 +102,10 @@ function AppRoutes() {
       path: "/edit-group/:groupId",
       element: <GroupForm />,
     },
-
+    {
+      path: "/groups/:groupId/items/:itemId/edit",
+      element: <EditItem />,
+    },
     {
       path: "*",
       element: <NotFound />,
