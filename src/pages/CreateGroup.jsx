@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus, User } from "lucide-react";
-import FriendCard from "../Component/FriendCard";
+import FriendCardEmpty from "../Component/FriendCardEmpty";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import { useNavigate } from "react-router-dom";
@@ -210,10 +210,9 @@ function CreateGroup() {
               {selectedMembers.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
                   {selectedMembers.map((member) => (
-                    <FriendCard
+                    <FriendCardEmpty
                       key={member.id}
                       name={member.name}
-                      balance={member.balance}
                       avatarUrl={member.avatarUrl}
                       onClick={() =>
                         console.log("Member clicked:", member.name)
@@ -313,9 +312,8 @@ function CreateGroup() {
                             }
                           }}
                         >
-                          <FriendCard
+                          <FriendCardEmpty
                             name={friend.name}
-                            balance={friend.balance}
                             avatarUrl={friend.avatarUrl}
                           />
                           {isSelected && (

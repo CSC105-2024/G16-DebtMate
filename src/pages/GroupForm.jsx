@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus, User } from "lucide-react";
-import FriendCard from "../Component/FriendCard";
+import FriendCardEmpty from "../Component/FriendCardEmpty";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import AddMember from "../Component/AddMember";
+import ChangeGroupPic from "../Component/ChangeGroupPic";
+import group1 from "/assets/icons/group1.svg";
 
 function GroupForm() {
   const { groupId } = useParams();
@@ -24,6 +26,10 @@ function GroupForm() {
   const [error, setError] = useState("");
   // number of friends to display per page
   const friendsPerPage = 14;
+
+  // for group picture
+  const [groupPicture, setGroupPicture] = useState(defaultprofile);
+  const [isChangePicOpen, setIsChangePicOpen] = useState(false);
 
   // sample friends data for development purposes
   const friends = [
@@ -201,6 +207,21 @@ function GroupForm() {
               </h2>
             </div>
 
+            {/* Group Picture Section */}
+            <div className="flex justify-center pt-6">
+              <div 
+                className="w-24 h-24 rounded-full overflow-hidden mb-4 cursor-pointer"
+                onClick={() => setIsChangePicOpen(true)}
+              >
+                <img
+                  src={group1}
+                  alt="Group Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+            
+
             {/* Group Name */}
             <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
               Group Name
@@ -241,10 +262,9 @@ function GroupForm() {
               {selectedMembers.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
                   {selectedMembers.map((member) => (
-                    <FriendCard
+                    <FriendCardEmpty
                       key={member.id}
                       name={member.name}
-                      balance={member.balance}
                       avatarUrl={member.avatarUrl}
                       onClick={() =>
                         console.log("Member clicked:", member.name)
@@ -295,7 +315,7 @@ function GroupForm() {
                 disabled={
                   !groupName || selectedMembers.length === 0 || isSaving
                 }
-                className="w-full max-w-md py-3 rounded-[13px] bg-twilight text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full max-w-md py-3 rounded-[13px] font-hornbill bg-twilight text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving
                   ? "Saving..."
@@ -349,9 +369,8 @@ function GroupForm() {
                             }
                           }}
                         >
-                          <FriendCard
+                          <FriendCardEmpty
                             name={friend.name}
-                            balance={friend.balance}
                             avatarUrl={friend.avatarUrl}
                           />
                           {isSelected && (
@@ -401,6 +420,22 @@ function GroupForm() {
           />
         )}
       </div>
+
+      {isChangePicOpen && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-[13px] shadow-lg">
+          <ChangeGroupPic 
+            onClose={() => setIsChangePicOpen(false)}
+            onConfirm={(newPic) => {
+              setGroupPicture(newPic);
+              setIsChangePicOpen(false);
+            }}
+          />
+        </div>
+      </div>
+    )}
+
+
     </div>
   );
 }

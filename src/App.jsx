@@ -16,7 +16,6 @@ import { useContext } from "react";
 import GroupList from "./pages/GroupList";
 import CreateGroup from "./pages/CreateGroup";
 import ItemList from "./pages/ItemList";
-import EditGroup from "./pages/EditGroup";
 import AddMember from "./Component/AddMember";
 import { Group, Settings } from "lucide-react";
 import SettingsPage from "./pages/SettingsPage";
@@ -24,6 +23,8 @@ import AddItems from "./pages/AddItems";
 import SplitBill from "./pages/SplitBill";
 import GroupForm from "./pages/GroupForm";
 import EditItem from "./pages/EditItem";
+import UserInformation from "./pages/UserInformation";
+import UserInformationEdit from "./pages/UserInformationEdit";
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
@@ -106,6 +107,23 @@ function AppRoutes() {
       path: "/groups/:groupId/items/:itemId/edit",
       element: <EditItem />,
     },
+    {
+      path: "/user-info",
+      element: (
+        <ProtectedRoute>
+          <UserInformation />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/user-info-edit",
+      element: (
+        <ProtectedRoute>
+          <UserInformationEdit />
+        </ProtectedRoute>
+      ),
+    },
+
     {
       path: "*",
       element: <NotFound />,

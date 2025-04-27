@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Search, Plus, Check } from "lucide-react";
-import FriendCard from "./FriendCard";
+import FriendCardEmpty from "./FriendCardEmpty";
 
 function AddMember({
   isOpen,
@@ -95,9 +95,8 @@ function AddMember({
                 <div className="h-full w-full">
                   {" "}
                   {/* Add this wrapper div */}
-                  <FriendCard
+                  <FriendCardEmpty
                     name={friend.name}
-                    balance={friend.balance}
                     avatarUrl={friend.avatarUrl}
                     className="h-full w-full" // Add this className prop
                   />
