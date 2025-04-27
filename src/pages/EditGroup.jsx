@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import group1 from "/assets/icons/group1.svg";
 
 const EditGroup = () => {
   const { groupId } = useParams();
@@ -74,6 +75,12 @@ const EditGroup = () => {
   return (
     <div className="edit-group-container">
       <h1>Edit Group</h1>
+      <div className={`w-22 h-22 bg-gray-300 rounded-full flex items-center justify-center text-gray-500 mb-2 max-[${XS}]:w-16 max-[${XS}]:h-16`}>
+        <img
+          src={group1}
+          alt="Group Profile Picture"
+          className="w-full h-full rounded-full object-cover cursor-pointer" />
+      </div>
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">

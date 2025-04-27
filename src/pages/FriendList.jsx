@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
+import FriendProfileModal from "../Component/FriendProfileModal";
 
 function FriendList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,33 +12,43 @@ function FriendList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
+  const [selectedFriend, setSelectedFriend] = useState(null);
   const friendsPerPage = 14;
 
-  // Mock data
+  // Mock data - adding username, email, and bio
   const friends = [
-    { id: 1, name: "Alan", balance: 100, avatarUrl: defaultprofile },
-    { id: 2, name: "Beauz", balance: -100, avatarUrl: defaultprofile },
-    { id: 4, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 5, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 6, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 7, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 8, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 9, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 10, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 11, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 12, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 13, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 14, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 15, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 16, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 17, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 18, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 19, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 20, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 21, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 22, name: "Colde", balance: 0, avatarUrl: defaultprofile },
-    { id: 23, name: "Colde", balance: 0, avatarUrl: defaultprofile },
+    { id: 1, name: "Alan", balance: 100, avatarUrl: defaultprofile, username: "alan123", email: "alan123@example.com", bio: "Lover of music and art." },
+    { id: 2, name: "Beauz", balance: -100, avatarUrl: defaultprofile, username: "beauz456", email: "beauz456@example.com", bio: "Adventure enthusiast and coffee addict." },
+    { id: 4, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde789", email: "colde789@example.com", bio: "Just here to learn and grow." },
+    { id: 5, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde123", email: "colde123@example.com", bio: "Tech lover and gamer." },
+    { id: 6, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde456", email: "colde456@example.com", bio: "Exploring the world, one step at a time." },
+    { id: 7, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde789", email: "colde789@example.com", bio: "Just living life." },
+    { id: 8, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde012", email: "colde012@example.com", bio: "Software developer and coffee lover." },
+    { id: 9, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde345", email: "colde345@example.com", bio: "Passionate about learning new things." },
+    { id: 10, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde678", email: "colde678@example.com", bio: "Building things and breaking them apart." },
+    { id: 11, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde901", email: "colde901@example.com", bio: "Music lover, always exploring new genres." },
+    { id: 12, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde234", email: "colde234@example.com", bio: "Life’s too short for bad coffee." },
+    { id: 13, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde567", email: "colde567@example.com", bio: "Taking one day at a time." },
+    { id: 14, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde890", email: "colde890@example.com", bio: "Making tech more human." },
+    { id: 15, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde012", email: "colde012@example.com", bio: "Adventurer at heart." },
+    { id: 16, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde345", email: "colde345@example.com", bio: "Love nature and the outdoors." },
+    { id: 17, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde678", email: "colde678@example.com", bio: "Driven by curiosity." },
+    { id: 18, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde901", email: "colde901@example.com", bio: "Gamer and full-time dreamer." },
+    { id: 19, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde234", email: "colde234@example.com", bio: "Creative and artistic soul." },
+    { id: 20, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde567", email: "colde567@example.com", bio: "I enjoy a good challenge." },
+    { id: 21, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde890", email: "colde890@example.com", bio: "Tech enthusiast and maker." },
+    { id: 22, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde123", email: "colde123@example.com", bio: "Learning new skills every day." },
+    { id: 23, name: "Colde", balance: 0, avatarUrl: defaultprofile, username: "colde456", email: "colde456@example.com", bio: "Coding is my passion." }
   ];
+  
+
+  const handleFriendCardClick = (friend) => {
+    setSelectedFriend(friend);
+  };
+
+  const handleClosePopup = () => {
+    setSelectedFriend(null);
+  };
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
@@ -64,6 +75,22 @@ function FriendList() {
     (currentPage - 1) * friendsPerPage,
     currentPage * friendsPerPage
   );
+
+  // Ref for detecting click outside the modal
+  const modalRef = useRef();
+
+  useEffect(() => {
+    // Function to close modal when clicking outside
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        handleClosePopup();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
@@ -133,7 +160,8 @@ function FriendList() {
                 name={friend.name}
                 balance={friend.balance}
                 avatarUrl={friend.avatarUrl}
-                onClick={() => console.log("View profile:", friend.name)}
+                friend={friend}
+                onClick={() => handleFriendCardClick(friend)}
               />
             ))}
           </div>
@@ -149,7 +177,8 @@ function FriendList() {
                   name={friend.name}
                   balance={friend.balance}
                   avatarUrl={friend.avatarUrl}
-                  onClick={() => console.log("View profile:", friend.name)}
+                  friend={friend}
+                  onClick={() => handleFriendCardClick(friend)}
                 />
               </div>
             ))}
@@ -186,6 +215,15 @@ function FriendList() {
           className="fixed inset-0 z-40"
           onClick={() => setIsMenuOpen(false)}
         />
+      )}
+
+      {selectedFriend && (
+        <div ref={modalRef}>
+          <FriendProfileModal
+            friend={selectedFriend}
+            onClose={handleClosePopup}
+          />
+        </div>
       )}
     </div>
   );
