@@ -11,7 +11,8 @@
     "server": "cd backend && npm run dev",
     "setup": "npm install && cd backend && npm install",
     "start": "concurrently \"npm run dev\" \"npm run server\"",
-    "dev:all": "concurrently \"npm run dev\" \"npm run server\""
+    "dev:all": "npm run setup && concurrently \"npm run dev\" \"npm run server\""
+  
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
