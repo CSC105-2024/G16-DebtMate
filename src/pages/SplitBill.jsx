@@ -113,7 +113,7 @@ function SplitBill() {
         </div>
       ) : (
         <div
-          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+          className={`fixed inset-y-0 left-0 z-[200] ${menuWidth} transform transition-transform duration-300 ease-in-out ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -132,7 +132,7 @@ function SplitBill() {
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-lg border border-twilight hover:bg-gray-100"
             >
               <Menu size={24} className="text-twilight" />
             </button>
@@ -242,7 +242,7 @@ function SplitBill() {
       {/* mobile overlay - unchanged */}
       {!isDesktop && isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-[150] lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
       )}

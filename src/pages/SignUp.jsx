@@ -186,7 +186,7 @@ function SignUp() {
           Debt Mate
         </h1>
 
-        <div className="w-[99%] max-w-[100vw] mx-[20vw] px-[6%] py-[2vh] mb-[vh] -mt-[1vh] bg-icy rounded-3xl sm:w-[500px] sm:mx-auto sm:px-[40px] sm:py-[30px]">
+        <div className="w-[99%] max-w-[100vw] mx-[10vw] px-[6%] py-[2vh] mb-[vh] -mt-[1vh] bg-icy rounded-3xl sm:w-[500px] sm:mx-auto sm:px-[40px] sm:py-[30px]">
           <h2 className="text-twilight text-[9vw] px-2 pt-5 sm:text-[32px] font-hornbill font-bold pt-2 sm:px-0 sm:mb-[20px]">
             Create Account
           </h2>

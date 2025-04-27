@@ -115,9 +115,9 @@ function ItemList() {
         </div>
       ) : (
         <div
-          className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+          className={`fixed inset-y-0 left-0 z-[200] ${menuWidth} transform transition-transform duration-300 ${
             isMenuOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          } bg-[#d5d4ff]`}
         >
           <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
         </div>
@@ -333,7 +333,7 @@ function ItemList() {
       {/* Overlay to close menu when clicking outside - mobile only */}
       {!isDesktop && isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-[150] lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
       )}
