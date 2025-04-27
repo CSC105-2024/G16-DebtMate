@@ -1,3 +1,7 @@
+# ⚠️ WARNING ⚠️
+
+**The features described below are only available in the Docker/PostgreSQL branch and are still in testing. They are NOT ready for release and should not be used in production environments. The main branch does not include these features. Please proceed with caution and only use for testing and development purposes.**
+
 # DebtMate 💸
 
 ## 🚀 What's This?
