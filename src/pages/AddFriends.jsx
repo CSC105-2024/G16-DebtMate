@@ -1,16 +1,18 @@
 /**
  * friend search and adding page component.
  * allows users to search for other users to add as friends.
- * includes debounced search, loading states, and friend request functionality(not working).
+ * includes debounced search, loading states, and friend request functionality.
  * uses the user search API endpoint from the backend.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, UserPlus } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
+import FriendProfileModal from "../Component/FriendProfileModal";
 
 function AddFriends() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,114 +22,33 @@ function AddFriends() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [addingFriend, setAddingFriend] = useState(null);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
+  const modalRef = useRef();
 
-  const menuWidth = "w-72";
-
-  /**
-   * Searches for users by username using the backend API
-   * Called when user submits search or through debounced effect
-   */
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Query the backend search API, sending auth cookies
-      const response = await fetch(
-        `http://localhost:3000/api/search/users?q=${encodeURIComponent(
-          searchTerm
-        )}&limit=5`,
-        {
-          credentials: "include", // Send auth token cookie
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Transform API results to component-friendly format
-        const transformedResults = data.users.map((user) => ({
-          id: user.id,
-          name: user.username || user.name, // Handle both field names
-          balance: 0, // New users start with 0 balance
-          avatarUrl: defaultprofile,
-        }));
-
-        setSearchResults(transformedResults);
-      } else {
-        setError(data.error || "Failed to search for users");
-        setSearchResults([]);
-      }
-    } catch (err) {
-      console.error("Error searching for users:", err);
-      setError("Failed to connect to the server");
-      setSearchResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Sends friend request to the selected user
-   * Updates UI to reflect pending state during request
-   * @param {number} userId - The ID of the user to add as friend
-   */
-  const handleAddFriend = async (userId) => {
-    setAddingFriend(userId);
-
-    try {
-      // Send friend request to the backend API
-      const response = await fetch(
-        "http://localhost:3000/api/friends/request",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ friendId: userId }),
-          credentials: "include",
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Remove the user from search results after successfully adding
-        setSearchResults((prev) => prev.filter((user) => user.id !== userId));
-      } else {
-        throw new Error(data.message || "Failed to add friend");
-      }
-    } catch (err) {
-      console.error("Error adding friend:", err);
-      setError(err.message || "Failed to add friend");
-    } finally {
-      setAddingFriend(null);
-    }
-  };
-
-  // Debounce search input to prevent excessive API calls
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchTerm.trim()) {
-        handleSearch();
-      } else {
-        setSearchResults([]);
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/me", {
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setCurrentUser({ id: data.userId });
+        } else {
+          console.error("Failed to fetch current user");
+        }
+      } catch (err) {
+        console.error("Error fetching current user");
       }
-    }, 300);
+    };
 
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+    fetchCurrentUser();
+  }, []);
 
-  // Handle responsive layout based on screen size
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -140,22 +61,161 @@ function AddFriends() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  // Add this effect to trigger search when searchTerm changes
+  useEffect(() => {
+    // We dont need this if function but i am too scared to remove it
+    if (searchTerm.length > 0) {
+      handleSearch();
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchTerm]);
+
+  // Effect for outside click detection
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setSelectedFriend(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearch = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (!currentUser) {
+        try {
+          const userResponse = await fetch("http://localhost:3000/api/me", {
+            credentials: "include",
+          });
+
+          const userData = await userResponse.json();
+
+          if (userData.success) {
+            setCurrentUser({ id: userData.userId });
+          } else {
+            setError("Failed to fetch user info. Please try again.");
+            setIsLoading(false);
+            return;
+          }
+        } catch (err) {
+          setError("Network error. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/api/friends/search?query=${encodeURIComponent(
+          searchTerm
+        )}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        const currentUserId = currentUser ? currentUser.id : null;
+        const filteredUsers = currentUserId
+          ? data.users.filter(
+              (user) => String(user.id) !== String(currentUserId)
+            )
+          : data.users;
+
+        // Format the results for display
+        const formattedResults = filteredUsers.map((user) => ({
+          id: user.id,
+          name: user.name || user.username,
+          username: user.username,
+          email: user.email,
+          balance: 0,
+          avatarUrl: defaultprofile,
+          bio: user.bio || "",
+        }));
+
+        setSearchResults(formattedResults);
+      } else {
+        setError(data.message || "Search failed");
+        setSearchResults([]);
+      }
+    } catch (err) {
+      setError("Network error while searching");
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle adding a friend
+  const handleAddFriend = async (friendId) => {
+    setAddingFriend(friendId);
+
+    try {
+      const response = await fetch("http://localhost:3000/api/friends/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ friendId }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Remove the added friend from results
+        setSearchResults((prevResults) =>
+          prevResults.filter((user) => user.id !== friendId)
+        );
+      } else {
+        console.error("Failed to add friend");
+      }
+    } catch (err) {
+      console.error("Add friend error");
+    } finally {
+      setAddingFriend(null);
+    }
+  };
+
+  // Handle removing a friend from search results after being added
+  const handleFriendAdded = (friendId) => {
+    // Remove the added friend from results
+    setSearchResults((prevResults) =>
+      prevResults.filter((user) => user.id !== friendId)
+    );
+  };
+
+  // Handle friend card click
+  const handleFriendCardClick = (friend) => {
+    setSelectedFriend(friend);
+  };
+
+  // Handle closing the modal
+  const handleClosePopup = () => {
+    setSelectedFriend(null);
+  };
+
   return (
     <div className="flex h-screen bg-color-dreamy">
-      {/* Hamburger Menu */}
+      {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 ${menuWidth} transform transition-transform duration-300 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
         <HamburgerMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
       </div>
 
-      {/* Main Content */}
+      {/* Content Area */}
       <div className="flex-1 flex flex-col lg:ml-72">
-        {/* Top Bar */}
         <div className="flex items-center p-4 gap-3">
-          {/* Menu button - only visible on mobile */}
           {!isDesktop && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -165,55 +225,40 @@ function AddFriends() {
             </button>
           )}
 
-          {/* Search Bar */}
           <div className="flex-grow max-w-md mx-auto">
             <SearchBar
               value={searchTerm}
               onChange={setSearchTerm}
-              onSearch={handleSearch}
               placeholder="Search for users..."
             />
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6">
-          <div className="max-w-md mx-auto">
-            <p className="text-4xl font-hornbill font-black text-twilight mb-6 text-left">
-              Add Friends
-            </p>
+        <div className="flex-1 p-4 overflow-y-auto">
+          <h1 className="text-2xl font-hornbill text-twilight mb-4">
+            Add Friends
+          </h1>
 
-            {/* Loading, Error, and No Results States */}
-            {isLoading && (
-              <div className="text-center py-4">
-                <p className="text-twilight">Searching...</p>
-              </div>
-            )}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
 
-            {error && (
-              <div className="text-center py-4">
-                <p className="text-red-500">{error}</p>
-              </div>
-            )}
-
-            {!isLoading &&
-              searchTerm &&
-              searchResults.length === 0 &&
-              !error && (
-                <div className="text-center py-4">
-                  <p className="text-twilight">No users found</p>
-                </div>
-              )}
-
-            {/* Search Results */}
-            <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <p className="text-twilight">Searching...</p>
+            </div>
+          ) : searchResults.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {searchResults.map((user) => (
                 <div key={user.id} className="relative">
                   <FriendCard
                     name={user.name}
                     balance={user.balance}
                     avatarUrl={user.avatarUrl}
-                    onClick={() => console.log("View profile:", user.name)}
+                    friend={user}
+                    onClick={() => handleFriendCardClick(user)}
                   />
                   <button
                     onClick={() => handleAddFriend(user.id)}
@@ -225,7 +270,17 @@ function AddFriends() {
                 </div>
               ))}
             </div>
-          </div>
+          ) : searchTerm.length > 0 ? (
+            <div className="flex justify-center items-center h-40">
+              <p className="text-twilight">No users found</p>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center h-40">
+              <p className="text-twilight">
+                Search for users to add as friends
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -235,6 +290,17 @@ function AddFriends() {
           className="fixed inset-0 bg-black/20 z-40 lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
+      )}
+
+      {/* Add FriendProfileModal */}
+      {selectedFriend && (
+        <div ref={modalRef}>
+          <FriendProfileModal
+            friend={selectedFriend}
+            onClose={handleClosePopup}
+            onFriendAdded={handleFriendAdded}
+          />
+        </div>
       )}
     </div>
   );

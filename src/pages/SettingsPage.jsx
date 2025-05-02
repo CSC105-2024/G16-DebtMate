@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import {
   Menu,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CurrencySelect from "../Component/CurrencySelect";
+import { AuthContext } from "../context/AuthContext";
 
 function SettingsPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,7 +19,9 @@ function SettingsPage() {
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [currency, setCurrency] = useState("USD");
 
-  const menuWidth = "w-72"; // Same sidebar width as FriendList
+  const { setIsAuthenticated } = useContext(AuthContext);
+
+  const menuWidth = "w-72";
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -40,17 +43,29 @@ function SettingsPage() {
     { label: "Logout", icon: LogOut },
   ];
 
-  const handleClick = (type) => {
+  const handleClick = async (type) => {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
     } else if (type === "Logout") {
-      localStorage.setItem("isLoggedIn", "false");
+      try {
+        const response = await fetch("http://localhost:3000/api/logout", {
+          method: "POST",
+          credentials: "include",
+        });
 
-      // Navigate to the login page
-      navigate("/");
+        console.log("Logout response status:", response.status);
 
-      // Refresh the window to ensure all state is reset
-      window.location.reload();
+        // Update the auth context
+        setIsAuthenticated(false);
+
+        // Redirect to login page
+        navigate("/");
+      } catch (error) {
+        console.error("Logout failed:", error);
+
+        setIsAuthenticated(false);
+        navigate("/");
+      }
     }
   };
 

@@ -35,20 +35,6 @@ function Login() {
     setLoginError("");
 
     try {
-      // First check if this user already exists in localStorage
-      const storedUser = JSON.parse(
-        localStorage.getItem("currentUser") || "null"
-      );
-
-      if (storedUser && storedUser.email === formData.email) {
-        // User exists in localStorage, just set isLoggedIn to true
-        localStorage.setItem("isLoggedIn", "true");
-        setIsAuthenticated(true);
-        navigate("/friendlist");
-        return;
-      }
-
-      // Otherwise try to authenticate with the server
       const response = await fetch("http://localhost:3000/api/login", {
         method: "POST",
         headers: {
@@ -61,10 +47,6 @@ function Login() {
       const data = await response.json();
 
       if (data.success) {
-        // Save user data
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-        // Set logged in flag to true
-        localStorage.setItem("isLoggedIn", "true");
         setIsAuthenticated(true);
         navigate("/friendlist");
       } else {
