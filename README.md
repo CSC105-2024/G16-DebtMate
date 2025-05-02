@@ -1,422 +1,228 @@
 # DebtMate Developer Guide
 
-## Main Branch Documentation
+## Overview
 
-This document provides comprehensive technical details for developers working with the DebtMate main branch codebase.
+**DebtMate** is a web application designed for tracking shared expenses and debts among friends. The application allows users to create groups, add members, split bills, and manage expenses seamlessly.
 
-## Codebase Overview
+---
 
-DebtMate is a web application designed for tracking shared expenses and debts between friends. The main branch implements a simple in-memory data store without any database dependencies for ease of development.
+## Tech Stack
 
-## Project Architecture
+| Layer          | Technologies                 |
+| -------------- | ---------------------------- |
+| Frontend       | React 19, Tailwind CSS, Vite |
+| Backend        | Hono.js, Node.js, TypeScript |
+| Database       | SQLite with Prisma ORM       |
+| Authentication | JWT with bcrypt              |
 
-### Tech Stack
+---
 
-| Layer             | Technologies                              |
-|-------------------|-------------------------------------------|
-| **Frontend**      | React 19, Tailwind CSS, Vite              |
-| **Backend**       | Hono.js, Node.js                          |
-| **Data Storage**  | In-memory JavaScript objects              |
-| **Authentication**| JWT with bcrypt                           |
-
-### Core Design Principles
-
-- **Simplicity**: In-memory data storage enables easy setup and development
-- **Modern React**: Leverages React 19 features and hooks for efficient UI development
-- **Component-Based UI**: Implements reusable UI components with Tailwind styling
-
-## Development Setup
+## Getting Started
 
 ### Prerequisites
 
-1. **Node.js** (v16+) and **npm** (v7+)
+- Node.js (v16+)
+- npm (v7+)
 
-### Quick Start
+---
 
-1. Clone the repository
+### Setting Up the Project
+
+1. **Clone the repository**
+
    ```bash
    git clone https://github.com/CSC105-2024/G16-DebtMate.git
    cd G16-DebtMate
    ```
 
-2. Start development servers (frontend and backend concurrently) while installing all packages and dependencies:
+2. **Install dependencies**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   cd ..
+   ```
+
+3. **Configure the backend environment**
+
+   ```bash
+   cd backend
+   cp .env.example .env
+   cd ..
+   ```
+
+4. **Default `.env` configuration**
+
+   ```env
+   # JWT Configuration
+   JWT_SECRET=21541661356
+   JWT_EXPIRES_IN=7d
+
+   # Prisma Database Configuration
+   DATABASE_URL="file:./dev.db"
+   ```
+
+5. **Initialize and seed the database (from backend folder)**
+
+   ```bash
+   npm run db:setup
+   ```
+
+   > This runs the Prisma migration and seeds the initial data using:
+   >
+   > ```json
+   > "db:setup": "prisma migrate dev --name init && node src/scripts/seed.js"
+   > ```
+
+6. **Start both frontend and backend concurrently**
+
    ```bash
    npm run dev:all
    ```
 
-## Codebase Structure
+---
 
-### Frontend Structure (`/src`)
+## Running in Development Mode
 
-- `/Component`: Reusable UI components
-- `/pages`: Page-level components
+- Frontend only:
+
+  ```bash
+  npm run dev
+  # Access at http://localhost:5173
+  ```
+
+- Backend only:
+
+  ```bash
+  npm run server
+  # Access at http://localhost:3000
+  ```
+
+- Both:
+
+  ```bash
+  npm run dev:all
+  ```
+
+---
+
+## Project Structure
+
+### Frontend (`/src`)
+
+- `/components`: Reusable UI components
+- `/pages`: Page components (e.g., `GroupList`, `CreateGroup`, `SplitBill`)
 - `/context`: React context providers
-- `App.jsx`: Main application component and routing
+- `App.jsx`: Main application with routing
 
-### Backend Structure (`/backend/src`)
+### Backend (`/src`)
 
-- `/models`: Data access layer with in-memory storage
-- `/routes`: API route definitions
-- `/controllers`: Business logic for API endpoints
-- `/middleware`: Request processing functions
-- `/utils`: Shared utility functions
-- `/config`: Configuration modules
+- `/models`: Data models (user, group, item)
+- `/routes`: API endpoints (auth, search, group)
+- `/controllers`: Business logic
+- `/middleware`: Request processing (auth, CORS)
+- `/utils`: Helper functions
+- `/config`: Configuration files
 - `server.ts`: Application entry point
 
-## Key Development Workflows
+---
 
-### Running the Application
+## Key Features
 
-- `npm run dev`: Starts the frontend Vite server
-- `npm run server`: Starts the backend Hono server
-- `npm run dev:all`: Sets up and starts both servers concurrently
+- **User Authentication**: JWT-based auth with secure token storage
+- **Friend Management**: Add friends and manage relationships
+- **Group Creation**: Create groups and add members
+- **Expense Tracking**: Add items/expenses to groups
+- **Bill Splitting**: Split bills among group members
+- **Responsive Design**: Works on both desktop and mobile devices
+
+---
+
+## Development Workflow
 
 ### Authentication
 
-The authentication system implements:
-- JWT for secure token-based authentication
-- bcrypt for password hashing
-- HTTP-only cookies for secure token storage
+- JWT is used for secure authentication
+- Tokens are stored in HTTP-only cookies
+- Passwords are hashed using bcrypt
+- Auth middleware protects private routes
 
-### Form Handling
+### Database
 
-The frontend utilizes:
-- react-hook-form for form state management
-- zod for schema validation
+- Uses SQLite (file-based) via Prisma ORM
+- Prisma handles schema and migrations
+- Scripts for database operations:
 
-### Styling
-
-The project implements Tailwind CSS for styling with:
-- Custom components built on Tailwind primitives
-- Responsive design patterns
-- Iconography from Lucide React and Iconify
-
-### Available Scripts (Run from root)
-
-- `npm run build`: Build the frontend for production
-- `npm run lint`: Run ESLint to check code quality
-- `npm run preview`: Preview the built frontend
-- `npm run setup`: Install all dependencies
-- `npm run server`: Start Hono server
+  - `npm run db:setup`: Migrate and seed database
+  - `npm run db:reset`: Reset database and re-apply migrations
+  - `npm run db:seed`: Seed the database with sample data only
 
 ---
 
-# ⚠️ **WARNING** ⚠️
+## API Routes
 
-**The features described below are only available in the Docker/PostgreSQL branch and are still in testing. They are NOT ready for release and should not be used in production environments. The main branch does not include these features. Please proceed with caution and only use for testing and development purposes.**
-
-# DebtMate (PostgreSQL Version)
-
-## 🚀 Overview
-
-DebtMate enables users to:
-
-- 💰 Track debts and expenses between individuals
-- 👥 Create and manage groups for shared expenses
-- ✅ Maintain clear records of financial obligations without complications
-
-## 🛠 Getting Started
-
-### 📌 Prerequisites
-
-Before beginning development, ensure you have the following installed:
-
-1. **Node.js & npm** - [Download here](https://nodejs.org/)
-2. **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
-   - Required for PostgreSQL mode (optional for memory mode)
-   - Ensure Docker service is running before using PostgreSQL mode
+- `/auth`: User login and signup
+- `/users`: User management and profile operations
+- `/search`: Friend search
+- `/groups`: Group and expense management
 
 ---
 
-## 📂 Database Modes
+## Available Scripts
 
-DebtMate supports two distinct database modes:
-
-| Mode                | Description                                                      |
-| ------------------- | ---------------------------------------------------------------- |
-| **Memory Mode**     | In-memory database for quick development (no Docker required)    |
-| **PostgreSQL Mode** | Persistent database for full-featured development and production |
-
-#### 🏗 Configuring Database Mode
-
-Set the database mode in `/backend/.env`:
-
-```bash
-DB_MODE=memory # Options: memory, postgres
-```
-
-The mode is also controlled by which startup script you execute (see below).
+| Script             | Description                                             |
+| ------------------ | ------------------------------------------------------- |
+| `npm run dev`      | Start frontend development server                       |
+| `npm run server`   | Start backend server                                    |
+| `npm run dev:all`  | Start both frontend and backend                         |
+| `npm run build`    | Build frontend for production                           |
+| `npm run lint`     | Check code quality using ESLint                         |
+| `npm run preview`  | Preview built frontend                                  |
+| `npm run setup`    | Install all dependencies                                |
+| `npm run db:setup` | Run migrations and seed database                        |
+| `npm run db:reset` | Reset database and re-apply migrations (⚠️ destructive) |
+| `npm run db:seed`  | Seed the database with sample data only                 |
 
 ---
 
-## 🚀 Quick Start Options
+## Coding Standards
 
-### 🔹 Memory Mode (No Docker Required)
+### Frontend
 
-For rapid development without PostgreSQL configuration:
+- Use functional components with React hooks
+- Use **PascalCase** for component names (e.g., `FriendCard.jsx`)
+- Style with Tailwind CSS
+- Document component props for reusability
 
-```bash
-# Clone the repository
-git clone https://github.com/CSC105-2024/G16-DebtMate.git
-cd G16-DebtMate
+### Backend
 
-# Copy example environment file
-cd backend
-cp .env.example .env  # DB_MODE=memory is default
-cd ..
+- Follow TypeScript best practices
+- Document functions using JSDoc
+- Use `async/await` for async code
+- Keep controllers focused on business logic
+- Delegate data access to models
 
-# Start the app with in-memory database
-npm run dev:memory
-```
+### General
 
-### 🔹 PostgreSQL Mode (With Docker)
-
-For development with persistent data storage:
-
-```bash
-# Clone the repository
-git clone https://github.com/CSC105-2024/G16-DebtMate.git
-cd G16-DebtMate
-
-# Copy example environment file
-cd backend
-cp .env.example .env
-# Edit .env to set DB_MODE=postgres if desired (optional - script handles it)
-cd ..
-
-# Start with PostgreSQL database
-npm run dev:postgres
-```
+- Run `npm run lint` before submitting PRs
+- Follow consistent error-handling patterns
+- Use descriptive variable and function names
 
 ---
 
-## ⚙️ Technical Implementation Details
+## Accessing the Application
 
-### 🛑 Memory Mode (`npm run dev:memory`)
-
-- Implements an in-memory database that resets when the server restarts
-- No PostgreSQL or Docker requirements
-- Provides faster startup and simpler configuration
-- **Data is lost when the server restarts**
-
-### ✅ PostgreSQL Mode (`npm run dev:postgres`)
-
-- Launches a PostgreSQL container in Docker (port 5433)
-- Configures database with:
-  - **Username:** `admin`
-  - **Password:** `admin`
-- Executes database initialization scripts from `init`
-- **Data persists between server restarts**
-- Launches **React frontend** (Vite) at [`http://localhost:5173`](http://localhost:5173)
-- Launches **Hono backend** at [`http://localhost:3000`](http://localhost:3000)
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🔨 Manual Setup
+## Contributing
 
-For developers preferring granular control over the setup process:
-
-```bash
-# Clone the repository
-git clone https://github.com/CSC105-2024/G16-DebtMate.git
-cd G16-DebtMate
-
-# Set up environment file
-cd backend
-cp .env.example .env
-# Edit .env to set DB_MODE=memory or DB_MODE=postgres
-cd ..
-
-# Install dependencies for frontend and backend
-npm run setup
-
-# For PostgreSQL Mode only:
-npm run docker:up  # Start PostgreSQL container
-
-# In two separate terminals:
-npm run dev      # Frontend (terminal 1)
-npm run server   # Backend (terminal 2)
-```
+See `CONTRIBUTING.md` for contribution guidelines and code of conduct.
 
 ---
 
-## ⚙️ Environment Configuration
+## License
 
-The backend requires environment variables for proper operation. These are stored in `.env`:
-
-```bash
-# Create the .env file
-cd backend
-cp .env.example .env
-```
-
-#### 🔑 Default Configuration Values in `.env.example`:
-
-```bash
-# Database Configuration
-DB_USER=admin
-DB_PASSWORD=admin
-DB_HOST=localhost
-DB_PORT=5433
-DB_NAME=debtmate
-DB_MODE=memory  # Options: memory, postgres
-
-# JWT Configuration
-JWT_SECRET=21541661356
-JWT_EXPIRES_IN=7d
-```
-
-**Production Security Recommendations:**
-
-- 🔐 Replace the `JWT_SECRET` with a strong, unique random string
-- 🔄 Configure `DB_MODE=postgres` for persistent data storage
-- 🔎 Update database credentials according to security requirements
-
----
-
-## 🐳 Docker Command Reference
-
-Docker manages the PostgreSQL database (required only for PostgreSQL mode):
-
-```bash
-# Start Docker containers
-npm run docker:up
-
-# Stop Docker containers
-npm run docker:down
-
-# Rebuild database (CAUTION: WILL DELETE ALL DATA!)
-npm run docker:rebuild
-
-# Complete reset (removes all volumes, images, and containers)
-npm run docker:reset
-
-# View Docker logs
-npm run docker:logs
-
-# Connect to PostgreSQL CLI
-npm run docker:postgres
-
-# List database tables
-npm run docker:list-tables
-
-# List all users in the database
-npm run docker:list-users
-```
-
----
-
-## 🌐 Application Access
-
-When all services are running:
-
-| Service                                 | URL                                              |
-| --------------------------------------- | ------------------------------------------------ |
-| **Frontend**                            | [`http://localhost:5173`](http://localhost:5173) |
-| **Backend API**                         | [`http://localhost:3000`](http://localhost:3000) |
-| **PostgreSQL (if using postgres mode)** | `localhost:5433`                                 |
-
-**PostgreSQL Database Connection Details:**
-
-- **User**: `admin`
-- **Password**: `admin`
-
----
-
-## 🏗 Technical Stack Specifications
-
-| Component          | Technologies                              |
-| ------------------ | ----------------------------------------- |
-| **Frontend**       | React 19, Tailwind, Vite                  |
-| **Backend**        | Hono (Express-like), PostgreSQL/In-memory |
-| **Infrastructure** | Docker, Docker Compose                    |
-| **Tooling**        | ESLint, Concurrently, Cross-env           |
-
----
-
-## 📦 Database Implementation Details
-
-DebtMate supports two database implementations:
-
-### 🛑 In-Memory Database:
-
-✔ Implements simple JavaScript objects that reset on server restart  
-✔ Requires no setup, ideal for rapid development  
-❌ **Data persistence is not maintained when the server restarts**
-
-### ✅ PostgreSQL Database:
-
-✔ Provides persistent data storage  
-✔ Supports user accounts and authentication  
-✔ Enables groups and members management  
-✔ Facilitates expenses and debts tracking  
-✔ Maintains comprehensive transaction history
-
-The PostgreSQL database is automatically initialized when using Docker through SQL scripts in the `init` folder.
-
-For direct database access:
-
-```bash
-# Connect to PostgreSQL when using Docker
-npm run docker:postgres
-
-# Alternative: Use your preferred PostgreSQL client with:
-# Host: localhost
-# Port: 5433
-# User: admin
-# Password: admin
-# Database: debtmate
-```
-
----
-
-## 📂 Project Directory Structure
-
-```bash
-/
-├── src/                  # Frontend code
-│   ├── Component/        # Reusable components
-│   ├── pages/            # Page components
-│   └── App.jsx           # Main app component
-│
-├── backend/              # Backend API
-│   ├── src/
-│   │   ├── models/       # Data models
-│   │   ├── routes/       # API routes
-│   │   ├── controllers/  # Business logic
-│   │   ├── middleware/   # Request middleware
-│   │   ├── utils/        # Utility functions
-│   │   ├── config/       # Configuration files
-│   │   └── server.ts     # Entry point
-│   ├── .env              # Backend config (must be created)
-│   └── .env.example      # Example environment variables
-│
-├── database/             # Database setup
-│   └── init/             # Initialization SQL scripts
-│
-├── package.json          # Project dependencies and scripts
-└── docker-compose.yml    # Docker configuration
-```
-
----
-
-## ✅ Development Roadmap
-
-- [x] Replace in-memory user store with PostgreSQL database
-- [x] Add Docker setup for easy development
-- [x] Add JWT authentication
-- [x] Support both in-memory and PostgreSQL modes
-- [ ] Implement group creation functionality
-- [ ] Add comprehensive expense tracking features
-
----
-
-## 🤝 Contributing
-
-Contributions welcome - just make it work! ¯\\\_(ツ)\_/¯
-
----
-
-## 📜 License
-
-MIT - Free to use and modify
+MIT – Free to use and modify.
