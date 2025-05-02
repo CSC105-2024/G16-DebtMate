@@ -4,14 +4,17 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "^1.14.1",
+    "@prisma/client": "^6.7.0",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.5.0",
     "hono": "^4.7.7",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.7.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.3"
   },
   "main": "src/server.js",
@@ -20,8 +23,11 @@
     "dev": "tsx watch src/server.ts",
     "dev:all": "cd .. && npm run dev:all",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },  
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:setup": "prisma migrate dev --name init && node src/scripts/seed.js",
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "node src/scripts/seed.js"
+  },
   "keywords": [],
   "author": ""
 }
