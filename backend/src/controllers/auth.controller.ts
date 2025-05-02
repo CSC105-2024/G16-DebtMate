@@ -8,17 +8,14 @@
 import { Context } from 'hono';
 import { UserModel } from '../models/user';
 import { generateToken } from '../utils/jwt';
-import jwt from 'jsonwebtoken';
-import { setCookie } from 'hono/cookie';
 
 const AuthController = {
   // signup function - creates new accounts
   signup: async (c: Context) => {
     try {
       const body = await c.req.json();
-      const { username, email, password } = body;
+      const { username, email, password, name } = body;
       
-      // gotta check if user exists first
       const userExists = await UserModel.exists(username, email);
       if (userExists) {
         return c.json({ 
@@ -27,13 +24,11 @@ const AuthController = {
         }, 400);
       }
       
-      // make the new user with hashed pw
-      const newUser = await UserModel.create(username, email, username, password);
+      const newUser = await UserModel.create(name || username, email, username, password);
       
       // create token for auth
       const token = generateToken(newUser.id);
       
-      // cookies are better than localStorage tbh
       c.header('Set-Cookie', `auth_token=${token}; HttpOnly; Path=/; Max-Age=${60*60*24*7}; SameSite=Lax`);
       
       return c.json({ 
@@ -49,7 +44,6 @@ const AuthController = {
     }
   },
   
-  // login function - checks creds and gives token
   login: async (c: Context) => {
     try {
       const body = await c.req.json();
@@ -65,50 +59,84 @@ const AuthController = {
         }, 401);
       }
       
-      // check if password matches
-      if (!user.password) {
-        return c.json({ 
-          success: false, 
-          message: 'Invalid credentials' 
-        }, 401);
-      }
-      const isPasswordValid = await UserModel.validatePassword(password, user.password);
+      // check password
+      const isValid = await UserModel.validatePassword(user, password);
       
-      if (!isPasswordValid) {
+      if (!isValid) {
         return c.json({ 
           success: false, 
           message: 'Invalid credentials' 
         }, 401);
       }
       
-      // make the token with jwt
-      const token = jwt.sign(
-        { userId: user.id },  // hope this id exists lol
-        process.env.JWT_SECRET || 'your-default-secret-key',
-        { expiresIn: '7d' }
-      );
+      // generate auth token
+      const token = generateToken(user.id);
       
-      // set cookie with the token
-      setCookie(c, 'auth_token', token, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // a week
-        sameSite: 'Lax'
-      });
+      c.header('Set-Cookie', `auth_token=${token}; HttpOnly; Path=/; Max-Age=${60*60*24*7}; SameSite=Lax`);
       
-      return c.json({ 
-        success: true, 
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email
-        }
+      const { password: _, ...userWithoutPassword } = user;
+      
+      return c.json({
+        success: true,
+        user: userWithoutPassword
       });
     } catch (error) {
       console.error('Login error:', error);
       return c.json({ 
         success: false, 
-        message: error.message 
+        message: 'An error occurred during login' 
+      }, 500);
+    }
+  },
+  
+  me: async (c: Context) => {
+    try {
+      const userId = parseInt(c.get('userId'));
+      
+      if (isNaN(userId)) {
+        return c.json({ 
+          success: false, 
+          message: 'Not authenticated' 
+        }, 401);
+      }
+      
+      const user = await UserModel.findById(userId);
+      
+      if (!user) {
+        return c.json({ 
+          success: false, 
+          message: 'User not found' 
+        }, 404);
+      }
+      
+      const { password: _, ...userWithoutPassword } = user;
+      
+      return c.json({ 
+        success: true, 
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      console.error('Get me error:', error);
+      return c.json({ 
+        success: false, 
+        message: 'An error occurred' 
+      }, 500);
+    }
+  },
+  
+  logout: async (c: Context) => {
+    try {
+      c.header('Set-Cookie', 'auth_token=; HttpOnly; Path=/; Max-Age=0');
+      
+      return c.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      return c.json({
+        success: false,
+        message: 'Failed to logout'
       }, 500);
     }
   }
