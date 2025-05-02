@@ -23,9 +23,11 @@ function SearchBar({
         placeholder={placeholder}
         className="flex-grow outline-none bg-transparent text-twilight placeholder-twilight"
       />
-      <button onClick={onSearch} aria-label="Search">
-        <Search className="w-5 h-5 text-twilight hover:scale-105 transition-transform" />
-      </button>
+      {onSearch && (
+        <button onClick={onSearch} aria-label="Search">
+          <Search className="w-5 h-5 text-twilight hover:scale-105 transition-transform" />
+        </button>
+      )}
     </div>
   );
 }
