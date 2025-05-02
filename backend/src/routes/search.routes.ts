@@ -1,33 +1,33 @@
-/**
- * handles user search functionality for adding friends.
- * provides the API endpoint for searching users by username.
- * uses auth middleware to ensure only logged-in users can search.
- * interacts with search utility functions to perform database queries.
- */
-
 import { Hono } from 'hono';
+import { Context } from 'hono';
 import { findUsersByUsername } from '../utils/search';
 import { authMiddleware } from '../middleware/auth.middleware';
+import SearchController from '../controllers/search.controller';
 
-// routes for searching users
-const searchRoutes = new Hono();
+// 👇 Extend context variables
+type Bindings = {};
+type Variables = {
+  userId: string;
+};
 
-// search for users by username
-searchRoutes.get('/users', authMiddleware, async (c) => {
-  const query = c.req.query('q');
-  const limitStr = c.req.query('limit');
-  const limit = limitStr ? parseInt(limitStr) : 5;
-  
+const searchRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+searchRoutes.get('/users', authMiddleware, SearchController.searchUsers);
+
+searchRoutes.get('/friends/search', authMiddleware, async (c) => {
+  const query = c.req.query('query');
+  const userId = parseInt(c.get('userId'));
+
   if (!query) {
-    return c.json({ success: false, error: 'search query is required' }, 400);
+    return c.json({ success: false, message: 'Search query is required' }, 400);
   }
-  
+
   try {
-    const result = await findUsersByUsername(query, limit);
+    const result = await findUsersByUsername(query, userId);
     return c.json(result);
   } catch (error) {
-    console.error('search error:', error);
-    return c.json({ success: false, error: 'failed to search for users' }, 500);
+    console.error('Search error:', error);
+    return c.json({ success: false, message: 'Failed to search for users' }, 500);
   }
 });
 
