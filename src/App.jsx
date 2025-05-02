@@ -35,12 +35,7 @@ function AppRoutes() {
 
   // quick little wrapper to handle auth protection
   const ProtectedRoute = ({ children }) => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") !== "false";
-    return isAuthenticated && isLoggedIn ? (
-      children
-    ) : (
-      <Navigate to="/login" replace />
-    );
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
   };
 
   const router = createBrowserRouter([
