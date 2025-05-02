@@ -1,114 +1,104 @@
 /**
- * User model that handles all user-related database operations.
- * Provides methods for finding, creating, and validating users.
- * Uses in-memory storage mode.
+ * User model for managing user data and authentication.
+ * Uses Prisma client for database operations.
  */
 
 import bcrypt from 'bcrypt';
-import db from '../config/db.config';
-import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
 
-dotenv.config();
+const prisma = new PrismaClient();
 
-// User model interface
-interface User {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-  password?: string;
-  created_at?: Date;
-}
-
-// In-memory storage
-const users: User[] = [];
-let nextId = 1;
-
-// User model implementation
-const UserModel = {
-  // Find a user by email
-  async findByEmail(email: string): Promise<User | null> {
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    return result.rows.length > 0 ? result.rows[0] : null;
-  },
-  
-  // Check if a username exists
-  async findByName(username: string): Promise<boolean> {
-    const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-    return result.rows.length > 0;
-  },
-  
-  // Check if username or email exists
-  async exists(username: string, email: string): Promise<boolean> {
-    const result = await db.query(
-      'SELECT * FROM users WHERE username = $1 OR email = $2',
-      [username, email]
-    );
-    return result.rows.length > 0;
-  },
-  
+export const UserModel = {
   // Find user by ID
-  async findById(id: number): Promise<User | null> {
-    const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
-    
-    if (result.rows.length === 0) {
-      return null;
-    }
-    
-    const { password, ...userWithoutPassword } = result.rows[0];
-    return userWithoutPassword as User;
+  async findById(userId: number) {
+    return prisma.user.findUnique({
+      where: { id: userId }
+    });
   },
   
-  // Find user by username and password for authentication
-  async findByUsernameAndPassword(username: string, password: string): Promise<User | null> {
-    const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+  // Find user by email
+  async findByEmail(email: string) {
+    return prisma.user.findUnique({
+      where: { email }
+    });
+  },
+  
+  // Find user by username
+  async findByUsername(username: string) {
+    return prisma.user.findUnique({
+      where: { username }
+    });
+  },
+  
+  // Check if a user exists by username or email
+  async exists(username: string, email: string) {
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email }
+        ]
+      }
+    });
     
-    if (result.rows.length === 0) {
-      return null;
-    }
-    
-    const user = result.rows[0];
-    const passwordMatch = await UserModel.validatePassword(password, user.password);
-    
-    if (!passwordMatch) {
-      return null;
-    }
-    
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword as User;
+    return !!user;
   },
   
   // Create a new user
-  async create(username: string, email: string, name: string, password: string): Promise<User> {
-    const hashedPassword = await bcrypt.hash(password, 10);
+  async create(name: string, email: string, username: string, password: string) {
+    // Hash the password 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     
-    const newUser = {
-      id: nextId++,
-      name: username,
-      username,
-      email,
-      password: hashedPassword,
-      created_at: new Date()
-    };
+    // Create the user in the database
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        username,
+        password: hashedPassword
+      }
+    });
     
-    users.push(newUser);
-    
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
   },
   
-  // Find users by username pattern
-  async findByUsernamePattern(pattern: string, limit: number = 5): Promise<User[]> {
-    return users
-      .filter(user => user.username.toLowerCase().startsWith(pattern.toLowerCase()))
-      .slice(0, limit)
-      .map(({ password, ...user }) => user as User);
+  // Validate user password
+  async validatePassword(user: any, password: string) {
+    return bcrypt.compare(password, user.password);
   },
   
-  // Validate password
-  async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(plainPassword, hashedPassword);
+  // Search for users by name, username, or email
+  async search(query: string, limit: number = 10, currentUserId?: number) {
+    let whereClause: any = {
+      OR: [
+        { username: { contains: query } },
+        { email: { contains: query } },
+        { name: { contains: query } }
+      ]
+    };
+    
+    if (currentUserId) {
+      whereClause = {
+        AND: [
+          whereClause,
+          { id: { not: currentUserId } }
+        ]
+      };
+    }
+    
+    const users = await prisma.user.findMany({
+      where: whereClause,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true
+      }
+    });
+    
+    return users;
   }
 };
-
-export { User, UserModel };
