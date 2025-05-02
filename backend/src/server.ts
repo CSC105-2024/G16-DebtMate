@@ -9,11 +9,11 @@ import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
 import { fileURLToPath } from 'node:url';
 
-
 // import middleware and routes
 import corsMiddleware from './middleware/cors.middleware';
 import authRoutes from './routes/auth.routes';
 import searchRoutes from './routes/search.routes';
+import friendRoutes from './routes/friend.routes';
 import groupRoutes from './routes/group.routes';
 import config from './config/app.config';
 
@@ -24,11 +24,11 @@ const app = new Hono();
 app.use('*', corsMiddleware);
 
 // register API routes
-app.route('/api', authRoutes);  // /api/signup, /api/login, /api/me
-app.route('/api/search', searchRoutes);  // /api/search/users
-app.route('/api/groups', groupRoutes);  // /api/groups/*
+app.route('/api', authRoutes);
+app.route('/api/search', searchRoutes);  
+app.route('/api/friends', friendRoutes);
+app.route('/api/groups', groupRoutes);
 
-// start server when run directly (not imported)
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`Server running on http://localhost:${config.port}`);
   console.log(`Environment: ${config.environment}`);

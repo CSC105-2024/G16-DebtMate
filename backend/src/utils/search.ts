@@ -1,24 +1,26 @@
 /**
- * provides user search functionality for friend discovery.
- * searches database for usernames matching a pattern.
- * used by search.routes.ts to handle API search requests.
- * interacts with UserModel to find matching users.
+ * provides search functionality for finding users in the system.
+ * implements pattern-matching to locate user accounts by username.
+ * handles database operations with Prisma/SQLite.
+ * used by search controllers to power friend discovery features.
  */
 
 import { UserModel } from '../models/user';
 
-interface UserSearch {
-  username: string;
-}
-
 // search utility functions
-export const findUsersByUsername = async (searchQuery: string, limit = 5) => {
+export const findUsersByUsername = async (searchQuery: string, currentUserId?: number, limit = 5) => {
   try {
-    // Find users that match the search query
-    const users = await UserModel.findByUsernamePattern(searchQuery, limit);
-    return { success: true, users };
+    const users = await UserModel.search(searchQuery, limit, currentUserId);
+    
+    return { 
+      success: true, 
+      users: users
+    };
   } catch (error) {
-    console.error('search error:', error);
-    return { success: false, error: 'failed to search for users' };
+    console.error('Search users by username error:', error);
+    return { 
+      success: false, 
+      message: 'Failed to search for users' 
+    };
   }
 };
