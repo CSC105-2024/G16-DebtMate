@@ -19,14 +19,14 @@
   },
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "tsx watch src/server.ts",
-    "dev:all": "cd .. && npm run dev:all",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "db:setup": "prisma migrate dev --name init && node src/scripts/seed.js",
+    "db:setup": "tsx prisma/setup.ts",
     "db:reset": "prisma migrate reset --force",
-    "db:seed": "node src/scripts/seed.js"
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": ""
