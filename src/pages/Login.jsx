@@ -4,11 +4,9 @@ import logo from "/assets/icons/logo.svg";
 import email from "/assets/icons/email.svg";
 import oeye from "/assets/icons/oeye.svg";
 import ceye from "/assets/icons/ceye.svg";
-import { AuthContext } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -35,7 +33,7 @@ function Login() {
     setLoginError("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/login", {
+      const response = await fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CurrencySelect from "../Component/CurrencySelect";
-import { AuthContext } from "../context/AuthContext";
 
 function SettingsPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,8 +17,6 @@ function SettingsPage() {
   const navigate = useNavigate();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [currency, setCurrency] = useState("USD");
-
-  const { setIsAuthenticated } = useContext(AuthContext);
 
   const menuWidth = "w-72";
 

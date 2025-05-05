@@ -11,7 +11,6 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import FriendList from "./pages/FriendList";
 import AddFriends from "./pages/AddFriends";
-import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
 import GroupList from "./pages/GroupList";
 import CreateGroup from "./pages/CreateGroup";
@@ -27,8 +26,6 @@ import UserInformation from "./pages/UserInformation";
 import UserInformationEdit from "./pages/UserInformationEdit";
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useContext(AuthContext);
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -171,9 +168,7 @@ function AppRoutes() {
 function App() {
   return (
     <div className="app-container">
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <AppRoutes />
     </div>
   );
 }

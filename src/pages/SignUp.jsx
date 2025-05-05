@@ -1,7 +1,6 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { AuthContext } from "../context/AuthContext";
 import logo from "/assets/icons/logo.svg";
 import username from "/assets/icons/username.svg";
 import email from "/assets/icons/email.svg";
@@ -17,7 +16,6 @@ const baseInputClass = `w-full py-[1vh] px-[6%] border rounded-2xl placeholder-g
 
 function SignUp() {
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -125,7 +123,7 @@ function SignUp() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/signup", {
+      const response = await fetch("http://localhost:3000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,6 +132,7 @@ function SignUp() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          name: formData.username,
         }),
         credentials: "include",
       });
@@ -152,19 +151,22 @@ function SignUp() {
         // Redirect to home
         navigate("/friendlist");
       } else {
-        if (data.message.includes("User already exists")) {
-          // Handle username/email already exists
-          if (data.message.includes("username")) {
-            setErrors((prev) => ({
-              ...prev,
-              username: "Username already exists",
-            }));
-          } else {
-            setErrors((prev) => ({
-              ...prev,
-              email: "Email already exists",
-            }));
-          }
+        if (data.error && data.error.includes("Username already exists")) {
+          setErrors((prev) => ({
+            ...prev,
+            username: "Username already exists",
+          }));
+        } else if (data.error && data.error.includes("email")) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "Email already exists",
+          }));
+        } else {
+          // Generic error
+          setErrors((prev) => ({
+            ...prev,
+            email: data.error || "Registration failed",
+          }));
         }
       }
     } catch (err) {
