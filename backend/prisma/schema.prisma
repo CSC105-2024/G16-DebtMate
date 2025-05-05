@@ -13,10 +13,89 @@ model User {
   username  String   @unique
   email     String   @unique
   password  String
+  bio       String?  
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 
-  // Friend relationship (many-to-many self-relation)
+  // users can have friends - many-to-many self relation
   friends     User[] @relation("UserFriends")
   friendsOf   User[] @relation("UserFriends")
+
+  // linking tables for other relations
+  groupMemberships GroupMember[]
+  itemAssignments  ItemUser[]
+  
+  // payments made by this user
+  payments         Payment[]
+}
+
+model Group {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  icon          String?     
+  total         Float     @default(0)
+  serviceCharge Float     @default(0)  //  handle  fees
+  tax           Float     @default(0)  // tax calculation stuff
+  isSettled     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  // group connections
+  members       GroupMember[]
+  items         Item[]
+  payments      Payment[]
+}
+
+model GroupMember {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  groupId        Int
+  amountOwed     Float    @default(0)  // tracks what each person owes
+  isPaid         Boolean  @default(false)  // paid status flag
+  joinedAt       DateTime @default(now())
+  
+  // foreign keys
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model Item {
+  id          Int       @id @default(autoincrement())
+  name        String
+  amount      Float
+  groupId     Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+
+  // connections
+  group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  users       ItemUser[]
+}
+
+model ItemUser {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  userId    Int
+  amount    Float    // how much of the item cost goes to this user
+  
+  // foreign keys
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId])
+}
+
+model Payment {
+  id        Int       @id @default(autoincrement())
+  groupId   Int
+  userId    Int
+  amount    Float
+  note      String?
+  createdAt DateTime  @default(now())
+  
+  // linking to other tables
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
