@@ -1,5 +1,6 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import logo from "/assets/icons/logo.svg";
 import email from "/assets/icons/email.svg";
 import oeye from "/assets/icons/oeye.svg";
@@ -7,6 +8,7 @@ import ceye from "/assets/icons/ceye.svg";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -33,23 +35,13 @@ function Login() {
     setLoginError("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-        credentials: "include",
-      });
+      const result = await login(formData);
 
-      const data = await response.json();
-
-      if (data.success) {
-        setIsAuthenticated(true);
+      if (result.success) {
         navigate("/friendlist");
       } else {
         setLoginError(
-          data.message || "Login failed. Please check your credentials."
+          result.message || "Login failed. Please check your credentials."
         );
       }
     } catch (error) {

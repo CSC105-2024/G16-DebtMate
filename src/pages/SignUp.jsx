@@ -1,6 +1,7 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { useAuth } from "../context/AuthContext";
 import logo from "/assets/icons/logo.svg";
 import username from "/assets/icons/username.svg";
 import email from "/assets/icons/email.svg";
@@ -16,6 +17,7 @@ const baseInputClass = `w-full py-[1vh] px-[6%] border rounded-2xl placeholder-g
 
 function SignUp() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -123,40 +125,22 @@ function SignUp() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          name: formData.username,
-        }),
-        credentials: "include",
+      const result = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        name: formData.username, // Using username as name if needed
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Save current user (for session)
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-        // Set logged in flag
-        localStorage.setItem("isLoggedIn", "true");
-
-        // Update authentication state
-        setIsAuthenticated(true);
-
-        // Redirect to home
+      if (result.success) {
         navigate("/friendlist");
       } else {
-        if (data.error && data.error.includes("Username already exists")) {
+        if (result.message.includes("Username already exists")) {
           setErrors((prev) => ({
             ...prev,
             username: "Username already exists",
           }));
-        } else if (data.error && data.error.includes("email")) {
+        } else if (result.message.includes("email")) {
           setErrors((prev) => ({
             ...prev,
             email: "Email already exists",
@@ -165,12 +149,16 @@ function SignUp() {
           // Generic error
           setErrors((prev) => ({
             ...prev,
-            email: data.error || "Registration failed",
+            email: result.message || "Registration failed",
           }));
         }
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors((prev) => ({
+        ...prev,
+        email: "Network error. Please try again.",
+      }));
     }
   };
 
@@ -314,7 +302,7 @@ function SignUp() {
             <div>
               <button
                 type="submit"
-                className="bg-twilight text-[5vw] sm:text-[18px] text-icy w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px] hover:bg-[#434273] active:bg-[#3b3b66]"
+                className={`bg-twilight text-[5vw] sm:text-[18px] text-icy w-[40%] py-[0.6vh] mx-[2vw] -mb-[2vh] font-bold rounded-2xl font-hornbill shadow-lg sm:w-[150px] sm:py-[8px] sm:my-[5px] hover:bg-[#434273] active:bg-[#3b3b66]`}
               >
                 Sign Up
               </button>
