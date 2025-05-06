@@ -3,15 +3,12 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-
-// importing pages and components for routing
 import "./App.css";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import FriendList from "./pages/FriendList";
 import AddFriends from "./pages/AddFriends";
-import { useContext } from "react";
 import GroupList from "./pages/GroupList";
 import CreateGroup from "./pages/CreateGroup";
 import ItemList from "./pages/ItemList";
@@ -25,9 +22,19 @@ import EditItem from "./pages/EditItem";
 import UserInformation from "./pages/UserInformation";
 import UserInformationEdit from "./pages/UserInformationEdit";
 
+// Import AuthProvider and useAuth
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
 function AppRoutes() {
-  if (isLoading) {
-    return <div>Loading...</div>;
+  const { isAuthenticated, loading } = useAuth();
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-twilight"></div>
+      </div>
+    );
   }
 
   // quick little wrapper to handle auth protection
@@ -167,9 +174,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <div className="app-container">
-      <AppRoutes />
-    </div>
+    <AuthProvider>
+      <div className="app-container">
+        <AppRoutes />
+      </div>
+    </AuthProvider>
   );
 }
 
