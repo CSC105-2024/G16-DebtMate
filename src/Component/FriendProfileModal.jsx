@@ -3,21 +3,19 @@ import { UserPlus, UserMinus } from "lucide-react";
 
 const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
   const [isFriend, setIsFriend] = useState(false); // Track friend state
-  const [isAdding, setIsAdding] = useState(false); // Track loading state
-
-  if (!friend) return null;
+  const [isAdding, setIsAdding] = useState(false); // Track adding state
 
   // Handle adding a friend
   const handleAddFriend = async () => {
     setIsAdding(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/friends/add", {
+      const response = await fetch("http://localhost:3000/api/users/friends", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ friendId: friend.id }),
+        body: JSON.stringify({ friendUsername: friend.username }),
         credentials: "include",
       });
 
@@ -39,6 +37,8 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
     }
   };
 
+  if (!friend) return null;
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-pale rounded-[13px] p-6 w-full max-w-md relative">
@@ -51,11 +51,9 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
             &lt; Back
           </button>
           <button
-            onClick={handleAddFriend}
-            disabled={isAdding || isFriend}
-            className={`p-2 rounded-full transition ${
-              isAdding ? "opacity-50" : "hover:bg-slate-300"
-            }`}
+            onClick={() => (isFriend ? setIsFriend(false) : handleAddFriend())}
+            className="p-2 rounded-full hover:bg-slate-300 transition"
+            disabled={isAdding}
           >
             {isFriend ? (
               <UserMinus className="text-twilight w-6 h-6" />
@@ -76,7 +74,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
             {friend.name}
           </h1>
           <p className="text-[20px] font-telegraf text-twilight mb-6">
-            @{friend.username || friend.email}
+            @{friend.email}
           </p>
           <p
             className={`font-telegraf font-black text-[30px] min-w-[70px] text-center ${
@@ -110,7 +108,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
                 Bio
               </label>
               <textarea
-                value={friend.bio || ""}
+                value={friend.bio}
                 readOnly
                 className="text-twilight w-full p-2 rounded-[13px] border border-twilight bg-transparent resize-none"
                 rows={4}

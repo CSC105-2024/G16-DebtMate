@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
@@ -15,42 +14,56 @@ function FriendList() {
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [friends, setFriends] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const friendsPerPage = 14;
-  const navigate = useNavigate();
 
-  // Fetch friends from API
+  // Fetch actual friends from the database
   useEffect(() => {
     const fetchFriends = async () => {
-      setIsLoading(true);
       try {
-        const response = await fetch("http://localhost:3000/api/friends", {
+        setLoading(true);
+        // First get current user info
+        const meResponse = await fetch("http://localhost:3000/api/users/me", {
           credentials: "include",
         });
+        const meData = await meResponse.json();
 
-        const data = await response.json();
+        if (!meData.success) {
+          throw new Error(meData.message || "Failed to fetch user data");
+        }
 
-        if (data.success) {
-          const formattedFriends = data.friends.map((friend) => ({
+        // Then fetch friends using the user ID
+        const friendsResponse = await fetch(
+          `http://localhost:3000/api/users/${meData.user.id}/friends`,
+          {
+            credentials: "include",
+          }
+        );
+
+        const friendsData = await friendsResponse.json();
+
+        if (friendsData.success) {
+          // Format friends data to match what the components expect
+          const formattedFriends = friendsData.friends.map((friend) => ({
             id: friend.id,
             name: friend.name || friend.username,
-            balance: 0,
-            avatarUrl: defaultprofile,
             username: friend.username,
             email: friend.email,
-            bio: "",
+            balance: 0, // You might want to calculate this dynamically if you have that data
+            avatarUrl: friend.avatarUrl || defaultprofile,
+            bio: friend.bio || "No bio available",
           }));
 
           setFriends(formattedFriends);
         } else {
-          setError(data.message || "Failed to fetch friends");
+          throw new Error(friendsData.message || "Failed to fetch friends");
         }
       } catch (err) {
         console.error("Error fetching friends:", err);
-        setError("Network error when fetching friends");
+        setError("Failed to load friends. Please try again later.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -66,10 +79,14 @@ function FriendList() {
   };
 
   const handleSearch = () => {
+    // You can implement actual friend filtering here
     console.log("Searching for:", searchTerm);
+    // For now, we'll just filter the existing friends array
+    // This can be enhanced to make an API call if needed
   };
 
-  const menuWidth = "w-72";
+  // Menu width consistent between mobile and desktop
+  const menuWidth = "w-72"; // Tailwind class for width
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -84,17 +101,19 @@ function FriendList() {
   }, []);
 
   // Filter friends based on search term
-  const filteredFriends = friends.filter(
-    (friend) =>
-      friend.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      friend.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredFriends = searchTerm
+    ? friends.filter(
+        (friend) =>
+          friend.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          friend.username.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : friends;
 
-  // Sort friends based on sort direction
+  // Sort friends by name (ascending or descending)
   const sortedFriends = [...filteredFriends].sort((a, b) => {
-    const nameA = a.name.toLowerCase();
-    const nameB = b.name.toLowerCase();
-    return sortAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    return sortAsc
+      ? a.name.localeCompare(b.name)
+      : b.name.localeCompare(a.name);
   });
 
   // Pagination for desktop
@@ -116,7 +135,6 @@ function FriendList() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -179,52 +197,33 @@ function FriendList() {
           </div>
         </div>
 
-        {/* Scrollable List (Mobile/Tablet) */}
-        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 lg:hidden">
-          <div className="w-full max-w-md mx-auto space-y-4">
-            {isLoading ? (
-              <p className="text-center text-twilight pt-10">
-                Loading friends...
-              </p>
-            ) : error ? (
-              <p className="text-center text-red-500 pt-10">{error}</p>
-            ) : sortedFriends.length === 0 ? (
-              <p className="text-center text-twilight pt-10">
-                No friends found
-              </p>
-            ) : (
-              sortedFriends.map((friend) => (
-                <FriendCard
-                  key={friend.id}
-                  name={friend.name}
-                  balance={friend.balance}
-                  avatarUrl={friend.avatarUrl}
-                  friend={friend}
-                  onClick={() => handleFriendCardClick(friend)}
-                />
-              ))
-            )}
+        {/* Loading, Error, or No Friends States */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-twilight">Loading friends...</p>
           </div>
-        </div>
-
-        {/* Paginated List (Desktop only) */}
-        <div className="hidden lg:flex flex-col flex-1 overflow-hidden px-4 pt-6">
-          <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
-            {isLoading ? (
-              <p className="text-center text-twilight pt-10 col-span-2">
-                Loading friends...
-              </p>
-            ) : error ? (
-              <p className="text-center text-red-500 pt-10 col-span-2">
-                {error}
-              </p>
-            ) : paginatedFriends.length === 0 ? (
-              <p className="text-center text-twilight pt-10 col-span-2">
-                No friends found
-              </p>
-            ) : (
-              paginatedFriends.map((friend) => (
-                <div key={friend.id} className="mb-4 break-inside-avoid">
+        ) : error ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : sortedFriends.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center flex-col">
+            <p className="text-twilight mb-2">
+              You don't have any friends yet.
+            </p>
+            <button
+              onClick={() => (window.location.href = "/add-friends")}
+              className="px-4 py-2 bg-twilight text-white rounded-[13px]"
+            >
+              Add Friends
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Scrollable List (Mobile/Tablet) */}
+            <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 lg:hidden">
+              <div className="w-full max-w-md mx-auto space-y-4">
+                {sortedFriends.map((friend) => (
                   <FriendCard
                     key={friend.id}
                     name={friend.name}
@@ -233,34 +232,53 @@ function FriendList() {
                     friend={friend}
                     onClick={() => handleFriendCardClick(friend)}
                   />
-                </div>
-              ))
-            )}
-          </div>
+                ))}
+              </div>
+            </div>
 
-          {/* Pagination controls */}
-          <div className="py-[3rem] w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <span className="px-4 py-1 text-twilight font-semibold">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+            {/* Paginated List (Desktop only) */}
+            <div className="hidden lg:flex flex-col flex-1 overflow-hidden px-4 pt-6">
+              <div className="flex-1 overflow-y-auto w-full max-w-4xl mx-auto columns-2 gap-4 pr-2">
+                {paginatedFriends.map((friend) => (
+                  <div key={friend.id} className="mb-4 break-inside-avoid">
+                    <FriendCard
+                      name={friend.name}
+                      balance={friend.balance}
+                      avatarUrl={friend.avatarUrl}
+                      friend={friend}
+                      onClick={() => handleFriendCardClick(friend)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination controls */}
+              <div className="py-[3rem] w-full max-w-4xl mx-auto flex justify-center gap-2 border-t mt-auto">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span className="px-4 py-1 text-twilight font-semibold">
+                  Page {currentPage} of {Math.max(totalPages, 1)}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className="px-3 py-1 bg-twilight text-white rounded-[13px] disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Overlay (Mobile only) */}
