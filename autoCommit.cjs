@@ -20,39 +20,32 @@ const commitCommands = [
   `git add package.json package-lock.json && git commit -m "Add Axios dependency for HTTP requests"`,
 ];
 
-function countdown(ms, onDone) {
-  let remaining = ms;
-
-  const interval = setInterval(() => {
-    remaining -= 10000;
-    if (remaining <= 0) {
-      clearInterval(interval);
-      onDone();
-    } else {
-      console.log(`⏳ next commit in ${Math.ceil(remaining / 1000)} sec...`);
-    }
-  }, 1);
-}
-
-function runCommits(idx = 0) {
-  if (idx >= commitCommands.length) {
-    console.log("✅ all commits done, my g!");
+function processCommits(currentIndex = 0) {
+  if (currentIndex >= commitCommands.length) {
+    console.log("All commits completed");
     return;
   }
-  console.log(`🚀 running commit ${idx + 1}…`);
-  exec(commitCommands[idx], (err, stdout, stderr) => {
+
+  console.log(`Processing commit ${currentIndex + 1}/${commitCommands.length}`);
+  exec(commitCommands[currentIndex], (err, stdout, stderr) => {
     if (err) {
-      console.error(`❌ error at commit ${idx + 1}:`, stderr.trim() || err);
+      console.error(
+        `Error during commit ${currentIndex + 1}:`,
+        stderr.trim() || err
+      );
       return;
     }
-    console.log(`✅ commit ${idx + 1} done:\n${stdout.trim()}`);
-    const randomDelay = 1000; // fixed 1 sec delay since u had it random but always 1 anyway
-    console.log(
-      `⌛ waiting ${Math.ceil(randomDelay / 1000)} sec before next commit...`
-    );
-    countdown(randomDelay, () => runCommits(idx + 1));
+
+    console.log(`Commit ${currentIndex + 1} completed`);
+    console.log(stdout.trim());
+
+    // Add some randomization to make it look less predictable
+    const delay = Math.floor(Math.random() * 500) + 800;
+    console.log(`Waiting ${delay}ms before next commit`);
+
+    setTimeout(() => processCommits(currentIndex + 1), delay);
   });
 }
 
 // start the commit flow
-runCommits();
+processCommits();
