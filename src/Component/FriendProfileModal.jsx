@@ -1,37 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserPlus, UserMinus } from "lucide-react";
+import { addFriend, checkFriendshipStatus } from "../utils/friendUtils";
 
 const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
-  const [isFriend, setIsFriend] = useState(false); // Track friend state
-  const [isAdding, setIsAdding] = useState(false); // Track adding state
+  const [isFriend, setIsFriend] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check friendship status when component mounts
+  useEffect(() => {
+    const checkStatus = async () => {
+      setIsLoading(true);
+      const { isFriend: isAlreadyFriend } = await checkFriendshipStatus(
+        friend.id
+      );
+      setIsFriend(isAlreadyFriend);
+      setIsLoading(false);
+    };
+
+    if (friend?.id) {
+      checkStatus();
+    }
+  }, [friend?.id]);
 
   // Handle adding a friend
   const handleAddFriend = async () => {
+    if (isAdding) return;
+
     setIsAdding(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/users/friends", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ friendUsername: friend.username }),
-        credentials: "include",
-      });
+      const result = await addFriend(friend.username);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (result.success) {
         setIsFriend(true);
 
         if (onFriendAdded) {
           onFriendAdded(friend.id);
         }
       } else {
-        console.error("Failed to add friend:", data.message);
+        console.error("Failed to add friend:", result.message);
       }
-    } catch (err) {
-      console.error("Add friend error:", err);
     } finally {
       setIsAdding(false);
     }
@@ -50,17 +59,19 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
           >
             &lt; Back
           </button>
-          <button
-            onClick={() => (isFriend ? setIsFriend(false) : handleAddFriend())}
-            className="p-2 rounded-full hover:bg-slate-300 transition"
-            disabled={isAdding}
-          >
-            {isFriend ? (
-              <UserMinus className="text-twilight w-6 h-6" />
-            ) : (
-              <UserPlus className="text-twilight w-6 h-6" />
-            )}
-          </button>
+          {!isLoading && (
+            <button
+              onClick={handleAddFriend}
+              className="p-2 rounded-full hover:bg-slate-300 transition"
+              disabled={isAdding || isFriend}
+            >
+              {isFriend ? (
+                <UserMinus className="text-twilight w-6 h-6" />
+              ) : (
+                <UserPlus className="text-twilight w-6 h-6" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Profile Info */}
@@ -74,7 +85,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
             {friend.name}
           </h1>
           <p className="text-[20px] font-telegraf text-twilight mb-6">
-            @{friend.email}
+            @{friend.username}
           </p>
           <p
             className={`font-telegraf font-black text-[30px] min-w-[70px] text-center ${
@@ -108,7 +119,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
                 Bio
               </label>
               <textarea
-                value={friend.bio}
+                value={friend.bio || "No bio available"}
                 readOnly
                 className="text-twilight w-full p-2 rounded-[13px] border border-twilight bg-transparent resize-none"
                 rows={4}

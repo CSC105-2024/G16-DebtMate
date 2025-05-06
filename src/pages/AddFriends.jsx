@@ -14,6 +14,7 @@ import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
 import { searchUsers } from "../utils/searchUtils";
+import { addFriend, getCurrentUser } from "../utils/friendUtils";
 
 function AddFriends() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,20 +30,11 @@ function AddFriends() {
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/me", {
-          credentials: "include",
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          setCurrentUser({ id: data.userId });
-        } else {
-          console.error("Failed to fetch current user");
-        }
-      } catch (err) {
-        console.error("Error fetching current user");
+      const { user, error } = await getCurrentUser();
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        console.error("Failed to fetch current user:", error);
       }
     };
 
@@ -61,18 +53,14 @@ function AddFriends() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Add this effect to trigger search when searchTerm changes
-  useEffect(
-    () => {
-      // We dont need this if function but i am too scared to remove it
-      if (searchTerm.length > 0) {
-        handleSearch();
-      } else {
-        setSearchResults([]);
-      }
-    },
-    [searchTerm] // Effect for outside click detection
-  );
+  // Effect to trigger search when searchTerm changes
+  useEffect(() => {
+    if (searchTerm.length > 0) {
+      handleSearch();
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchTerm]);
 
   // Effect for outside click detection
   useEffect(() => {
@@ -91,21 +79,12 @@ function AddFriends() {
 
     try {
       if (!currentUser) {
-        try {
-          const userResponse = await fetch("http://localhost:3000/api/me", {
-            credentials: "include",
-          });
+        const { user, error: userError } = await getCurrentUser();
 
-          const userData = await userResponse.json();
-
-          if (userData.success) {
-            setCurrentUser({ id: userData.userId });
-          } else {
-            setError("Failed to fetch user info. Please try again.");
-            return;
-          }
-        } catch (err) {
-          setError("Network error. Please try again.");
+        if (user) {
+          setCurrentUser(user);
+        } else {
+          setError("Failed to fetch user info. Please try again.");
           return;
         }
       }
@@ -135,27 +114,16 @@ function AddFriends() {
     setAddingFriend(friend.id);
 
     try {
-      const response = await fetch("http://localhost:3000/api/users/friends", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ friendUsername: friend.username }),
-        credentials: "include",
-      });
+      const result = await addFriend(friend.username);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (result.success) {
         // Remove the added friend from results
         setSearchResults((prevResults) =>
           prevResults.filter((user) => user.id !== friend.id)
         );
       } else {
-        console.error("Failed to add friend");
+        console.error("Failed to add friend:", result.message);
       }
-    } catch (err) {
-      console.error("Add friend error");
     } finally {
       setAddingFriend(null);
     }
