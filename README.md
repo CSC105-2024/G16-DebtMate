@@ -127,6 +127,95 @@
 
 ---
 
+## API Endpoints Documentation (Grouped by CRUD)
+
+### 🟢 **CREATE (POST)**
+
+| Endpoint                        | Description                       | Auth Required |
+| ------------------------------- | --------------------------------- | ------------- |
+| `/auth/register`                | Register a new user               | No            |
+| `/auth/login`                   | Authenticate user and return JWT  | No            |
+| `/auth/logout`                  | Logout and clear auth cookie      | No            |
+| `/api/users/friends`            | Add a new friend                  | Yes           |
+| `/api/groups`                   | Create a new group                | Yes           |
+| `/api/groups/:id/members`       | Add a member to a group           | Yes           |
+| `/api/groups/:groupId/items`    | Add a new expense item to a group | Yes           |
+| `/api/groups/:groupId/payments` | Record a new payment              | Yes           |
+
+---
+
+### 🔵 **READ (GET)**
+
+| Endpoint                        | Description                     | Auth Required |
+| ------------------------------- | ------------------------------- | ------------- |
+| `/api/me`                       | Check if user is authenticated  | Yes           |
+| `/api/users/me`                 | Get current user's profile      | Yes           |
+| `/api/users/:userId/friends`    | Get a user's friends list       | Yes           |
+| `/api/users/friends/search`     | Search users to add as friends  | Yes           |
+| `/api/groups/:id`               | Get group details               | Yes           |
+| `/api/users/:userId/groups`     | Get all groups for a user       | Yes           |
+| `/api/users/me/groups`          | Get groups for the current user | Yes           |
+| `/api/items/:id`                | Get item details                | Yes           |
+| `/api/groups/:groupId/items`    | Get all items in a group        | Yes           |
+| `/api/groups/:groupId/payments` | Get all payments in a group     | Yes           |
+
+---
+
+### 🟡 **UPDATE (PUT)**
+
+| Endpoint                               | Description            | Auth Required |
+| -------------------------------------- | ---------------------- | ------------- |
+| `/api/groups/:id`                      | Update group info      | Yes           |
+| `/api/items/:id`                       | Update an expense item | Yes           |
+| `/api/groups/:id/members/:userId/paid` | Mark a member as paid  | Yes           |
+
+---
+
+### 🔴 **DELETE (DELETE)**
+
+| Endpoint                          | Description                  | Auth Required |
+| --------------------------------- | ---------------------------- | ------------- |
+| `/api/items/:id`                  | Delete an expense item       | Yes           |
+| `/api/groups/:id/members/:userId` | Remove a member from a group | Yes           |
+
+---
+
+## How Authentication Works
+
+- Uses JWT stored in HTTP-only cookie
+- `/api/*` endpoints are protected by `authMiddleware`
+- Tokens expire in 7 days by default
+
+---
+
+## API Request/Response Flow
+
+1. Client sends request
+2. Middleware checks token (if protected)
+3. Controller runs the logic
+4. Response returned with status + data
+
+---
+
+## Status Codes
+
+- `200` – Success
+- `201` – Resource created
+- `400` – Bad request
+- `401` – Unauthorized
+- `403` – Forbidden
+- `404` – Not found
+- `500` – Server error
+
+---
+
+## Content Types
+
+- All endpoints use JSON
+- `Content-Type: application/json`
+
+---
+
 ## Key Features
 
 - **User Authentication**: JWT-based auth with secure token storage
