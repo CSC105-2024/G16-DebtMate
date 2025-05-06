@@ -30,6 +30,7 @@ api.post('/auth/logout', (c) => {
 const protectedRoutes = new Hono();
 protectedRoutes.use('*', authMiddleware);
 protectedRoutes.get('/users/me', UserController.getCurrentUser);
+protectedRoutes.get('/me', UserController.isAuthenticated);
 
 // all the friend stuff
 protectedRoutes.get('/users/:userId/friends', UserController.getFriends);

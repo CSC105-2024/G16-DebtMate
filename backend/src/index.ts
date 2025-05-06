@@ -14,10 +14,11 @@ const app = new Hono();
 // set up middleware
 app.use('*', logger());
 app.use('*', cors({
-  origin: '*',
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  credentials: true,
+  exposeHeaders: ['Set-Cookie']
 }));
 
 // just to make sure the server is running

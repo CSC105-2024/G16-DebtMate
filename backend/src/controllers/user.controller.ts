@@ -121,11 +121,33 @@ export class UserController {
         }, 400);
       }
       
-      const friends = await UserModel.getFriends(userId);
+      // Updated to fetch more comprehensive friend data
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          friends: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              email: true,
+              bio: true,
+              // Don't include password
+            }
+          }
+        }
+      });
+      
+      if (!user) {
+        return c.json({ 
+          success: false, 
+          message: 'User not found' 
+        }, 404);
+      }
       
       return c.json({
         success: true,
-        friends
+        friends: user.friends
       });
     } catch (error) {
       console.error('Get friends error:', error);
@@ -267,6 +289,33 @@ export class UserController {
       return c.json({ success: false, message: 'Failed to search users' }, 500);
     }
   }
+  
+  static async isAuthenticated(c: Context) {
+    try {
+      // If this endpoint is reached through authMiddleware, the user is authenticated
+      // The userId will be available in the context
+      const userId = c.get('userId');
+      
+      if (userId) {
+        return c.json({
+          success: true,
+          isAuthenticated: true
+        });
+      }
+      
+      return c.json({
+        success: false,
+        isAuthenticated: false
+      });
+    } catch (error) {
+      console.error('Authentication check error:', error);
+      return c.json({ 
+        success: false, 
+        isAuthenticated: false
+      });
+    }
+  }
+
   static setAuthCookie(c: Context, token: string) {
     const isProduction = process.env.NODE_ENV === 'production';
     setCookie(c, 'auth_token', token, {
