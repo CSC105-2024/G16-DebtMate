@@ -15,7 +15,6 @@ function AddItems() {
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const menuWidth = "w-72";
@@ -35,8 +34,6 @@ function AddItems() {
     } catch (err) {
       console.error("Error loading group:", err);
       setError("Failed to load group details");
-    } finally {
-      setIsLoading(false);
     }
   }, [groupId]);
 
@@ -162,11 +159,7 @@ function AddItems() {
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-twilight">Loading...</p>
-              </div>
-            ) : error ? (
+            {error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
               </div>

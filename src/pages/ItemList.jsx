@@ -13,7 +13,6 @@ function ItemList() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [group, setGroup] = useState(null);
   const [items, setItems] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [serviceCharge, setServiceCharge] = useState("10");
   const [tax, setTax] = useState("7");
@@ -27,12 +26,12 @@ function ItemList() {
   const taxAmount = itemsTotal * (parseFloat(tax) / 100);
   const total = itemsTotal + serviceChargeAmount + taxAmount;
   const currency = localStorage.getItem("currency");
+
   // Menu width consistent between mobile and desktop
   const menuWidth = "w-72";
   // Fetch group details
   useEffect(() => {
     const fetchGroupDetails = () => {
-      setIsLoading(true);
       try {
         // Get groups from localStorage
         const groups = JSON.parse(localStorage.getItem("groups") || "[]");
@@ -49,8 +48,6 @@ function ItemList() {
       } catch (err) {
         console.error("Error loading group:", err);
         setError("Failed to load group data");
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -58,7 +55,6 @@ function ItemList() {
       fetchGroupDetails();
     } else {
       setError("No group ID provided");
-      setIsLoading(false);
     }
   }, [groupId]);
 
@@ -194,11 +190,7 @@ function ItemList() {
 
         {/* Modified Items List Section */}
         <div className="flex-1 overflow-y-auto px-6 lg:overflow-visible lg:flex lg:flex-col">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-twilight">Loading...</p>
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-red-500">{error}</p>
             </div>

@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
-import defaultprofile from "/assets/icons/defaultprofile.png";
 import FriendCard from "../Component/FriendCard";
+import defaultprofile from "/assets/icons/defaultprofile.png";
 
 function EditItem() {
   const { groupId, itemId } = useParams();
@@ -15,7 +15,6 @@ function EditItem() {
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const menuWidth = "w-72";
 
@@ -42,8 +41,6 @@ function EditItem() {
       }
     } catch (err) {
       setError("Failed to load item details");
-    } finally {
-      setIsLoading(false);
     }
   }, [groupId, itemId]);
 
@@ -165,11 +162,7 @@ function EditItem() {
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-twilight">Loading...</p>
-              </div>
-            ) : error ? (
+            {error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
               </div>

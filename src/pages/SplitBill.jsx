@@ -15,7 +15,6 @@ function SplitBill() {
   const [group, setGroup] = useState(null);
   const [memberTotals, setMemberTotals] = useState({});
   const [grandTotal, setGrandTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const currency = localStorage.getItem("currency");
   const menuWidth = "w-72";
@@ -23,7 +22,6 @@ function SplitBill() {
   // hook to handle bill splitting calculations
   useEffect(() => {
     const calculateSplits = () => {
-      setIsLoading(true);
       try {
         // get groups and bill data from localStorage
         const groups = JSON.parse(localStorage.getItem("groups") || "[]");
@@ -81,8 +79,6 @@ function SplitBill() {
       } catch (err) {
         console.error("Error calculating splits:", err);
         setError("Failed to calculate bill splits");
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -168,11 +164,7 @@ function SplitBill() {
         {/* split bill content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-twilight">Loading...</p>
-              </div>
-            ) : error ? (
+            {error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
               </div>
