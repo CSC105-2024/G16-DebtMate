@@ -14,19 +14,14 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, '../../.env') });
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET || '31415926';
-if (!process.env.JWT_SECRET) {
-  console.warn('Warning: JWT_SECRET not found in environment variables. Using default secret for development.');
-}
+
 
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as ms.StringValue;
 
 interface UserPayload extends JwtPayload {
   userId: number;
 }
-
-// made this a class so it's easier to use
 export class JWT {
-  // makes a new token when someone logs in
   static generate = (userId: number): string => {
     const payload: UserPayload = { userId };
     const options: SignOptions = { 

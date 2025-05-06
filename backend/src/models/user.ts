@@ -1,5 +1,7 @@
-// all the user related database stuff goes here
-// handles creating users, finding them, and managing friends
+/**
+ * User model containing database operations for user management
+ * Handles authentication, profile data, and relationships
+ */
 
 import bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
@@ -148,24 +150,5 @@ export const UserModel = {
     return user?.friends || [];
   },
 
-  async getCurrentUser(userId: number) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        friends: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true
-          }
-        }
-      }
-    });
-    
-    if (!user) return null;
-    
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
+  
 };

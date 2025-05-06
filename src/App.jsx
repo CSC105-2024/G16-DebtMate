@@ -22,13 +22,11 @@ import EditItem from "./pages/EditItem";
 import UserInformation from "./pages/UserInformation";
 import UserInformationEdit from "./pages/UserInformationEdit";
 
-// Import AuthProvider and useAuth
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth();
 
-  // Show loading state while checking authentication
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
