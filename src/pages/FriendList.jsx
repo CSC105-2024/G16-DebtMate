@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
+import { searchUsers, filterBySearchTerm } from "../utils/searchUtils";
 
 function FriendList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,30 +18,35 @@ function FriendList() {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
   const friendsPerPage = 14;
 
-  // Fetch actual friends from the database
+  // Fetch friends from the database
   useEffect(() => {
     const fetchFriends = async () => {
       try {
         setLoading(true);
-        const meResponse = await fetch("http://localhost:3000/api/users/me", {
-          credentials: "include",
-        });
-        const meData = await meResponse.json();
+
+        const meResponse = await axios.get(
+          "http://localhost:3000/api/users/me",
+          {
+            withCredentials: true,
+          }
+        );
+        const meData = meResponse.data;
 
         if (!meData.success) {
           throw new Error(meData.message || "Failed to fetch user data");
         }
 
-        const friendsResponse = await fetch(
+        const friendsResponse = await axios.get(
           `http://localhost:3000/api/users/${meData.user.id}/friends`,
           {
-            credentials: "include",
+            withCredentials: true,
           }
         );
 
-        const friendsData = await friendsResponse.json();
+        const friendsData = friendsResponse.data;
 
         if (friendsData.success) {
           const formattedFriends = friendsData.friends.map((friend) => ({
@@ -75,12 +82,45 @@ function FriendList() {
     setSelectedFriend(null);
   };
 
-  const handleSearch = () => {
-    console.log("Searching for:", searchTerm);
+  // Updated search handler to use searchUtils
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    // First try to filter existing friends
+    const filteredLocalFriends = filterBySearchTerm(friends, searchTerm, [
+      "name",
+      "username",
+    ]);
+
+    // If we have local results, just use those
+    if (filteredLocalFriends.length > 0) {
+      setSearchResults(filteredLocalFriends);
+      return;
+    }
+
+    // Otherwise, search the API
+    const result = await searchUsers(searchTerm);
+
+    if (result.success) {
+      setSearchResults(result.results);
+    } else {
+      console.error("Search failed:", result.error);
+      // Fall back to local filtering even if API search fails
+      setSearchResults(filteredLocalFriends);
+    }
   };
 
-  // Menu width consistent between mobile and desktop
-  const menuWidth = "w-72"; // Tailwind class for width
+  // Reset search when searchTerm is cleared
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults(null);
+    }
+  }, [searchTerm]);
+
+  const menuWidth = "w-72";
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -94,14 +134,12 @@ function FriendList() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Filter friends based on search term
-  const filteredFriends = searchTerm
-    ? friends.filter(
-        (friend) =>
-          friend.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          friend.username.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : friends;
+  // Use search results if available, otherwise filter friends locally
+  const filteredFriends =
+    searchResults ||
+    (searchTerm
+      ? filterBySearchTerm(friends, searchTerm, ["name", "username"])
+      : friends);
 
   // Sort friends by name (ascending or descending)
   const sortedFriends = [...filteredFriends].sort((a, b) => {
@@ -116,6 +154,11 @@ function FriendList() {
     (currentPage - 1) * friendsPerPage,
     currentPage * friendsPerPage
   );
+
+  // Reset to first page when search results change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchResults]);
 
   // Ref for detecting click outside the modal
   const modalRef = useRef();
@@ -203,14 +246,18 @@ function FriendList() {
         ) : sortedFriends.length === 0 ? (
           <div className="flex-1 flex items-center justify-center flex-col">
             <p className="text-twilight mb-2">
-              You don't have any friends yet.
+              {searchTerm
+                ? "No search results found."
+                : "You don't have any friends yet."}
             </p>
-            <button
-              onClick={() => (window.location.href = "/add-friends")}
-              className="px-4 py-2 bg-twilight text-white rounded-[13px]"
-            >
-              Add Friends
-            </button>
+            {!searchTerm && (
+              <button
+                onClick={() => (window.location.href = "/add-friends")}
+                className="px-4 py-2 bg-twilight text-white rounded-[13px]"
+              >
+                Add Friends
+              </button>
+            )}
           </div>
         ) : (
           <>

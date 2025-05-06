@@ -1,3 +1,4 @@
+import axios from "axios";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 
 /**
@@ -11,16 +12,16 @@ export const searchUsers = async (searchTerm) => {
       return { success: true, results: [], error: null };
     }
 
-    const response = await fetch(
+    const response = await axios.get(
       `http://localhost:3000/api/users/friends/search?query=${encodeURIComponent(
         searchTerm.trim()
       )}`,
       {
-        credentials: "include",
+        withCredentials: true,
       }
     );
 
-    const data = await response.json();
+    const data = response.data;
 
     if (data.success) {
       // Format the results for display

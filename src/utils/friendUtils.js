@@ -1,3 +1,4 @@
+import axios from "axios";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 
 /**
@@ -7,16 +8,18 @@ import defaultprofile from "/assets/icons/defaultprofile.png";
  */
 export const addFriend = async (friendUsername) => {
   try {
-    const response = await fetch("http://localhost:3000/api/users/friends", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ friendUsername }),
-      credentials: "include",
-    });
+    const response = await axios.post(
+      "http://localhost:3000/api/users/friends",
+      { friendUsername },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    );
 
-    const data = await response.json();
+    const data = response.data;
 
     return {
       success: data.success,
@@ -39,24 +42,24 @@ export const addFriend = async (friendUsername) => {
 export const checkFriendshipStatus = async (userId) => {
   try {
     // Get current user info
-    const meResponse = await fetch("http://localhost:3000/api/users/me", {
-      credentials: "include",
+    const meResponse = await axios.get("http://localhost:3000/api/users/me", {
+      withCredentials: true,
     });
-    const meData = await meResponse.json();
+    const meData = meResponse.data;
 
     if (!meData.success) {
       return { isFriend: false, error: "Failed to fetch user data" };
     }
 
     // Get friend list
-    const friendsResponse = await fetch(
+    const friendsResponse = await axios.get(
       `http://localhost:3000/api/users/${meData.user.id}/friends`,
       {
-        credentials: "include",
+        withCredentials: true,
       }
     );
 
-    const friendsData = await friendsResponse.json();
+    const friendsData = friendsResponse.data;
 
     if (!friendsData.success) {
       return { isFriend: false, error: "Failed to fetch friends list" };
@@ -78,10 +81,10 @@ export const checkFriendshipStatus = async (userId) => {
  */
 export const getCurrentUser = async () => {
   try {
-    const response = await fetch("http://localhost:3000/api/users/me", {
-      credentials: "include",
+    const response = await axios.get("http://localhost:3000/api/users/me", {
+      withCredentials: true,
     });
-    const data = await response.json();
+    const data = response.data;
 
     if (data.success) {
       return { user: data.user, error: null };
