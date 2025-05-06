@@ -52,7 +52,13 @@ function SettingsPage() {
   const handleClick = async (type) => {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
-    } else if (type === "Logout") {
+    } 
+
+    // A simple functionality to refresh the settings page on a button click
+    else if(type === "Refresh"){
+      window.location.reload();
+    }
+    else if (type === "Logout") {
       try {
         await logout();
         navigate("/");
