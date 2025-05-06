@@ -13,13 +13,13 @@
     "start": "concurrently \"npm run dev\" \"npm run server\"",
     "dev:all": "npm run setup && cd backend && npx prisma generate && npm run db:setup && cd .. && concurrently \"npm run dev\" \"npm run server\"",
     "prisma:studio": "cd backend && npx prisma studio"
-  
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@iconify-icons/lucide": "^1.2.135",
     "@iconify/react": "^5.2.1",
     "@tailwindcss/vite": "^4.0.14",
+    "axios": "^1.9.0",
     "lucide-react": "^0.487.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
