@@ -13,6 +13,7 @@ import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
+import { searchUsers } from "../utils/searchUtils";
 
 function AddFriends() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,14 +62,17 @@ function AddFriends() {
   }, []);
 
   // Add this effect to trigger search when searchTerm changes
-  useEffect(() => {
-    // We dont need this if function but i am too scared to remove it
-    if (searchTerm.length > 0) {
-      handleSearch();
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchTerm]);
+  useEffect(
+    () => {
+      // We dont need this if function but i am too scared to remove it
+      if (searchTerm.length > 0) {
+        handleSearch();
+      } else {
+        setSearchResults([]);
+      }
+    },
+    [searchTerm] // Effect for outside click detection
+  );
 
   // Effect for outside click detection
   useEffect(() => {
@@ -106,40 +110,19 @@ function AddFriends() {
         }
       }
 
-      // Update to use the correct backend endpoint
-      const response = await fetch(
-        `http://localhost:3000/api/users/friends/search?query=${encodeURIComponent(
-          searchTerm
-        )}`,
-        {
-          credentials: "include",
-        }
-      );
+      const searchResult = await searchUsers(searchTerm);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (searchResult.success) {
         const currentUserId = currentUser ? currentUser.id : null;
         const filteredUsers = currentUserId
-          ? data.users.filter(
+          ? searchResult.results.filter(
               (user) => String(user.id) !== String(currentUserId)
             )
-          : data.users;
+          : searchResult.results;
 
-        // Format the results for display
-        const formattedResults = filteredUsers.map((user) => ({
-          id: user.id,
-          name: user.name || user.username,
-          username: user.username,
-          email: user.email,
-          balance: 0,
-          avatarUrl: defaultprofile,
-          bio: user.bio || "",
-        }));
-
-        setSearchResults(formattedResults);
+        setSearchResults(filteredUsers);
       } else {
-        setError(data.message || "Search failed");
+        setError(searchResult.error);
         setSearchResults([]);
       }
     } catch (err) {
@@ -148,12 +131,10 @@ function AddFriends() {
     }
   };
 
-  // Handle adding a friend
   const handleAddFriend = async (friend) => {
     setAddingFriend(friend.id);
 
     try {
-      // Use friendUsername instead of friendId
       const response = await fetch("http://localhost:3000/api/users/friends", {
         method: "POST",
         headers: {
@@ -180,20 +161,16 @@ function AddFriends() {
     }
   };
 
-  // Handle removing a friend from search results after being added
   const handleFriendAdded = (friendId) => {
-    // Remove the added friend from results
     setSearchResults((prevResults) =>
       prevResults.filter((user) => user.id !== friendId)
     );
   };
 
-  // Handle friend card click
   const handleFriendCardClick = (friend) => {
     setSelectedFriend(friend);
   };
 
-  // Handle closing the modal
   const handleClosePopup = () => {
     setSelectedFriend(null);
   };
