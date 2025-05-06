@@ -19,7 +19,6 @@ function AddFriends() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [addingFriend, setAddingFriend] = useState(null);
   const [selectedFriend, setSelectedFriend] = useState(null);
@@ -84,7 +83,6 @@ function AddFriends() {
   }, []);
 
   const handleSearch = async () => {
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -100,18 +98,17 @@ function AddFriends() {
             setCurrentUser({ id: userData.userId });
           } else {
             setError("Failed to fetch user info. Please try again.");
-            setIsLoading(false);
             return;
           }
         } catch (err) {
           setError("Network error. Please try again.");
-          setIsLoading(false);
           return;
         }
       }
 
+      // Update to use the correct backend endpoint
       const response = await fetch(
-        `http://localhost:3000/api/friends/search?query=${encodeURIComponent(
+        `http://localhost:3000/api/users/friends/search?query=${encodeURIComponent(
           searchTerm
         )}`,
         {
@@ -148,22 +145,21 @@ function AddFriends() {
     } catch (err) {
       setError("Network error while searching");
       setSearchResults([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // Handle adding a friend
-  const handleAddFriend = async (friendId) => {
-    setAddingFriend(friendId);
+  const handleAddFriend = async (friend) => {
+    setAddingFriend(friend.id);
 
     try {
-      const response = await fetch("http://localhost:3000/api/friends/add", {
+      // Use friendUsername instead of friendId
+      const response = await fetch("http://localhost:3000/api/users/friends", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ friendId }),
+        body: JSON.stringify({ friendUsername: friend.username }),
         credentials: "include",
       });
 
@@ -172,7 +168,7 @@ function AddFriends() {
       if (data.success) {
         // Remove the added friend from results
         setSearchResults((prevResults) =>
-          prevResults.filter((user) => user.id !== friendId)
+          prevResults.filter((user) => user.id !== friend.id)
         );
       } else {
         console.error("Failed to add friend");
@@ -245,11 +241,7 @@ function AddFriends() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <p className="text-twilight">Searching...</p>
-            </div>
-          ) : searchResults.length > 0 ? (
+          {searchResults.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {searchResults.map((user) => (
                 <div key={user.id} className="relative">
@@ -261,7 +253,7 @@ function AddFriends() {
                     onClick={() => handleFriendCardClick(user)}
                   />
                   <button
-                    onClick={() => handleAddFriend(user.id)}
+                    onClick={() => handleAddFriend(user)}
                     disabled={addingFriend === user.id}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-twilight text-white p-2 rounded-full hover:bg-opacity-80 disabled:opacity-50"
                   >
