@@ -21,7 +21,6 @@ function GroupForm() {
   const [groupDescription, setGroupDescription] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(groupId ? true : false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   // number of friends to display per page
@@ -59,8 +58,6 @@ function GroupForm() {
       } catch (err) {
         console.error("Error loading group:", err);
         setError("Failed to load group data");
-      } finally {
-        setIsLoading(false);
       }
     }
   }, [groupId]);
@@ -154,15 +151,6 @@ function GroupForm() {
 
   const menuWidth = "w-72";
 
-  // renders loading state while fetching group data
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-color-dreamy">
-        <p className="text-twilight">Loading group details...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
       {/* Sidebar */}
@@ -209,7 +197,7 @@ function GroupForm() {
 
             {/* Group Picture Section */}
             <div className="flex justify-center pt-6">
-              <div 
+              <div
                 className="w-24 h-24 rounded-full overflow-hidden mb-4 cursor-pointer"
                 onClick={() => setIsChangePicOpen(true)}
               >
@@ -220,7 +208,6 @@ function GroupForm() {
                 />
               </div>
             </div>
-            
 
             {/* Group Name */}
             <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
@@ -422,20 +409,18 @@ function GroupForm() {
       </div>
 
       {isChangePicOpen && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-[13px] shadow-lg">
-          <ChangeGroupPic 
-            onClose={() => setIsChangePicOpen(false)}
-            onConfirm={(newPic) => {
-              setGroupPicture(newPic);
-              setIsChangePicOpen(false);
-            }}
-          />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-[13px] shadow-lg">
+            <ChangeGroupPic
+              onClose={() => setIsChangePicOpen(false)}
+              onConfirm={(newPic) => {
+                setGroupPicture(newPic);
+                setIsChangePicOpen(false);
+              }}
+            />
+          </div>
         </div>
-      </div>
-    )}
-
-
+      )}
     </div>
   );
 }

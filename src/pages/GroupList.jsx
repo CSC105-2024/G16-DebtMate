@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus } from "lucide-react";
-import FriendCard from "../Component/FriendCard"; // Or replace with GroupCard if available
-import defaultprofile from "/assets/icons/defaultprofile.png";
-import SearchBar from "../Component/SearchBar";
 import Avatar from "../Component/Avatar";
+import SearchBar from "../Component/SearchBar";
+import defaultprofile from "/assets/icons/defaultprofile.png";
 
 function GroupList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,12 +13,11 @@ function GroupList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
   const [groups, setGroups] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const groupsPerPage = 14;
+
   // fetch groups from localStorage
   useEffect(() => {
-    setIsLoading(true);
     try {
       const savedGroups = JSON.parse(localStorage.getItem("groups") || "[]");
       setGroups(savedGroups);
@@ -27,8 +25,6 @@ function GroupList() {
     } catch (err) {
       console.error("Error loading groups:", err);
       setError("Failed to load groups");
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -139,11 +135,7 @@ function GroupList() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-twilight">Loading groups...</p>
-            </div>
-          ) : error ? (
+          {error ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-red-500">{error}</p>
             </div>
@@ -266,7 +258,7 @@ function GroupList() {
         </div>
 
         {/* Create Group Button (when groups exist) */}
-        {!isLoading && !error && sortedGroups.length > 0 && (
+        {!error && sortedGroups.length > 0 && (
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={handleCreateGroup}
