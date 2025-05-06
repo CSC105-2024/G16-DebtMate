@@ -66,7 +66,6 @@ function SignUp() {
         },
       };
 
-      // if it exists
       if (validations[name]) {
         validations[name]();
       }
@@ -84,7 +83,6 @@ function SignUp() {
       [name]: value,
     }));
 
-    // check as user types
     const fieldError = validateField(name, value);
     setErrors((prev) => ({
       ...prev,
@@ -129,7 +127,7 @@ function SignUp() {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        name: formData.username, // Using username as name if needed
+        name: formData.username,
       });
 
       if (result.success) {
@@ -146,7 +144,6 @@ function SignUp() {
             email: "Email already exists",
           }));
         } else {
-          // Generic error
           setErrors((prev) => ({
             ...prev,
             email: result.message || "Registration failed",

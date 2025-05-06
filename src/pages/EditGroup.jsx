@@ -8,7 +8,7 @@ const EditGroup = () => {
   const [groupData, setGroupData] = useState({
     name: "",
     members: [],
-    // Add other relevant group data fields
+    // Add  relevant group data fields
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +18,6 @@ const EditGroup = () => {
     const fetchGroupData = async () => {
       try {
         setIsLoading(true);
-        // Replace with your actual API call
         const response = await fetch(`/api/groups/${groupId}`);
 
         if (!response.ok) {
@@ -49,7 +48,6 @@ const EditGroup = () => {
     e.preventDefault();
 
     try {
-      // Replace with your actual API call
       const response = await fetch(`/api/groups/${groupId}`, {
         method: "PUT",
         headers: {
@@ -62,7 +60,6 @@ const EditGroup = () => {
         throw new Error("Failed to update group");
       }
 
-      // Navigate back to the group details page
       navigate(`/groups/${groupId}`);
     } catch (err) {
       setError(err.message);
@@ -75,11 +72,14 @@ const EditGroup = () => {
   return (
     <div className="edit-group-container">
       <h1>Edit Group</h1>
-      <div className={`w-22 h-22 bg-gray-300 rounded-full flex items-center justify-center text-gray-500 mb-2 max-[${XS}]:w-16 max-[${XS}]:h-16`}>
+      <div
+        className={`w-22 h-22 bg-gray-300 rounded-full flex items-center justify-center text-gray-500 mb-2 max-[${XS}]:w-16 max-[${XS}]:h-16`}
+      >
         <img
           src={group1}
           alt="Group Profile Picture"
-          className="w-full h-full rounded-full object-cover cursor-pointer" />
+          className="w-full h-full rounded-full object-cover cursor-pointer"
+        />
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -94,8 +94,6 @@ const EditGroup = () => {
             required
           />
         </div>
-
-        {/* Add other form fields here (members, settings, etc.) */}
 
         <div className="form-actions">
           <button

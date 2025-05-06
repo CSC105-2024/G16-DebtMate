@@ -27,19 +27,16 @@ function ItemList() {
   const total = itemsTotal + serviceChargeAmount + taxAmount;
   const currency = localStorage.getItem("currency");
 
-  // Menu width consistent between mobile and desktop
   const menuWidth = "w-72";
   // Fetch group details
   useEffect(() => {
     const fetchGroupDetails = () => {
       try {
-        // Get groups from localStorage
         const groups = JSON.parse(localStorage.getItem("groups") || "[]");
         const groupData = groups.find((g) => g.id === parseInt(groupId));
 
         if (groupData) {
           setGroup(groupData);
-          // Set items from group data if it exists
           setItems(groupData.items || []);
           setError(null);
         } else {
@@ -58,7 +55,6 @@ function ItemList() {
     }
   }, [groupId]);
 
-  // Handle responsive layout based on screen size
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -75,9 +71,7 @@ function ItemList() {
     navigate(`/groups/${groupId}/items/add`);
   };
 
-  // handle split bill navigation with bill data
   const handleSplitBill = () => {
-    // save current bill data to localStorage before navigation
     const billData = {
       serviceCharge: parseFloat(serviceCharge),
       tax: parseFloat(tax),
@@ -85,16 +79,14 @@ function ItemList() {
     };
     localStorage.setItem(`bill_${groupId}`, JSON.stringify(billData));
 
-    // navigate to split bill page
     navigate(`/groups/${groupId}/split`);
   };
 
   // Add totalPages calculation
-  const itemsPerPage = 8; // Showing 8 items per page on desktop
+  const itemsPerPage = 8;
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Get paginated items for desktop view
   const paginatedItems = items.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -102,7 +94,7 @@ function ItemList() {
 
   return (
     <div className="flex h-screen bg-color-dreamy">
-      {/* Hamburger Menu - Modified for consistent desktop behavior */}
+      {/* Hamburger Menu */}
       {isDesktop ? (
         <div
           className={`fixed inset-y-0 left-0 z-[150] ${menuWidth} bg-[#d5d4ff]`}
@@ -119,7 +111,7 @@ function ItemList() {
         </div>
       )}
 
-      {/* Main Content - Using Fixed Position Layout */}
+      {/* Main Content */}
       <div
         className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
           isDesktop ? "ml-72" : ""
@@ -175,7 +167,7 @@ function ItemList() {
           </div>
         </div>
 
-        {/* Add Item Button - Make smaller in desktop mode */}
+        {/* Add Item Button */}
         <div className="px-6 mb-4 lg:mb-2">
           <div className="w-full lg:max-w-4xl lg:mx-auto">
             <button
@@ -188,7 +180,7 @@ function ItemList() {
           </div>
         </div>
 
-        {/* Modified Items List Section */}
+        {/*  Items List Section */}
         <div className="flex-1 overflow-y-auto px-6 lg:overflow-visible lg:flex lg:flex-col">
           {error ? (
             <div className="flex items-center justify-center h-full">

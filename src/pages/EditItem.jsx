@@ -18,7 +18,6 @@ function EditItem() {
   const [error, setError] = useState(null);
   const menuWidth = "w-72";
 
-  // Load item data
   useEffect(() => {
     try {
       const groups = JSON.parse(localStorage.getItem("groups") || "[]");
@@ -44,7 +43,6 @@ function EditItem() {
     }
   }, [groupId, itemId]);
 
-  // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -218,7 +216,6 @@ function EditItem() {
                           }
                         }}
                       >
-                        {/* Use normal div without extra styles */}
                         <FriendCard
                           name={member.name}
                           balance={0}

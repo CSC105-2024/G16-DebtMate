@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 function UserInformation() {
   const navigate = useNavigate();
 
-  // Mock user data (replace later with real API data)
   const user = {
     profilePicture: "/assets/icons/imgtemp.png",
     name: "Mike Wazowski",
@@ -39,12 +38,16 @@ function UserInformation() {
       <h1 className="text-2xl font-hornbill text-twilight font-bold">
         {user.name}
       </h1>
-      <p className="text-[20px] font-telegraf text-twilight mb-6">@{user.username}</p>
+      <p className="text-[20px] font-telegraf text-twilight mb-6">
+        @{user.username}
+      </p>
 
       {/* User Info Section */}
       <div className="w-full max-w-md space-y-4">
         <div>
-          <label className="block text-twilight font-semibold mb-1 text-left font-hornbill text-[24px]">Email</label>
+          <label className="block text-twilight font-semibold mb-1 text-left font-hornbill text-[24px]">
+            Email
+          </label>
           <input
             type="text"
             value={user.email}
@@ -53,7 +56,9 @@ function UserInformation() {
           />
         </div>
         <div>
-          <label className="block text-twilight font-semibold mb-1 text-left font-hornbill text-[24px]">Bio</label>
+          <label className="block text-twilight font-semibold mb-1 text-left font-hornbill text-[24px]">
+            Bio
+          </label>
           <textarea
             value={user.bio}
             readOnly

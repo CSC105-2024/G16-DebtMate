@@ -16,7 +16,6 @@ function GroupList() {
   const [error, setError] = useState(null);
   const groupsPerPage = 14;
 
-  // fetch groups from localStorage
   useEffect(() => {
     try {
       const savedGroups = JSON.parse(localStorage.getItem("groups") || "[]");
@@ -28,12 +27,10 @@ function GroupList() {
     }
   }, []);
 
-  // filter groups based on search term
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // sort groups alphabetically
   const sortedGroups = [...filteredGroups].sort((a, b) => {
     return sortAsc
       ? a.name.localeCompare(b.name)
@@ -257,7 +254,6 @@ function GroupList() {
           )}
         </div>
 
-        {/* Create Group Button (when groups exist) */}
         {!error && sortedGroups.length > 0 && (
           <div className="p-4 border-t border-gray-200">
             <button

@@ -8,6 +8,7 @@ import groupsIcon from "/assets/icons/Groups.svg";
 import addFriendIcon from "/assets/icons/AddFriend.svg";
 import settingsIcon from "/assets/icons/Settings.svg";
 import placeImg from "/assets/icons/imgtemp.png";
+import { getCurrentUser } from "../utils/friendUtils";
 
 // breakpoint for Iphone-SE
 const XS = "400px";
@@ -39,6 +40,25 @@ MenuItem.propTypes = {
 export default function HamburgerMenu({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
   const [isDesktop, setIsDesktop] = useState(false);
+  const [user, setUser] = useState({ username: "User", name: "" });
+
+  // Fetch current user data from database
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const { user: userData, error } = await getCurrentUser();
+        if (userData) {
+          setUser(userData);
+        } else {
+          console.error("Error fetching user data:", error);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // check screen size and set initial state
   useEffect(() => {
@@ -60,7 +80,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
   // handler functions for each menu item
   const handleCreateGroup = () => {
     navigate("/create-group");
-    if (!isDesktop) setIsOpen(false); // close menu after clicking
+    if (!isDesktop) setIsOpen(false);
   };
 
   const handleFriends = () => {
@@ -82,10 +102,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
     navigate("/settings");
     if (!isDesktop) setIsOpen(false);
   };
-  const user = JSON.parse(localStorage.getItem("currentUser")) || {
-    username: "User",
-    email: "",
-  };
+
   const menuItems = [
     {
       icon: createGroupIcon,
@@ -159,12 +176,12 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
               <h2
                 className={`font-hornbill font-black text-[30px] text-twilight text-left w-full max-[${XS}]:text-[24px]`}
               >
-                {user.username}
+                {user.name || user.username}
               </h2>
               <h3
                 className={`font-telegraf font-black text-[17px] text-twilight text-left w-full max-[${XS}]:text-[14px]`}
               >
-                @mike_020
+                @{user.username}
               </h3>
             </div>
           </div>

@@ -19,7 +19,6 @@ function AddItems() {
 
   const menuWidth = "w-72";
 
-  // Fetch group details from localStorage
   useEffect(() => {
     try {
       const groups = JSON.parse(localStorage.getItem("groups") || "[]");
@@ -37,7 +36,6 @@ function AddItems() {
     }
   }, [groupId]);
 
-  // Handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -83,10 +81,8 @@ function AddItems() {
       }
       groups[groupIndex].items.push(newItem);
 
-      // Save updated groups back to localStorage
       localStorage.setItem("groups", JSON.stringify(groups));
 
-      // Navigate back to the items list page instead of the edit page
       navigate(`/groups/${groupId}/items`);
     } catch (err) {
       console.error("Error adding item:", err);

@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/Group.css"; // Assuming you have a CSS file for styling
+import "../styles/Group.css";
 
 const Group = ({ group }) => {
   const navigate = useNavigate();

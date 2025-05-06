@@ -23,7 +23,6 @@ function FriendList() {
     const fetchFriends = async () => {
       try {
         setLoading(true);
-        // First get current user info
         const meResponse = await fetch("http://localhost:3000/api/users/me", {
           credentials: "include",
         });
@@ -33,7 +32,6 @@ function FriendList() {
           throw new Error(meData.message || "Failed to fetch user data");
         }
 
-        // Then fetch friends using the user ID
         const friendsResponse = await fetch(
           `http://localhost:3000/api/users/${meData.user.id}/friends`,
           {
@@ -44,13 +42,12 @@ function FriendList() {
         const friendsData = await friendsResponse.json();
 
         if (friendsData.success) {
-          // Format friends data to match what the components expect
           const formattedFriends = friendsData.friends.map((friend) => ({
             id: friend.id,
             name: friend.name || friend.username,
             username: friend.username,
             email: friend.email,
-            balance: 0, // You might want to calculate this dynamically if you have that data
+            balance: 0,
             avatarUrl: friend.avatarUrl || defaultprofile,
             bio: friend.bio || "No bio available",
           }));
@@ -79,10 +76,7 @@ function FriendList() {
   };
 
   const handleSearch = () => {
-    // You can implement actual friend filtering here
     console.log("Searching for:", searchTerm);
-    // For now, we'll just filter the existing friends array
-    // This can be enhanced to make an API call if needed
   };
 
   // Menu width consistent between mobile and desktop

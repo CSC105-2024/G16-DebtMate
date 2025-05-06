@@ -23,7 +23,6 @@ function SplitBill() {
   useEffect(() => {
     const calculateSplits = () => {
       try {
-        // get groups and bill data from localStorage
         const groups = JSON.parse(localStorage.getItem("groups") || "[]");
         const billData = JSON.parse(
           localStorage.getItem(`bill_${groupId}`) || "{}"
@@ -59,12 +58,10 @@ function SplitBill() {
           subtotal += itemAmount;
         });
 
-        // add service charge and tax from billData
         const serviceChargeAmount = subtotal * (billData.serviceCharge / 100);
         const taxAmount = subtotal * (billData.tax / 100);
         const finalTotal = subtotal + serviceChargeAmount + taxAmount;
 
-        // distribute service charge and tax equally among all members
         const totalMembers = currentGroup.members.length;
         const extraPerPerson = (serviceChargeAmount + taxAmount) / totalMembers;
 
@@ -231,7 +228,7 @@ function SplitBill() {
         </div>
       </div>
 
-      {/* mobile overlay - unchanged */}
+      {/* mobile overlay */}
       {!isDesktop && isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-[150] lg:hidden"

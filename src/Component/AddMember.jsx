@@ -43,7 +43,7 @@ function AddMember({
 
   // Close without saving changes
   const handleCancel = () => {
-    setLocalSelectedMembers([...selectedMembers]); // Reset to original selection
+    setLocalSelectedMembers([...selectedMembers]);
     onClose();
   };
 
@@ -94,11 +94,10 @@ function AddMember({
               >
                 <div className="h-full w-full">
                   {" "}
-                  {/* Add this wrapper div */}
                   <FriendCardEmpty
                     name={friend.name}
                     avatarUrl={friend.avatarUrl}
-                    className="h-full w-full" // Add this className prop
+                    className="h-full w-full"
                   />
                 </div>
                 {isSelected(friend.id) && (

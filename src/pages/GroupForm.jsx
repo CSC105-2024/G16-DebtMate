@@ -98,7 +98,6 @@ function GroupForm() {
     setSelectedMembers(members);
   };
 
-  // saves group data to local storage and redirects to groups page
   const handleSaveGroup = async () => {
     setIsSaving(true);
     setError("");

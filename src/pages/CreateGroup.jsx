@@ -46,11 +46,9 @@ function CreateGroup() {
   };
 
   const handleAddMembers = () => {
-    // Open the AddMember overlay instead of navigating
     setIsAddMemberOpen(true);
   };
 
-  // New function to handle adding members from the overlay
   const handleSaveMembers = (members) => {
     setSelectedMembers(members);
   };
@@ -62,7 +60,7 @@ function CreateGroup() {
     try {
       // Create a simple group object
       const newGroup = {
-        id: Date.now(), // Simple unique ID
+        id: Date.now(),
         name: groupName,
         description: groupDescription,
         members: selectedMembers,
@@ -88,8 +86,7 @@ function CreateGroup() {
     }
   };
 
-  // Menu width consistent between mobile and desktop
-  const menuWidth = "w-72"; // Tailwind class for width
+  const menuWidth = "w-72";
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -97,7 +94,6 @@ function CreateGroup() {
       setIsDesktop(desktop);
       setIsMenuOpen(desktop); // Auto-open on desktop
 
-      // If switching to desktop, automatically show AddMember section
       if (desktop && !isDesktop) {
         setIsAddMemberOpen(true);
       }
@@ -151,12 +147,8 @@ function CreateGroup() {
                   </button>
                 </div>
               )}
-              <div className="flex-grow flex justify-center">
-                {/* Any centered content goes here */}
-              </div>
-              <div className="flex-none ml-auto">
-                {/* No edit button here since we're creating a new group */}
-              </div>
+              <div className="flex-grow flex justify-center"></div>
+              <div className="flex-none ml-auto"></div>
             </div>
           </div>
 
@@ -165,7 +157,6 @@ function CreateGroup() {
               <h2 className="text-4xl font-hornbill text-twilight text-left font-black">
                 Create Group
               </h2>
-              {/* Remove duplicate edit button here too */}
             </div>
             <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
               Group Name
@@ -249,7 +240,6 @@ function CreateGroup() {
               </div>
             )}
 
-            {/* Error message if there's an error */}
             {error && (
               <div className="pl-4 pr-4 pt-2 pb-2">
                 <p className="text-red-500">{error}</p>
