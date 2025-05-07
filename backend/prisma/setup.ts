@@ -15,33 +15,95 @@ async function main() {
         name: 'Test User',
         username: 'testuser',
         email: 'test@example.com',
-        password
+        password,
+        bio: 'I am a test user',
+        avatarUrl: null
       },
       {
         name: 'Jane Smith',
         username: 'janesmith',
         email: 'jane@example.com',
-        password
+        password,
+        bio: 'Hi, I am Jane',
+        avatarUrl: null
       },
       {
         name: 'John Doe',
         username: 'johndoe',
         email: 'john@example.com',
-        password
+        password,
+        bio: 'Hello, I am John',
+        avatarUrl: null
       },
       {
         name: 'Bob Johnson',
         username: 'bjohnson',
         email: 'bob@example.com',
-        password
+        password,
+        bio: 'Hey there, I am Bob',
+        avatarUrl: null
       }
     ];
     
+    // Reset database
+    console.log('Cleaning up existing records...');
+    await prisma.payment.deleteMany({});
+    await prisma.itemUser.deleteMany({});
+    await prisma.item.deleteMany({});
+    await prisma.groupMember.deleteMany({});
+    await prisma.group.deleteMany({});
+    await prisma.user.deleteMany({});
+    
+    console.log('Creating users...');
     for (const userData of users) {
-      await prisma.user.upsert({
-        where: { email: userData.email },
-        update: {},
-        create: userData
+      await prisma.user.create({
+        data: userData
+      });
+    }
+    
+    // Create some friendship connections
+    console.log('Setting up friendships...');
+    const user1 = await prisma.user.findUnique({ where: { username: 'testuser' } });
+    const user2 = await prisma.user.findUnique({ where: { username: 'janesmith' } });
+    const user3 = await prisma.user.findUnique({ where: { username: 'johndoe' } });
+    
+    if (user1 && user2) {
+      await prisma.user.update({
+        where: { id: user1.id },
+        data: {
+          friends: {
+            connect: { id: user2.id }
+          }
+        }
+      });
+      
+      await prisma.user.update({
+        where: { id: user2.id },
+        data: {
+          friends: {
+            connect: { id: user1.id }
+          }
+        }
+      });
+    }
+    
+    if (user1 && user3) {
+      await prisma.user.update({
+        where: { id: user1.id },
+        data: {
+          friends: {
+            connect: { id: user3.id }
+          }
+        }
+      });
+      
+      await prisma.user.update({
+        where: { id: user3.id },
+        data: {
+          friends: {
+            connect: { id: user1.id }
+          }
+        }
       });
     }
     
