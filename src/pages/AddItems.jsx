@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import axios from "axios";
 
 function AddItems() {
   const { groupId } = useParams();
@@ -15,25 +16,35 @@ function AddItems() {
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const menuWidth = "w-72";
 
+  // Fetch group data when component mounts
   useEffect(() => {
-    try {
-      const groups = JSON.parse(localStorage.getItem("groups") || "[]");
-      const foundGroup = groups.find((g) => g.id === parseInt(groupId));
+    const fetchGroupData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`/api/groups/${groupId}`, {
+          withCredentials: true,
+        });
 
-      if (foundGroup) {
-        setGroup(foundGroup);
-        setError(null);
-      } else {
-        setError("Group not found");
+        if (response.data) {
+          setGroup(response.data);
+          setError(null);
+        } else {
+          setError("Group not found");
+        }
+      } catch (err) {
+        console.error("Error loading group:", err);
+        setError("Failed to load group details");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error loading group:", err);
-      setError("Failed to load group details");
-    }
+    };
+
+    fetchGroupData();
   }, [groupId]);
 
   useEffect(() => {
@@ -48,45 +59,63 @@ function AddItems() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!itemName || !itemPrice || selectedMembers.length === 0) {
       setError("Please fill in all fields and select at least one member");
       return;
     }
 
+    // Check if price is a valid number
+    const price = parseFloat(itemPrice);
+    if (isNaN(price) || price <= 0) {
+      setError("Please enter a valid price");
+      return;
+    }
+
     try {
-      // Get current groups from localStorage
-      const groups = JSON.parse(localStorage.getItem("groups") || "[]");
-      const groupIndex = groups.findIndex((g) => g.id === parseInt(groupId));
+      setIsLoading(true);
 
-      if (groupIndex === -1) {
-        setError("Group not found");
-        return;
+      // Calculate equal split amount for all selected members
+      const splitAmount = price / selectedMembers.length;
+
+      // Create user assignments array for the API
+      const userAssignments = selectedMembers.map((memberId) => ({
+        userId: memberId,
+        amount: splitAmount,
+      }));
+
+      // Send request to backend to create item
+      const response = await axios.post(
+        `/api/groups/${groupId}/items`,
+        {
+          name: itemName,
+          amount: price,
+          userAssignments,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 201) {
+        navigate(`/groups/${groupId}/items`);
+      } else {
+        setError("Failed to add item");
       }
-
-      // Create new item with unique ID
-      const newItemId = Date.now();
-      const newItem = {
-        id: newItemId,
-        name: itemName,
-        amount: parseFloat(itemPrice),
-        splitBetween: selectedMembers,
-        addedBy: JSON.parse(localStorage.getItem("currentUser"))?.id || 0,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Add item to group's items array
-      if (!groups[groupIndex].items) {
-        groups[groupIndex].items = [];
-      }
-      groups[groupIndex].items.push(newItem);
-
-      localStorage.setItem("groups", JSON.stringify(groups));
-
-      navigate(`/groups/${groupId}/items`);
     } catch (err) {
       console.error("Error adding item:", err);
-      setError("Failed to add item");
+      setError(err.response?.data?.message || "Failed to add item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Toggle member selection
+  const toggleMemberSelection = (memberId) => {
+    if (selectedMembers.includes(memberId)) {
+      setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
+    } else {
+      setSelectedMembers([...selectedMembers, memberId]);
     }
   };
 
@@ -138,7 +167,7 @@ function AddItems() {
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="flex items-center gap-3 mb-2">
               <Avatar
-                src={group?.avatarUrl || defaultprofile}
+                src={group?.icon || defaultprofile}
                 alt={group?.name || "Group"}
                 size="lg"
               />
@@ -155,7 +184,11 @@ function AddItems() {
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {error ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-twilight">Loading...</p>
+              </div>
+            ) : error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
               </div>
@@ -192,28 +225,20 @@ function AddItems() {
                     Split Between
                   </h3>
                   <div className="space-y-2">
-                    {group?.members?.map((member) => (
+                    {group?.members?.map((memberObj) => (
                       <div
-                        key={member.id}
+                        key={memberObj.user.id}
                         className={`w-full cursor-pointer ${
-                          selectedMembers.includes(member.id)
+                          selectedMembers.includes(memberObj.user.id)
                             ? "ring-2 ring-twilight rounded-[13px]"
                             : ""
                         }`}
-                        onClick={() => {
-                          if (selectedMembers.includes(member.id)) {
-                            setSelectedMembers(
-                              selectedMembers.filter((id) => id !== member.id)
-                            );
-                          } else {
-                            setSelectedMembers([...selectedMembers, member.id]);
-                          }
-                        }}
+                        onClick={() => toggleMemberSelection(memberObj.user.id)}
                       >
                         <FriendCard
-                          name={member.name}
+                          name={memberObj.user.name}
                           balance={0}
-                          avatarUrl={member.avatarUrl || defaultprofile}
+                          avatarUrl={memberObj.user.avatarUrl || defaultprofile}
                           className="w-full lg:!w-full"
                         />
                       </div>
@@ -231,9 +256,10 @@ function AddItems() {
             <div className="lg:max-w-xl lg:mx-auto">
               <button
                 onClick={handleAddItem}
-                className="w-full py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold"
+                disabled={isLoading}
+                className="w-full py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold disabled:opacity-50"
               >
-                Add Item
+                {isLoading ? "Adding..." : "Add Item"}
               </button>
             </div>
           </div>

@@ -1,6 +1,11 @@
 # Contributing to DebtMate
 
-Thank you for your interest in contributing to DebtMate! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in DebtMate.
+At this time, we are **not accepting public contributions**. Only internal group members from the project team are permitted to contribute directly to this repository.
+
+If you are not a part of the team, you're welcome to explore the codebase, fork the repository, and use it as a reference or foundation for your own projects.
+
+---
 
 ## Table of Contents
 
@@ -17,13 +22,16 @@ Thank you for your interest in contributing to DebtMate! This document provides 
 
 ## Project Overview
 
-DebtMate is a full-stack application for tracking shared expenses and debts among friends and groups. The project uses:
+**DebtMate** is a full-stack web application for managing shared expenses and debts among friends or groups.
 
-| Component          | Technologies Used                     |
-| ------------------ | ------------------------------------- |
-| **Frontend**       | React 19, Tailwind CSS, Vite          |
-| **Backend**        | Hono.js, PostgreSQL/In-memory storage |
-| **Infrastructure** | Docker, Docker Compose                |
+| Component          | Technology Stack                                       |
+| ------------------ | ------------------------------------------------------ |
+| **Frontend**       | React 19, Tailwind CSS, Vite                           |
+| **Backend**        | Hono.js, TypeScript, Prisma ORM                        |
+| **Database**       | SQLite (on `main` branch)                              |
+| **Infrastructure** | Docker + PostgreSQL (only on `docker/postgres` branch) |
+
+> ⚠️ **Note**: Docker and PostgreSQL are only configured in the `docker/postgres` branch. The `main` branch uses SQLite with Prisma and does not require Docker for local development.
 
 ---
 
@@ -31,35 +39,36 @@ DebtMate is a full-stack application for tracking shared expenses and debts amon
 
 ### Prerequisites
 
-Before starting, ensure you have the following installed:
+Ensure the following tools are installed on your machine:
 
-1. **Node.js & npm** - [Download here](https://nodejs.org/)
-2. **Docker Desktop** (optional) - [Download here](https://www.docker.com/products/docker-desktop/)
-   - Required for PostgreSQL mode, not needed for memory mode
+1. **Node.js & npm** – [Download here](https://nodejs.org/)
+2. **(Optional)** Docker Desktop – Required _only_ if working on the `docker/postgres` branch
 
-### First-time Setup
+### Initial Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/CSC105-2024/G16-DebtMate.git
 cd G16-DebtMate
 
-# Install dependencies for frontend and backend
+# Install dependencies
 npm run setup
 
-# Set up environment file
+# Set up backend environment variables
 cd backend
 cp .env.example .env
-# Edit .env as needed
+# Edit the .env file as needed
 cd ..
 ```
 
-### Development Modes
+---
 
-| Mode                                 | Command                |
-| ------------------------------------ | ---------------------- |
-| **Memory Mode** (No Docker Required) | `npm run dev:memory`   |
-| **PostgreSQL Mode** (With Docker)    | `npm run dev:postgres` |
+## Development Modes
+
+| Mode                     | Command                                    |
+| ------------------------ | ------------------------------------------ |
+| SQLite mode (default)    | `npm run dev`                              |
+| PostgreSQL mode (Docker) | Only available on `docker/postgres` branch |
 
 ---
 
@@ -68,28 +77,27 @@ cd ..
 ```bash
 /
 ├── src/                  # Frontend code
-│   ├── Component/        # Reusable components
-│   ├── pages/            # Page components
+│   ├── Component/        # Reusable UI components
+│   ├── pages/            # Page-level components
 │   ├── context/          # React context providers
-│   └── App.jsx           # Main app component
+│   └── App.jsx           # Main application entry point
 │
-├── backend/              # Backend API
+├── backend/              # Backend code
 │   ├── src/
-│   │   ├── models/       # Data models
-│   │   ├── routes/       # API routes
-│   │   ├── controllers/  # Business logic
-│   │   ├── middleware/   # Request middleware
+│   │   ├── models/       # Prisma models
+│   │   ├── routes/       # API endpoints
+│   │   ├── controllers/  # Request handlers and business logic
+│   │   ├── middleware/   # Middleware functions
 │   │   ├── utils/        # Utility functions
-│   │   ├── config/       # Configuration files
-│   │   └── server.ts     # Entry point
-│   ├── .env              # Backend config (must be created)
-│   └── .env.example      # Example environment variables
+│   │   ├── config/       # Environment and runtime config
+│   │   └── server.ts     # Application entry point
+│   ├── .env              # Environment variables (required)
+│   └── .env.example      # Example environment file
 │
-├── database/             # Database setup
-│   └── init/             # Initialization SQL scripts
+├── database/             # (Only in docker/postgres) DB setup scripts
 │
-├── package.json          # Project dependencies and scripts
-└── docker-compose.yml    # Docker configuration
+├── package.json          # Project scripts and dependencies
+└── docker-compose.yml    # (docker/postgres branch only)
 ```
 
 ---
@@ -99,36 +107,38 @@ cd ..
 ### Frontend
 
 - Use **functional components** with React hooks
-- Follow component naming conventions:
-  - Components should be **PascalCase** (e.g., `FriendCard.jsx`)
-  - Files should match component names
-- Use **Tailwind CSS** for styling
-- Document **component props**, especially for reusable components
+- Name components using **PascalCase** (e.g., `ExpenseList.jsx`)
+- Ensure file names match component names
+- Style using **Tailwind CSS**
+- Clearly document component **props**, especially for reusable components
 
 ### Backend
 
-- Follow **TypeScript** best practices
+- Use **TypeScript** consistently
 - Document public functions with **JSDoc comments**
-- Use `async/await` for asynchronous operations
-- Keep **controllers** focused on business logic, delegate data access to **models**
-- Ensure both **database implementations** (memory and PostgreSQL) are maintained
+- Use `async/await` for asynchronous logic
+- Keep controllers clean and business-focused
+- Delegate DB operations to Prisma models
+- Maintain support for **SQLite** (main) and **PostgreSQL** (in `docker/postgres`)
 
 ### General
 
-- Run `npm run lint` before submitting PRs to ensure code quality
-- Follow **existing patterns** for error handling
-- Use **descriptive variable and function names**
+- Run `npm run lint` before pushing code
+- Follow established patterns for error handling and responses
+- Use meaningful, descriptive variable and function names
 
 ---
 
-## Contribution Workflow
+## Contribution Workflow (For Team Members)
 
-1. Choose an **issue** to work on or create a new one.
-2. Create a **new branch** from `main` with a descriptive name:
-   - **Feature:** `feature/add-expense-tracking`
-   - **Bugfix:** `fix/login-validation-error`
-3. Make your **changes** with appropriate tests and documentation.
-4. **Push** your branch and create a **pull request**.
+1. Choose or create an issue to work on
+2. Create a new branch from `main` using a descriptive name:
+
+   - Feature: `feature/add-expense-tracking`
+   - Bugfix: `fix/login-validation`
+
+3. Make your changes, write relevant tests and documentation
+4. Push your branch and open a pull request
 
 ---
 
@@ -136,254 +146,62 @@ cd ..
 
 When submitting a PR:
 
-✔ Reference any **related issues**  
-✔ Provide a **clear description** of your changes  
-✔ Ensure all **checks pass** (linting, tests)  
-✔ Request **reviews** from appropriate team members  
-✔ Update **documentation** if necessary  
-✔ Include **screenshots** for UI changes
+- Reference any related issues
+- Clearly describe the changes made
+- Make sure all checks pass (linting, etc.)
+- Request reviews from relevant teammates
+- Update documentation if required
+- Include screenshots for frontend changes
 
 ---
 
 ## Testing
 
-Currently, the project does not have automated tests. When implementing:
+We are currently in the process of implementing automated tests.
+
+In the meantime:
 
 - Write **unit tests** for backend controllers and utilities
-- Test **both database modes** (memory and PostgreSQL)
-- For frontend, focus on **component behavior testing**
+- Test with both **SQLite** (default) and PostgreSQL (if on `docker/postgres`)
+- For frontend, focus on **component behavior**
 
 ---
 
 ## Documentation
 
-- **Add JSDoc comments** to functions and components
-- **Update README.md** when adding new features or modifying existing ones
-- **Document API endpoints** in backend code
+- Use **JSDoc** to document functions and modules
+- Update `README.md` if features are added or changed
+- Document new API endpoints in backend code
 
 ---
 
 ## API Development
 
-When extending the API:
+To add a new API endpoint:
 
-1. Create a **new route file** in `routes/`
-2. Implement **controller logic** in `controllers/`
-3. Add necessary **model methods** in `models/`
-4. Register new **routes** in `server.ts`
-5. Ensure both **database implementations** (memory and PostgreSQL) support the feature
-
----
-
-## Frontend Development
-
-When adding new UI features:
-
-✔ Determine whether to **create a new component** or extend an existing one  
-✔ Place **reusable components** in `Component/`  
-✔ Place **page components** in `pages/`  
-✔ Update **routes** in `App.jsx` when adding new pages  
-✔ Ensure **responsive design** (mobile, tablet, desktop)
-
----
-
-## Questions?
-
-If you have any questions or need clarification on these guidelines, please open an **issue** with the label `"question"`.
-
-Thank you for contributing to DebtMate!
-
-# Contributing to DebtMate
-
-Thank you for your interest in contributing to DebtMate! This document provides guidelines and instructions for contributing to the project.
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Development Setup](#development-setup)
-- [Project Structure](#project-structure)
-- [Coding Standards](#coding-standards)
-- [Contribution Workflow](#contribution-workflow)
-- [Pull Request Guidelines](#pull-request-guidelines)
-- [Testing](#testing)
-- [Documentation](#documentation)
-
----
-
-## Project Overview
-
-DebtMate is a full-stack application for tracking shared expenses and debts among friends and groups. The project uses:
-
-| Component          | Technologies Used                     |
-| ------------------ | ------------------------------------- |
-| **Frontend**       | React 19, Tailwind CSS, Vite          |
-| **Backend**        | Hono.js, PostgreSQL/In-memory storage |
-| **Infrastructure** | Docker, Docker Compose                |
-
----
-
-## Development Setup
-
-### Prerequisites
-
-Before starting, ensure you have the following installed:
-
-1. **Node.js & npm** - [Download here](https://nodejs.org/)
-2. **Docker Desktop** (optional) - [Download here](https://www.docker.com/products/docker-desktop/)
-   - Required for PostgreSQL mode, not needed for memory mode
-
-### First-time Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/CSC105-2024/G16-DebtMate.git
-cd G16-DebtMate
-
-# Install dependencies for frontend and backend
-npm run setup
-
-# Set up environment file
-cd backend
-cp .env.example .env
-# Edit .env as needed
-cd ..
-```
-
-### Development Modes
-
-| Mode                                 | Command                |
-| ------------------------------------ | ---------------------- |
-| **Memory Mode** (No Docker Required) | `npm run dev:memory`   |
-| **PostgreSQL Mode** (With Docker)    | `npm run dev:postgres` |
-
----
-
-## Project Structure
-
-```bash
-/
-├── src/                  # Frontend code
-│   ├── Component/        # Reusable components
-│   ├── pages/            # Page components
-│   ├── context/          # React context providers
-│   └── App.jsx           # Main app component
-│
-├── backend/              # Backend API
-│   ├── src/
-│   │   ├── models/       # Data models
-│   │   ├── routes/       # API routes
-│   │   ├── controllers/  # Business logic
-│   │   ├── middleware/   # Request middleware
-│   │   ├── utils/        # Utility functions
-│   │   ├── config/       # Configuration files
-│   │   └── server.ts     # Entry point
-│   ├── .env              # Backend config (must be created)
-│   └── .env.example      # Example environment variables
-│
-├── database/             # Database setup
-│   └── init/             # Initialization SQL scripts
-│
-├── package.json          # Project dependencies and scripts
-└── docker-compose.yml    # Docker configuration
-```
-
----
-
-## Coding Standards
-
-### Frontend
-
-- Use **functional components** with React hooks
-- Follow component naming conventions:
-  - Components should be **PascalCase** (e.g., `FriendCard.jsx`)
-  - Files should match component names
-- Use **Tailwind CSS** for styling
-- Document **component props**, especially for reusable components
-
-### Backend
-
-- Follow **TypeScript** best practices
-- Document public functions with **JSDoc comments**
-- Use `async/await` for asynchronous operations
-- Keep **controllers** focused on business logic, delegate data access to **models**
-- Ensure both **database implementations** (memory and PostgreSQL) are maintained
-
-### General
-
-- Run `npm run lint` before submitting PRs to ensure code quality
-- Follow **existing patterns** for error handling
-- Use **descriptive variable and function names**
-
----
-
-## Contribution Workflow
-
-1. Choose an **issue** to work on or create a new one.
-2. Create a **new branch** from `main` with a descriptive name:
-   - **Feature:** `feature/add-expense-tracking`
-   - **Bugfix:** `fix/login-validation-error`
-3. Make your **changes** with appropriate tests and documentation.
-4. **Push** your branch and create a **pull request**.
-
----
-
-## Pull Request Guidelines
-
-When submitting a PR:
-
-✔ Reference any **related issues**  
-✔ Provide a **clear description** of your changes  
-✔ Ensure all **checks pass** (linting, tests)  
-✔ Request **reviews** from appropriate team members  
-✔ Update **documentation** if necessary  
-✔ Include **screenshots** for UI changes
-
----
-
-## Testing
-
-Currently, the project does not have automated tests. When implementing:
-
-- Write **unit tests** for backend controllers and utilities
-- Test **both database modes** (memory and PostgreSQL)
-- For frontend, focus on **component behavior testing**
-
----
-
-## Documentation
-
-- **Add JSDoc comments** to functions and components
-- **Update README.md** when adding new features or modifying existing ones
-- **Document API endpoints** in backend code
-
----
-
-## API Development
-
-When extending the API:
-
-1. Create a **new route file** in `routes/`
-2. Implement **controller logic** in `controllers/`
-3. Add necessary **model methods** in `models/`
-4. Register new **routes** in `server.ts`
-5. Ensure both **database implementations** (memory and PostgreSQL) support the feature
+1. Create a new file in `routes/`
+2. Implement logic in a new or existing controller
+3. Add required methods in Prisma models if needed
+4. Register the route in `routes/index.ts`
+5. Confirm compatibility with both SQLite and PostgreSQL
 
 ---
 
 ## Frontend Development
 
-When adding new UI features:
+When building new UI features:
 
-✔ Determine whether to **create a new component** or extend an existing one  
-✔ Place **reusable components** in `Component/`  
-✔ Place **page components** in `pages/`  
-✔ Update **routes** in `App.jsx` when adding new pages  
-✔ Ensure **responsive design** (mobile, tablet, desktop)
+- Reusable components go in `Component/`
+- Page-level components go in `pages/`
+- Add new routes in `App.jsx`
+- Ensure proper mobile and desktop responsiveness
 
 ---
 
 ## Questions?
 
-If you have any questions or need clarification on these guidelines, please open an **issue** with the label `"question"`.
+If you have any questions or need help understanding any part of the project, please open an issue with the label `"question"`.
 
-Thank you for contributing to DebtMate!
+---
+
+Thanks again for supporting the project. Internal team members, happy building! 🚀
