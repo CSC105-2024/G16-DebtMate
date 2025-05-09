@@ -5,12 +5,12 @@ import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function AddItems() {
+  const { isDesktop, isMenuOpen, setIsMenuOpen} = useResponsiveLayout();
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const [group, setGroup] = useState(null);
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
@@ -40,18 +40,7 @@ function AddItems() {
     }
   }, [groupId]);
 
-  // Handle responsive layout
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
+  // Handle responsive layout_ fixed
 
   const handleAddItem = () => {
     if (!itemName || !itemPrice || selectedMembers.length === 0) {

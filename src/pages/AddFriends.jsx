@@ -11,10 +11,10 @@ import { Menu, UserPlus } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function AddFriends() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -128,17 +128,7 @@ function AddFriends() {
   }, [searchTerm]);
 
   // Handle responsive layout based on screen size
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
+// fixed with custom hook
 
   return (
     <div className="flex h-screen bg-color-dreamy">

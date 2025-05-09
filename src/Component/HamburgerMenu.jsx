@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 // icons for menu
 import createGroupIcon from "/assets/icons/CreateGroups.svg";
 import friendsIcon from "/assets/icons/Friends.svg";
@@ -38,24 +38,7 @@ MenuItem.propTypes = {
 
 export default function HamburgerMenu({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  // check screen size and set initial state
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-
-      // if desktop, menu open
-      if (desktop) setIsOpen(true);
-    };
-
-    checkScreenSize();
-
-    window.addEventListener("resize", checkScreenSize);
-
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, [setIsOpen]);
+  const { isDesktop } = useResponsiveLayout();
 
   // handler functions for each menu item
   const handleCreateGroup = () => {

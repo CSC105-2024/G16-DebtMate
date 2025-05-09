@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import {
   Menu,
@@ -10,27 +10,15 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CurrencySelect from "../Component/CurrencySelect";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function SettingsPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const navigate = useNavigate();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
   const [currency, setCurrency] = useState("USD");
 
   const menuWidth = "w-72"; // Same sidebar width as FriendList
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop); // Auto-open on desktop
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   const settingsOptions = [
     { label: "Currency", icon: DollarSign },

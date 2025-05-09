@@ -6,12 +6,12 @@ import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function SplitBill() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [group, setGroup] = useState(null);
   const [memberTotals, setMemberTotals] = useState({});
   const [grandTotal, setGrandTotal] = useState(0);
@@ -88,19 +88,6 @@ function SplitBill() {
 
     calculateSplits();
   }, [groupId]);
-
-  // handle responsive layout
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   return (
     <div className="flex h-screen bg-color-dreamy">

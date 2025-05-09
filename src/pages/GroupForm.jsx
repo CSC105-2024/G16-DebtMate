@@ -8,12 +8,12 @@ import SearchBar from "../Component/SearchBar";
 import AddMember from "../Component/AddMember";
 import ChangeGroupPic from "../Component/ChangeGroupPic";
 import group1 from "/assets/icons/group1.svg";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function GroupForm() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
@@ -64,21 +64,11 @@ function GroupForm() {
       }
     }
   }, [groupId]);
-
-  // handles responsive layout changes and updates menu visibility
+  // Auto-open AddMember on desktop
   useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-      if (desktop && !isDesktop) {
-        setIsAddMemberOpen(true);
-      }
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    if (isDesktop) {
+      setIsAddMemberOpen(true);
+    }
   }, [isDesktop]);
 
   const handleSearch = () => {

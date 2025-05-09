@@ -5,12 +5,12 @@ import { Menu, Plus, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import ItemCard from "../Component/ItemCard";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function ItemList() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [group, setGroup] = useState(null);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,18 +62,7 @@ function ItemList() {
     }
   }, [groupId]);
 
-  // Handle responsive layout based on screen size
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
+  // Handle responsive layout based on screen size - fixed
 
   const handleAddItem = () => {
     navigate(`/groups/${groupId}/items/add`);
