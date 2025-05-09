@@ -5,17 +5,14 @@ import { addFriend, checkFriendshipStatus } from "../utils/friendUtils";
 const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
   const [isFriend, setIsFriend] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Check friendship status when component mounts
   useEffect(() => {
     const checkStatus = async () => {
-      setIsLoading(true);
       const { isFriend: isAlreadyFriend } = await checkFriendshipStatus(
         friend.id
       );
       setIsFriend(isAlreadyFriend);
-      setIsLoading(false);
     };
 
     if (friend?.id) {
@@ -59,19 +56,17 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
           >
             &lt; Back
           </button>
-          {!isLoading && (
-            <button
-              onClick={handleAddFriend}
-              className="p-2 rounded-full hover:bg-slate-300 transition"
-              disabled={isAdding || isFriend}
-            >
-              {isFriend ? (
-                <UserMinus className="text-twilight w-6 h-6" />
-              ) : (
-                <UserPlus className="text-twilight w-6 h-6" />
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleAddFriend}
+            className="p-2 rounded-full hover:bg-slate-300 transition"
+            disabled={isAdding || isFriend}
+          >
+            {isFriend ? (
+              <UserMinus className="text-twilight w-6 h-6" />
+            ) : (
+              <UserPlus className="text-twilight w-6 h-6" />
+            )}
+          </button>
         </div>
 
         {/* Profile Info */}
