@@ -42,6 +42,7 @@ protectedRoutes.get('/users/friends/search', UserController.searchUsers);
 protectedRoutes.post('/groups', GroupController.createGroup);
 protectedRoutes.get('/groups/:id', GroupController.getGroup);
 protectedRoutes.put('/groups/:id', GroupController.updateGroup);
+protectedRoutes.patch('/groups/:id', GroupController.updateGroup);
 protectedRoutes.get('/users/:userId/groups', GroupController.getUserGroups);
 protectedRoutes.get('/users/me/groups', GroupController.getUserGroups); // just for current user
 protectedRoutes.post('/groups/:id/members', GroupController.addGroupMember);
