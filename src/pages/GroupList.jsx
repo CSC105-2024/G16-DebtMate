@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus } from "lucide-react";
-import FriendCard from "../Component/FriendCard"; // Or replace with GroupCard if available
+import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import Avatar from "../Component/Avatar";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function GroupList() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
@@ -49,19 +49,11 @@ function GroupList() {
   };
 
   const menuWidth = "w-72";
+///////////////////
 
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop); // Auto-open on desktop
-    };
 
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
+//////////////////////
   const totalPages = Math.ceil(sortedGroups.length / groupsPerPage);
   const paginatedGroups = sortedGroups.slice(
     (currentPage - 1) * groupsPerPage,

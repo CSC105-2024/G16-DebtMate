@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
+
 
 function FriendList() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop, isMenuOpen, setIsMenuOpen } = useResponsiveLayout();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
@@ -57,17 +58,7 @@ function FriendList() {
   // Menu width consistent between mobile and desktop
   const menuWidth = "w-72"; // Tailwind class for width
 
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop); // Auto-open on desktop
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
+  // fixed screen size with custom hook
 
   // Pagination for desktop
   const totalPages = Math.ceil(friends.length / friendsPerPage);

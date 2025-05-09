@@ -6,11 +6,11 @@ import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import { useNavigate } from "react-router-dom";
 import AddMember from "../Component/AddMember";
+import useResponsiveLayout from "../hooks/useResponsiveLayout";
 
 function CreateGroup() {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const {isDesktop, isMenuOpen, setIsMenuOpen} = useResponsiveLayout();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
@@ -92,20 +92,14 @@ function CreateGroup() {
   const menuWidth = "w-72"; // Tailwind class for width
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop); // Auto-open on desktop
+   // If switching to desktop, automatically show AddMember section
+   if (!isDesktop) {
+    setIsAddMemberOpen(true);
+  }
 
-      // If switching to desktop, automatically show AddMember section
-      if (desktop && !isDesktop) {
-        setIsAddMemberOpen(true);
-      }
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    // checkScreenSize();
+    // window.addEventListener("resize", checkScreenSize);
+    // return () => window.removeEventListener("resize", checkScreenSize);
   }, [isDesktop]);
 
   // Pagination for desktop
