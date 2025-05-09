@@ -4,6 +4,7 @@ import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
+import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 
@@ -16,22 +17,24 @@ function AddItems() {
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const menuWidth = "w-72";
 
-  // Fetch group data when component mounts
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        setIsLoading(true);
-        const response = await axios.get(`/api/groups/${groupId}`, {
-          withCredentials: true,
-        });
+        const timestamp = new Date().getTime();
+        const response = await axios.get(
+          `/api/groups/${groupId}?t=${timestamp}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (response.data) {
           setGroup(response.data);
+          setSelectedMembers([]);
           setError(null);
         } else {
           setError("Group not found");
@@ -39,8 +42,6 @@ function AddItems() {
       } catch (err) {
         console.error("Error loading group:", err);
         setError("Failed to load group details");
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -65,7 +66,6 @@ function AddItems() {
       return;
     }
 
-    // Check if price is a valid number
     const price = parseFloat(itemPrice);
     if (isNaN(price) || price <= 0) {
       setError("Please enter a valid price");
@@ -73,18 +73,12 @@ function AddItems() {
     }
 
     try {
-      setIsLoading(true);
-
-      // Calculate equal split amount for all selected members
       const splitAmount = price / selectedMembers.length;
-
-      // Create user assignments array for the API
       const userAssignments = selectedMembers.map((memberId) => ({
         userId: memberId,
         amount: splitAmount,
       }));
 
-      // Send request to backend to create item
       const response = await axios.post(
         `/api/groups/${groupId}/items`,
         {
@@ -105,12 +99,9 @@ function AddItems() {
     } catch (err) {
       console.error("Error adding item:", err);
       setError(err.response?.data?.message || "Failed to add item");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // Toggle member selection
   const toggleMemberSelection = (memberId) => {
     if (selectedMembers.includes(memberId)) {
       setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
@@ -118,6 +109,8 @@ function AddItems() {
       setSelectedMembers([...selectedMembers, memberId]);
     }
   };
+
+  const hasMembers = group?.members && group.members.length > 0;
 
   return (
     <div className="flex h-screen bg-color-dreamy">
@@ -137,13 +130,11 @@ function AddItems() {
         </div>
       )}
 
-      {/* Main Content */}
       <div
         className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
           isDesktop ? "ml-72" : ""
         }`}
       >
-        {/* Header */}
         <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
@@ -162,7 +153,6 @@ function AddItems() {
           </button>
         </div>
 
-        {/* Group Info Section */}
         <div className="px-6 pb-2">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="flex items-center gap-3 mb-2">
@@ -181,16 +171,21 @@ function AddItems() {
           </div>
         </div>
 
-        {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-twilight">Loading...</p>
-              </div>
-            ) : error ? (
+            {error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
+              </div>
+            ) : !hasMembers ? (
+              <div className="flex flex-col items-center justify-center h-64">
+                <p className="text-twilight mb-2">This group has no members.</p>
+                <button
+                  onClick={() => navigate(`/edit-group/${groupId}`)}
+                  className="px-4 py-2 bg-twilight text-white rounded-[13px]"
+                >
+                  Add Members
+                </button>
               </div>
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
@@ -211,12 +206,12 @@ function AddItems() {
                   <h3 className="font-telegraf text-twilight font-bold">
                     Price
                   </h3>
-                  <input
-                    type="number"
+                  <NumberInput
+                    label="Price"
                     value={itemPrice}
-                    onChange={(e) => setItemPrice(e.target.value)}
+                    onChange={setItemPrice}
                     placeholder="Enter price"
-                    className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 lg:py-2 text-twilight outline-none"
+                    allowDecimals={true}
                   />
                 </div>
 
@@ -236,7 +231,7 @@ function AddItems() {
                         onClick={() => toggleMemberSelection(memberObj.user.id)}
                       >
                         <FriendCard
-                          name={memberObj.user.name}
+                          name={memberObj.user.name || memberObj.user.username}
                           balance={0}
                           avatarUrl={memberObj.user.avatarUrl || defaultprofile}
                           className="w-full lg:!w-full"
@@ -250,23 +245,21 @@ function AddItems() {
           </div>
         </div>
 
-        {/* Bottom Button */}
         <div className="px-6 py-4">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="lg:max-w-xl lg:mx-auto">
               <button
                 onClick={handleAddItem}
-                disabled={isLoading}
+                disabled={!hasMembers}
                 className="w-full py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold disabled:opacity-50"
               >
-                {isLoading ? "Adding..." : "Add Item"}
+                Add Item
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Overlay for mobile menu */}
       {!isDesktop && isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-[150] lg:hidden"

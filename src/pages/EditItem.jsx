@@ -5,6 +5,8 @@ import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import axios from "axios";
+import NumberInput from "../Component/NumberInput";
 
 function EditItem() {
   const { groupId, itemId } = useParams();
@@ -12,34 +14,101 @@ function EditItem() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [group, setGroup] = useState(null);
+  const [item, setItem] = useState(null);
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [error, setError] = useState(null);
+  const [memberRemovedFromGroup, setMemberRemovedFromGroup] = useState(false);
   const menuWidth = "w-72";
 
   useEffect(() => {
-    try {
-      const groups = JSON.parse(localStorage.getItem("groups") || "[]");
-      const groupData = groups.find((g) => g.id === parseInt(groupId));
+    const fetchData = async () => {
+      try {
+        const timestamp = new Date().getTime();
 
-      if (groupData) {
-        setGroup(groupData);
-        const item = groupData.items?.find((i) => i.id === parseInt(itemId));
+        const groupResponse = await axios.get(
+          `/api/groups/${groupId}?t=${timestamp}`,
+          {
+            withCredentials: true,
+          }
+        );
 
-        if (item) {
-          setItemName(item.name);
-          setItemPrice(item.amount.toString());
-          setSelectedMembers(item.splitBetween);
-          setError(null);
-        } else {
-          setError("Item not found");
+        if (!groupResponse.data) {
+          throw new Error("Group not found");
         }
-      } else {
-        setError("Group not found");
+
+        setGroup(groupResponse.data);
+
+        const itemResponse = await axios.get(
+          `/api/items/${itemId}?t=${timestamp}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (!itemResponse.data) {
+          throw new Error("Item not found");
+        }
+
+        const itemData = itemResponse.data;
+        setItem(itemData);
+        setItemName(itemData.name);
+        setItemPrice(itemData.amount?.toString() || "");
+
+        if (itemData.users && itemData.users.length > 0) {
+          const userIds = itemData.users.map((assignment) => assignment.userId);
+          setSelectedMembers(userIds);
+
+          const groupMemberIds = groupResponse.data.members.map(
+            (m) => m.user.id
+          );
+          const removedUsers = userIds.filter(
+            (id) => !groupMemberIds.includes(id)
+          );
+
+          if (removedUsers.length > 0) {
+            setMemberRemovedFromGroup(true);
+            setSelectedMembers(
+              userIds.filter((id) => groupMemberIds.includes(id))
+            );
+          }
+        }
+
+        setError(null);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        setError(err.message || "Failed to load item details");
+
+        try {
+          const groups = JSON.parse(localStorage.getItem("groups") || "[]");
+          const groupData = groups.find((g) => g.id === parseInt(groupId));
+
+          if (groupData) {
+            setGroup(groupData);
+            const item = groupData.items?.find(
+              (i) => i.id === parseInt(itemId)
+            );
+
+            if (item) {
+              setItemName(item.name);
+              setItemPrice(item.amount.toString());
+              setSelectedMembers(item.splitBetween);
+              setError(null);
+            } else {
+              setError("Item not found");
+            }
+          } else {
+            setError("Group not found");
+          }
+        } catch (localErr) {
+          console.error("Error with localStorage fallback:", localErr);
+        }
       }
-    } catch (err) {
-      setError("Failed to load item details");
+    };
+
+    if (groupId && itemId) {
+      fetchData();
     }
   }, [groupId, itemId]);
 
@@ -55,46 +124,43 @@ function EditItem() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const handleUpdateItem = () => {
+  const handleUpdateItem = async () => {
     if (!itemName || !itemPrice || selectedMembers.length === 0) {
       setError("Please fill in all fields and select at least one member");
       return;
     }
 
     try {
-      const groups = JSON.parse(localStorage.getItem("groups") || "[]");
-      const groupIndex = groups.findIndex((g) => g.id === parseInt(groupId));
-
-      if (groupIndex === -1) {
-        setError("Group not found");
-        return;
-      }
-
-      groups[groupIndex].items = groups[groupIndex].items || [];
-      const itemIndex = groups[groupIndex].items.findIndex(
-        (i) => i.id === parseInt(itemId)
+      const price = parseFloat(itemPrice);
+      const splitAmount = parseFloat(
+        (price / selectedMembers.length).toFixed(2)
       );
 
-      if (itemIndex === -1) {
-        setError("Item not found");
-        return;
-      }
+      const userAssignments = selectedMembers.map((memberId) => ({
+        userId: memberId,
+        amount: splitAmount,
+      }));
 
-      // Update item
-      groups[groupIndex].items[itemIndex] = {
-        ...groups[groupIndex].items[itemIndex],
-        name: itemName,
-        amount: parseFloat(itemPrice),
-        splitBetween: selectedMembers,
-        updatedAt: new Date().toISOString(),
-      };
+      await axios.put(
+        `/api/items/${itemId}`,
+        {
+          name: itemName,
+          amount: price,
+          userAssignments,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
-      localStorage.setItem("groups", JSON.stringify(groups));
       navigate(`/groups/${groupId}/items`);
     } catch (err) {
-      setError("Failed to update item");
+      console.error("Error updating item:", err);
+      setError(err.response?.data?.message || "Failed to update item");
     }
   };
+
+  const hasMembers = group?.members && group.members.length > 0;
 
   return (
     <div className="flex h-screen bg-color-dreamy">
@@ -119,7 +185,6 @@ function EditItem() {
           isDesktop ? "ml-72" : ""
         }`}
       >
-        {/* Header */}
         <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
@@ -138,17 +203,16 @@ function EditItem() {
           </button>
         </div>
 
-        {/* Group Info Section */}
         <div className="px-6 pb-2">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="flex items-center gap-3 mb-2">
               <Avatar
-                src={group?.avatarUrl || defaultprofile}
+                src={group?.icon || defaultprofile}
                 alt={group?.name || "Group"}
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-2xl font-hornbill text-twilight font-black">
+                <h2 className="text-2xl text-twilight font-hornbill font-black">
                   {group?.name || "Edit Item"}
                 </h2>
               </div>
@@ -157,15 +221,34 @@ function EditItem() {
           </div>
         </div>
 
-        {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             {error ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-red-500">{error}</p>
               </div>
+            ) : !hasMembers ? (
+              <div className="flex flex-col items-center justify-center h-64">
+                <p className="text-twilight mb-2">This group has no members.</p>
+                <button
+                  onClick={() => navigate(`/edit-group/${groupId}`)}
+                  className="px-4 py-2 bg-twilight text-white rounded-[13px]"
+                >
+                  Add Members
+                </button>
+              </div>
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
+                {memberRemovedFromGroup && (
+                  <div className="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
+                    <p>
+                      Some users assigned to this item are no longer group
+                      members. The item will be split between remaining members
+                      only.
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <h3 className="font-telegraf text-twilight font-bold">
                     Item
@@ -180,16 +263,12 @@ function EditItem() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-telegraf text-twilight font-bold">
-                    Price
-                  </h3>
-                  <input
-                    type="number"
+                  <NumberInput
+                    label="Price"
                     value={itemPrice}
-                    onChange={(e) => setItemPrice(e.target.value)}
-                    step="0.01"
-                    className="w-full rounded-[13px] border border-twilight bg-backg px-4 py-3 lg:py-2 text-twilight outline-none"
+                    onChange={setItemPrice}
                     placeholder="Enter price"
+                    allowDecimals={true}
                   />
                 </div>
 
@@ -198,28 +277,33 @@ function EditItem() {
                     Split Between
                   </h3>
                   <div className="space-y-2">
-                    {group?.members?.map((member) => (
+                    {group?.members?.map((memberObj) => (
                       <div
-                        key={member.id}
+                        key={memberObj.user.id}
                         className={`block w-full cursor-pointer ${
-                          selectedMembers.includes(member.id)
+                          selectedMembers.includes(memberObj.user.id)
                             ? "ring-2 ring-twilight rounded-[13px]"
                             : ""
                         }`}
                         onClick={() => {
-                          if (selectedMembers.includes(member.id)) {
+                          if (selectedMembers.includes(memberObj.user.id)) {
                             setSelectedMembers(
-                              selectedMembers.filter((id) => id !== member.id)
+                              selectedMembers.filter(
+                                (id) => id !== memberObj.user.id
+                              )
                             );
                           } else {
-                            setSelectedMembers([...selectedMembers, member.id]);
+                            setSelectedMembers([
+                              ...selectedMembers,
+                              memberObj.user.id,
+                            ]);
                           }
                         }}
                       >
                         <FriendCard
-                          name={member.name}
+                          name={memberObj.user.name || memberObj.user.username}
                           balance={0}
-                          avatarUrl={member.avatarUrl || defaultprofile}
+                          avatarUrl={memberObj.user.avatarUrl || defaultprofile}
                           className="w-full lg:!w-full"
                         />
                       </div>
@@ -231,14 +315,14 @@ function EditItem() {
           </div>
         </div>
 
-        {/* Bottom Button */}
         <div className="px-6 py-4">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="lg:max-w-xl lg:mx-auto">
               <div className="flex gap-4">
                 <button
                   onClick={handleUpdateItem}
-                  className="flex-1 py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold"
+                  disabled={!hasMembers || selectedMembers.length === 0}
+                  className="flex-1 py-3 lg:py-2 rounded-[13px] bg-twilight text-white font-semibold disabled:opacity-50"
                 >
                   Save Changes
                 </button>
