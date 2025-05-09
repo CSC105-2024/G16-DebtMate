@@ -1,11 +1,11 @@
-// component for splitting bills between group members
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
-import FriendCard from "../Component/FriendCard";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import axios from "axios";
+import { getAvatarUrl, getDisplayName } from "../utils/avatarUtils";
 
 function SplitBill() {
   const { groupId } = useParams();
@@ -16,18 +16,40 @@ function SplitBill() {
   const [memberTotals, setMemberTotals] = useState({});
   const [grandTotal, setGrandTotal] = useState(0);
   const [error, setError] = useState(null);
-  const currency = localStorage.getItem("currency");
+  const currency = localStorage.getItem("currency") || "$";
   const menuWidth = "w-72";
 
-  // hook to handle bill splitting calculations
   useEffect(() => {
-    const calculateSplits = () => {
+    const fetchGroupAndCalculate = async () => {
       try {
-        const groups = JSON.parse(localStorage.getItem("groups") || "[]");
-        const billData = JSON.parse(
-          localStorage.getItem(`bill_${groupId}`) || "{}"
-        );
-        const currentGroup = groups.find((g) => g.id === parseInt(groupId));
+        let currentGroup;
+        let billData;
+
+        try {
+          const timestamp = new Date().getTime();
+          const response = await axios.get(
+            `/api/groups/${groupId}?t=${timestamp}`,
+            {
+              withCredentials: true,
+            }
+          );
+
+          if (response.data) {
+            currentGroup = response.data;
+
+            billData = JSON.parse(
+              localStorage.getItem(`bill_${groupId}`) || "{}"
+            );
+          }
+        } catch (apiErr) {
+          console.log("API fetch failed, falling back to localStorage", apiErr);
+
+          const groups = JSON.parse(localStorage.getItem("groups") || "[]");
+          currentGroup = groups.find((g) => g.id === parseInt(groupId));
+          billData = JSON.parse(
+            localStorage.getItem(`bill_${groupId}`) || "{}"
+          );
+        }
 
         if (!currentGroup) {
           setError("Group not found");
@@ -36,38 +58,61 @@ function SplitBill() {
 
         setGroup(currentGroup);
 
-        // Calculate totals for each member
         const totals = {};
         let subtotal = 0;
 
-        // initialize totals for all members
-        currentGroup.members.forEach((member) => {
-          totals[member.id] = 0;
-        });
-
-        // calculate splits for each item
-        currentGroup.items?.forEach((item) => {
-          const itemAmount = parseFloat(item.amount);
-          const splitMembers = item.splitBetween;
-          const splitAmount = itemAmount / splitMembers.length;
-
-          splitMembers.forEach((memberId) => {
-            totals[memberId] = (totals[memberId] || 0) + splitAmount;
+        if (currentGroup.members) {
+          currentGroup.members.forEach((member) => {
+            const memberId =
+              member.userId || (member.user ? member.user.id : member.id);
+            totals[memberId] = 0;
           });
+        }
 
-          subtotal += itemAmount;
-        });
+        if (currentGroup.items) {
+          currentGroup.items.forEach((item) => {
+            const itemAmount = parseFloat(item.amount);
 
-        const serviceChargeAmount = subtotal * (billData.serviceCharge / 100);
-        const taxAmount = subtotal * (billData.tax / 100);
-        const finalTotal = subtotal + serviceChargeAmount + taxAmount;
+            let splitMembers;
 
-        const totalMembers = currentGroup.members.length;
-        const extraPerPerson = (serviceChargeAmount + taxAmount) / totalMembers;
+            if (item.users && item.users.length > 0) {
+              splitMembers = item.users.map((u) => u.userId || u.user?.id);
+            } else if (item.splitBetween && item.splitBetween.length > 0) {
+              splitMembers = item.splitBetween;
+            } else {
+              splitMembers = currentGroup.members.map(
+                (m) => m.userId || m.user?.id || m.id
+              );
+            }
 
-        // add extra charges to each member's total
+            if (!splitMembers || splitMembers.length === 0) {
+              return;
+            }
+
+            const splitAmount = itemAmount / splitMembers.length;
+
+            splitMembers.forEach((memberId) => {
+              totals[memberId] = (totals[memberId] || 0) + splitAmount;
+            });
+
+            subtotal += itemAmount;
+          });
+        }
+
+        const serviceChargeRate = parseFloat(billData.serviceCharge || 0) / 100;
+        const taxRate = parseFloat(billData.tax || 0) / 100;
+
+        const serviceChargeAmount = subtotal * serviceChargeRate;
+        const taxAmount = subtotal * taxRate;
+        const extraAmount = serviceChargeAmount + taxAmount;
+        const finalTotal = subtotal + extraAmount;
+
         Object.keys(totals).forEach((memberId) => {
-          totals[memberId] += extraPerPerson;
+          if (subtotal > 0) {
+            const proportion = totals[memberId] / subtotal;
+            const memberExtra = extraAmount * proportion;
+            totals[memberId] += memberExtra;
+          }
         });
 
         setMemberTotals(totals);
@@ -79,10 +124,9 @@ function SplitBill() {
       }
     };
 
-    calculateSplits();
+    fetchGroupAndCalculate();
   }, [groupId]);
 
-  // handle responsive layout
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -95,9 +139,41 @@ function SplitBill() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
+  const getMemberName = (memberId) => {
+    if (!group || !group.members) {
+      return { name: "Unknown", avatar: defaultprofile };
+    }
+
+    const numericId = Number(memberId);
+
+    const member = group.members.find((m) => {
+      if (m.user) {
+        const userId = Number(m.user.id);
+        return userId === numericId;
+      } else {
+        const userId = Number(m.userId || m.id);
+        return userId === numericId;
+      }
+    });
+
+    if (!member) {
+      return { name: "Unknown", avatar: defaultprofile };
+    }
+
+    if (member.user) {
+      return {
+        name: member.user.name || member.user.username || "Unknown",
+        avatar: member.user.avatarUrl || defaultprofile,
+      };
+    }
+    return {
+      name: member.name || member.username || "Unknown",
+      avatar: member.avatarUrl || defaultprofile,
+    };
+  };
+
   return (
     <div className="flex h-screen bg-color-dreamy">
-      {/* hamburger menu */}
       {isDesktop ? (
         <div
           className={`fixed inset-y-0 left-0 z-[150] ${menuWidth} bg-[#d5d4ff]`}
@@ -114,13 +190,11 @@ function SplitBill() {
         </div>
       )}
 
-      {/* main content */}
       <div
         className={`fixed inset-0 z-[90] bg-[#d5d4ff] flex flex-col ${
           isDesktop ? "ml-72" : ""
         }`}
       >
-        {/* header */}
         <div className="p-4 lg:p-2 flex items-center justify-between lg:max-w-4xl lg:mx-auto lg:w-full">
           {!isDesktop && (
             <button
@@ -139,17 +213,16 @@ function SplitBill() {
           </button>
         </div>
 
-        {/* group info */}
         <div className="px-6 pb-2">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="flex items-center gap-3 mb-2">
               <Avatar
-                src={group?.avatarUrl || defaultprofile}
-                alt={group?.name || "Group"}
+                src={getAvatarUrl(group, "group")}
+                alt={getDisplayName(group, "Group")}
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-2xl font-hornbill text-twilight font-black">
+                <h2 className="text-2xl text-twilight font-hornbill font-black">
                   {group?.name || "Group"}
                 </h2>
               </div>
@@ -158,7 +231,6 @@ function SplitBill() {
           </div>
         </div>
 
-        {/* split bill content */}
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             {error ? (
@@ -167,39 +239,37 @@ function SplitBill() {
               </div>
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
-                <h2 className="text-3xl font-hornbill text-twilight font-black">
+                <h2 className="text-3xl text-twilight font-hornbill font-black">
                   Split Bill
                 </h2>
 
-                {/* member list */}
                 <div className="space-y-4">
-                  {group?.members?.map((member) => (
-                    <div
-                      key={member.id}
-                      className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={member.avatarUrl || defaultprofile}
-                          alt={member.name}
-                          size="sm"
-                        />
-                        <span className="font-telegraf text-twilight">
-                          {member.name}
+                  {Object.entries(memberTotals)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([memberId, amount]) => (
+                      <div
+                        key={memberId}
+                        className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={getMemberName(memberId).avatar}
+                            alt={getMemberName(memberId).name}
+                            size="sm"
+                          />
+                          <span className="font-telegraf text-twilight">
+                            {getMemberName(memberId).name}
+                          </span>
+                        </div>
+                        <span className="font-telegraf font-bold text-twilight">
+                          {currency} {amount?.toFixed(2) || "0.00"}
                         </span>
                       </div>
-                      <span className="font-telegraf font-bold text-twilight">
-                        {currency}{" "}
-                        {memberTotals[member.id]?.toFixed(2) || "0.00"}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
                 </div>
 
-                {/* separator */}
                 <div className="border-t border-twilight my-4 lg:block lg:border-t lg:border-twilight lg:my-6"></div>
 
-                {/* left to settle */}
                 <div className="flex justify-between items-center">
                   <span className="font-telegraf text-twilight font-bold">
                     Left to Settle:
@@ -213,7 +283,6 @@ function SplitBill() {
           </div>
         </div>
 
-        {/* exit button */}
         <div className="px-6 py-4">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="lg:max-w-xl lg:mx-auto">
@@ -228,7 +297,6 @@ function SplitBill() {
         </div>
       </div>
 
-      {/* mobile overlay */}
       {!isDesktop && isMenuOpen && (
         <div
           className="fixed inset-0 bg-black/20 z-[150] lg:hidden"

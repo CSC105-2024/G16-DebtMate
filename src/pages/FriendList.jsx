@@ -16,7 +16,6 @@ function FriendList() {
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [friends, setFriends] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
   const friendsPerPage = 14;
@@ -25,8 +24,6 @@ function FriendList() {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        setLoading(true);
-
         const meResponse = await axios.get(
           "http://localhost:3000/api/users/me",
           {
@@ -66,8 +63,6 @@ function FriendList() {
       } catch (err) {
         console.error("Error fetching friends:", err);
         setError("Failed to load friends. Please try again later.");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -113,7 +108,6 @@ function FriendList() {
     }
   };
 
-  // Reset search when searchTerm is cleared
   useEffect(() => {
     if (!searchTerm.trim()) {
       setSearchResults(null);
@@ -134,14 +128,12 @@ function FriendList() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Use search results if available, otherwise filter friends locally
   const filteredFriends =
     searchResults ||
     (searchTerm
       ? filterBySearchTerm(friends, searchTerm, ["name", "username"])
       : friends);
 
-  // Sort friends by name (ascending or descending)
   const sortedFriends = [...filteredFriends].sort((a, b) => {
     return sortAsc
       ? a.name.localeCompare(b.name)
@@ -155,16 +147,13 @@ function FriendList() {
     currentPage * friendsPerPage
   );
 
-  // Reset to first page when search results change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchResults]);
 
-  // Ref for detecting click outside the modal
   const modalRef = useRef();
 
   useEffect(() => {
-    // Function to close modal when clicking outside
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         handleClosePopup();
@@ -194,7 +183,7 @@ function FriendList() {
 
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${isDesktop ? "ml-72" : ""}`}>
-        {/* Top Sticky Header - reduced padding */}
+        {/* Top Sticky Header  */}
         <div className="sticky top-0 z-30 bg-color-dreamy px-4 pb-1">
           <div className="flex items-center justify-center gap-3">
             {!isDesktop && (
@@ -234,12 +223,7 @@ function FriendList() {
           </div>
         </div>
 
-        {/* Loading, Error, or No Friends States */}
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-twilight">Loading friends...</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-red-500">{error}</p>
           </div>

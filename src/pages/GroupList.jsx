@@ -5,6 +5,7 @@ import { Menu, Plus } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import SearchBar from "../Component/SearchBar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
+import axios from "axios";
 
 function GroupList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,14 +18,38 @@ function GroupList() {
   const groupsPerPage = 14;
 
   useEffect(() => {
-    try {
-      const savedGroups = JSON.parse(localStorage.getItem("groups") || "[]");
-      setGroups(savedGroups);
-      setError(null);
-    } catch (err) {
-      console.error("Error loading groups:", err);
-      setError("Failed to load groups");
-    }
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get("/api/users/me/groups", {
+          withCredentials: true,
+        });
+
+        if (response.data) {
+          // Format groups data for display
+          const formattedGroups = response.data.map((group) => ({
+            id: group.id,
+            name: group.name,
+            description: group.description,
+            icon: group.icon,
+            // Calculate balance for each group
+            balance: group.members.reduce((total, member) => {
+              return total + member.amountOwed;
+            }, 0),
+            members: group.members,
+          }));
+
+          setGroups(formattedGroups);
+          setError(null);
+        } else {
+          setError("Failed to load groups");
+        }
+      } catch (err) {
+        console.error("Error loading groups:", err);
+        setError("Failed to load groups");
+      }
+    };
+
+    fetchGroups();
   }, []);
 
   const filteredGroups = groups.filter((group) =>
@@ -177,10 +202,10 @@ function GroupList() {
                           }`}
                         >
                           {group.balance > 0
-                            ? `+$${group.balance}`
+                            ? `+$${Number(group.balance).toFixed(2)}`
                             : group.balance < 0
-                            ? `-$${Math.abs(group.balance)}`
-                            : "0"}
+                            ? `-$${Math.abs(Number(group.balance)).toFixed(2)}`
+                            : "$0.00"}
                         </div>
                       </div>
                     </div>
@@ -242,10 +267,10 @@ function GroupList() {
                       }`}
                     >
                       {group.balance > 0
-                        ? `+$${group.balance}`
+                        ? `+$${Number(group.balance).toFixed(2)}`
                         : group.balance < 0
-                        ? `-$${Math.abs(group.balance)}`
-                        : "0"}
+                        ? `-$${Math.abs(Number(group.balance)).toFixed(2)}`
+                        : "$0.00"}
                     </div>
                   </div>
                 ))}

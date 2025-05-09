@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, UserPlus } from "lucide-react";
 import FriendCard from "../Component/FriendCard";
-import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
 import { searchUsers } from "../utils/searchUtils";
@@ -25,7 +24,6 @@ function AddFriends() {
   const [addingFriend, setAddingFriend] = useState(null);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-  const navigate = useNavigate();
   const modalRef = useRef();
 
   useEffect(() => {
