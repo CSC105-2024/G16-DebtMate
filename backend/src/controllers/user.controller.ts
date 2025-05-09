@@ -316,6 +316,29 @@ export class UserController {
     }
   }
 
+  static async logout(c: Context) {
+    try {
+      setCookie(c, 'auth_token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        path: '/',
+        maxAge: 0,
+      });
+      
+      return c.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      return c.json({ 
+        success: false, 
+        message: 'Error during logout' 
+      }, 500);
+    }
+  }
+
   static setAuthCookie(c: Context, token: string) {
     const isProduction = process.env.NODE_ENV === 'production';
     setCookie(c, 'auth_token', token, {
