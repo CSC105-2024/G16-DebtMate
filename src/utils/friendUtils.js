@@ -1,5 +1,4 @@
 import axios from "axios";
-import defaultprofile from "/assets/icons/defaultprofile.png";
 
 /**
  * Add a friend by their username
