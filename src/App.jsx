@@ -10,10 +10,7 @@ import NotFound from "./pages/NotFound";
 import FriendList from "./pages/FriendList";
 import AddFriends from "./pages/AddFriends";
 import GroupList from "./pages/GroupList";
-import CreateGroup from "./pages/CreateGroup";
 import ItemList from "./pages/ItemList";
-import AddMember from "./Component/AddMember";
-import { Group, Settings } from "lucide-react";
 import SettingsPage from "./pages/SettingsPage";
 import AddItems from "./pages/AddItems";
 import SplitBill from "./pages/SplitBill";
@@ -25,12 +22,12 @@ import UserInformationEdit from "./pages/UserInformationEdit";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function AppRoutes() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-twilight"></div>
+        <div className="text-twilight font-bold text-xl">Loading...</div>
       </div>
     );
   }
