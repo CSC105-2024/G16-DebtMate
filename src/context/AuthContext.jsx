@@ -134,7 +134,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Custom hook for using auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

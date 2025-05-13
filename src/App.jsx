@@ -32,7 +32,6 @@ function AppRoutes() {
     );
   }
 
-  // quick little wrapper to handle auth protection
   const ProtectedRoute = ({ children }) => {
     return isAuthenticated ? children : <Navigate to="/login" replace />;
   };
