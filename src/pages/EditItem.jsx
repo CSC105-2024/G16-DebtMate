@@ -239,15 +239,7 @@ function EditItem() {
               </div>
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
-                {memberRemovedFromGroup && (
-                  <div className="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
-                    <p>
-                      Some users assigned to this item are no longer group
-                      members. The item will be split between remaining members
-                      only.
-                    </p>
-                  </div>
-                )}
+                {memberRemovedFromGroup }
 
                 <div className="space-y-2">
                   <h3 className="font-telegraf text-twilight font-bold">
