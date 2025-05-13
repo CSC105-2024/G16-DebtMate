@@ -176,7 +176,7 @@
 | Endpoint                          | Description                  | Auth Required |
 | --------------------------------- | ---------------------------- | ------------- |
 | `/api/items/:id`                  | Delete an expense item       | Yes           |
-| `/api/groups/:id/members/:userId` | Remove a member from a group | Yes           |
+
 
 ---
 
