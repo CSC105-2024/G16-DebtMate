@@ -38,9 +38,7 @@
 2. **Install dependencies**
 
    ```bash
-   cd backend
-   cp .env.example .env
-   cd ..
+   npm run setup
    ```
 
 3. **Configure the backend environment**
@@ -54,12 +52,14 @@
 4. **Default `.env` configuration**
 
    ```env
-   # JWT Configuration
-   JWT_SECRET=21541661356
-   JWT_EXPIRES_IN=7d
-
-   # Prisma Database Configuration
-   DATABASE_URL="file:./dev.db"
+    # JWT Configuration
+    JWT_SECRET="aec0d8"
+    JWT_EXPIRES_IN=7d
+    
+    # Prisma Database Configuration
+    DATABASE_URL="file:../dev.db"
+    
+    PORT=3000
    ```
 
 5. **Initialize and seed the database (from backend folder)**
@@ -68,14 +68,14 @@
    npm run db:setup
    ```
 
-   > This runs the Prisma migration and seeds the initial data using:
+   > This seeds the initial data using:
    >
    > ```json
-   > "db:setup": "prisma migrate dev --name init && node src/scripts/seed.js"
+   > "db:setup": "tsx prisma/setup.ts"
    > ```
 
 6. **Start both frontend and backend concurrently**
-
+    > In Root:
    ```bash
    npm run dev:all
    ```
@@ -244,7 +244,6 @@
 
   - `npm run db:setup`: Migrate and seed database
   - `npm run db:reset`: Reset database and re-apply migrations
-  - `npm run db:seed`: Seed the database with sample data only
 
 ---
 
@@ -270,7 +269,6 @@
 | `npm run setup`    | Install all dependencies                                |
 | `npm run db:setup` | Run migrations and seed database                        |
 | `npm run db:reset` | Reset database and re-apply migrations (⚠️ destructive) |
-| `npm run db:seed`  | Seed the database with sample data only                 |
 
 ---
 

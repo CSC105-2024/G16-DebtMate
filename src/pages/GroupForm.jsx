@@ -147,18 +147,9 @@ function GroupForm() {
   }, [groupId, user]);
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      const desktop = window.innerWidth >= 1024;
-      setIsDesktop(desktop);
-      setIsMenuOpen(desktop);
-      if (desktop && !isDesktop) {
-        setIsAddMemberOpen(true);
-      }
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    if (isDesktop) {
+      setIsAddMemberOpen(true);
+    }
   }, [isDesktop]);
 
   const handleSearch = () => {};
