@@ -245,10 +245,34 @@ export class ItemController {
   }
   
   static async deleteItem(c: Context) {
-    /**
-     * @TODO Implement the logic to delete an item, decrement group total, and update user debts
-     */
+  try {
+    const itemId = parseInt(c.req.param('id'));
+    
+    const item = await prisma.item.findUnique({
+      where: { id: itemId },
+      include: {
+        users: true
+      }
+    });
+    
+    if (!item) {
+      return c.json({ message: 'Item not found' }, 404);
+    }
+    
+    await prisma.itemUser.deleteMany({
+      where: { itemId }
+    });
+    
+    await prisma.item.delete({
+      where: { id: itemId }
+    });
+    
+    return c.json({ message: 'Item deleted successfully' });
+  } catch (error) {
+    console.error('Delete item error:', error);
+    return c.json({ message: 'Server error while deleting item' }, 500);
   }
+}
 
   
   static async getGroupItems(c: Context) {
