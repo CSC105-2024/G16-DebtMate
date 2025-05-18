@@ -1,3 +1,6 @@
+import axios from "axios";
+import { string } from "prop-types";
+
 /**
  * Get the currently authenticated user
  * @returns {Promise<{user: Object|null, error: string|null}>}
@@ -19,3 +22,30 @@ export const getCurrentUser = async () => {
     return { user: null, error: "Network error" };
   }
 };
+
+export const fetchUserFriends = async (userId) => {
+
+      try {
+        const friendsResponse = await axios.get(
+          `http://localhost:3000/api/users/${userId}/friends`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (friendsResponse.data && friendsResponse.data.success) {
+          return friendsResponse.data.friends.map(
+            (friend) => ({
+              id: friend.id,
+              name: friend.name || friend.username,
+              avatarUrl: friend.avatarUrl || defaultprofile,
+              username: friend.username,
+            })
+          );
+        } else {
+          console.error("Failed to fetch friends:", friendsResponse.data);
+        }
+      } catch (err) {
+        console.error("Error fetching friends:", err);
+      }
+    };

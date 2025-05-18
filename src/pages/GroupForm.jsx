@@ -10,6 +10,7 @@ import ChangeGroupPic from "../Component/ChangeGroupPic";
 import group1 from "/assets/icons/group1.svg";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { fetchUserFriends } from "../utils/userUtils";
 
 function GroupForm() {
   const { groupId } = useParams();
@@ -40,26 +41,10 @@ function GroupForm() {
       if (!user) return;
 
       try {
-        const friendsResponse = await axios.get(
-          `http://localhost:3000/api/users/${user.id}/friends`,
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (friendsResponse.data && friendsResponse.data.success) {
-          const formattedFriends = friendsResponse.data.friends.map(
-            (friend) => ({
-              id: friend.id,
-              name: friend.name || friend.username,
-              avatarUrl: friend.avatarUrl || defaultprofile,
-              username: friend.username,
-            })
-          );
-
-          setFriends(formattedFriends);
+        const friends = await fetchUserFriends(user.id);
+        if (friends) {
+          setFriends(friends);
         } else {
-          console.error("Failed to fetch friends:", friendsResponse.data);
           setError("Failed to load friends data");
 
           setFriends([
@@ -78,7 +63,6 @@ function GroupForm() {
           ]);
         }
       } catch (err) {
-        console.error("Error fetching friends:", err);
         setError("Failed to load friends. Using mock data for now.");
 
         setFriends([
