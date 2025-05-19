@@ -245,9 +245,75 @@ export class ItemController {
   }
   
   static async deleteItem(c: Context) {
-    /**
-     * @TODO Implement the logic to delete an item, decrement group total, and update user debts
-     */
+    try {
+      const itemId = parseInt(c.req.param('id'));
+      
+      // First get the item to access its groupId and amount
+      const item = await prisma.item.findUnique({
+        where: { id: itemId },
+        include: {
+          users: true,
+          group: true
+        }
+      });
+      
+      if (!item) {
+        return c.json({ message: 'Item not found' }, 404);
+      }
+      
+      const groupId = item.groupId;
+      
+      // Begin a transaction to ensure data consistency
+      await prisma.$transaction(async (tx) => {
+        // Update group total (decrement by item amount)
+        await tx.group.update({
+          where: { id: groupId },
+          data: {
+            total: {
+              decrement: item.amount
+            }
+          }
+        });
+        
+        // For each user assignment, update their amount owed in GroupMember
+        for (const assignment of item.users) {
+          await tx.groupMember.update({
+            where: {
+              userId_groupId: {
+                userId: assignment.userId,
+                groupId: groupId
+              }
+            },
+            data: {
+              amountOwed: {
+                decrement: assignment.amount
+              }
+            }
+          });
+        }
+        
+        // Delete the ItemUser assignments first
+        await tx.itemUser.deleteMany({
+          where: { itemId }
+        });
+        
+        // Then delete the item itself
+        await tx.item.delete({
+          where: { id: itemId }
+        });
+      });
+      
+      return c.json({ 
+        success: true, 
+        message: 'Item deleted successfully' 
+      });
+    } catch (error) {
+      console.error('Delete item error:', error);
+      return c.json({ 
+        success: false, 
+        message: 'Server error while deleting item' 
+      }, 500);
+    }
   }
 
   
