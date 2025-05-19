@@ -240,13 +240,14 @@ function SplitBill() {
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
                 <h2 className="text-3xl text-twilight font-hornbill font-black">
-                  Split Bill
+                    it Bill
                 </h2>
 
                 <div className="space-y-4">
                   {Object.entries(memberTotals)
                     .sort((a, b) => b[1] - a[1])
                     .map(([memberId, amount]) => (
+                      <button>
                       <div
                         key={memberId}
                         className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
@@ -265,6 +266,7 @@ function SplitBill() {
                           {currency} {amount?.toFixed(2) || "0.00"}
                         </span>
                       </div>
+                      </button>
                     ))}
                 </div>
 
