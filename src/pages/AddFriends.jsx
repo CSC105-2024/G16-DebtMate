@@ -13,7 +13,8 @@ import FriendCard from "../Component/FriendCard";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
 import { searchUsers } from "../utils/searchUtils";
-import { addFriend, getCurrentUser } from "../utils/friendUtils";
+import { addFriend } from "../utils/friendUtils";
+import { getCurrentUser } from "../utils/userUtils";
 
 function AddFriends() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

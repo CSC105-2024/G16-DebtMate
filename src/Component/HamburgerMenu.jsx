@@ -8,7 +8,7 @@ import groupsIcon from "/assets/icons/Groups.svg";
 import addFriendIcon from "/assets/icons/AddFriend.svg";
 import settingsIcon from "/assets/icons/Settings.svg";
 import placeImg from "/assets/icons/imgtemp.png";
-import { getCurrentUser } from "../utils/friendUtils";
+import { getCurrentUser } from "../utils/userUtils";
 
 // breakpoint for Iphone-SE
 const XS = "400px";
