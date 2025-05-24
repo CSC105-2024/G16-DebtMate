@@ -9,7 +9,8 @@ export class ItemController {
       const { name, amount, userAssignments } = await c.req.json();
       
       const group = await prisma.group.findUnique({
-        where: { id: groupId }
+        where: { id: groupId },
+        include: { owner: true }
       });
       
       if (!group) {
@@ -42,24 +43,27 @@ export class ItemController {
             await prisma.itemUser.create({
               data: {
                 itemId: item.id,
-                userId: typeof userId === 'string' ? parseInt(userId, 10) : userId, 
+                userId: typeof userId === 'string' ? parseInt(userId, 10) : userId,
                 amount
               }
             });
             
-            await prisma.groupMember.update({
-              where: {
-                userId_groupId: {
-                  userId,
-                  groupId
+            // Don't increment what the owner owes if they're part of this item
+            if (userId !== group.ownerId) {
+              await prisma.groupMember.update({
+                where: {
+                  userId_groupId: {
+                    userId,
+                    groupId
+                  }
+                },
+                data: {
+                  amountOwed: {
+                    increment: amount
+                  }
                 }
-              },
-              data: {
-                amountOwed: {
-                  increment: amount
-                }
-              }
-            });
+              });
+            }
           }
         }
       }
