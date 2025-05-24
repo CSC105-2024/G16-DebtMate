@@ -4,30 +4,39 @@ import axios from "axios";
 // Create the authentication context
 const AuthContext = createContext();
 
-// Base URL for API requests
 axios.defaults.baseURL = "http://localhost:3000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start with loading true
+
+  const updateUser = (userData) => {
+    setUser((prevUser) => ({
+      ...prevUser,
+      ...userData,
+    }));
+  };
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        console.log("Checking auth status...");
         const response = await axios.get("/api/me", {
           withCredentials: true,
         });
 
-        if (response.data.success && response.data.isAuthenticated) {
+        console.log("Auth response:", response.data);
+
+        if (response.status === 200) {
+          console.log("Setting authenticated to true");
           setIsAuthenticated(true);
 
-          // Get user details if authenticated
           try {
             const userResponse = await axios.get("/api/users/me", {
               withCredentials: true,
             });
-            if (userResponse.data.success) {
+            if (userResponse.status === 200) {
               setUser(userResponse.data.user);
             }
           } catch (error) {
@@ -127,6 +136,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         logout,
+        updateUser, 
       }}
     >
       {children}

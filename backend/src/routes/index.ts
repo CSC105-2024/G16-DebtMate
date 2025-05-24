@@ -31,6 +31,7 @@ const protectedRoutes = new Hono();
 protectedRoutes.use('*', authMiddleware);
 protectedRoutes.get('/users/me', UserController.getCurrentUser);
 protectedRoutes.get('/me', UserController.isAuthenticated);
+protectedRoutes.put('/users/me', UserController.updateUser);
 
 // all the friend stuff
 protectedRoutes.get('/users/:userId/friends', UserController.getFriends);

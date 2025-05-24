@@ -93,7 +93,6 @@ export class UserController {
 
       UserController.setAuthCookie(c, token);
 
-      // don't send the password back to client
       const { password: _, ...userWithoutPassword } = user;
       
       return c.json({
@@ -121,7 +120,6 @@ export class UserController {
         }, 400);
       }
       
-      // Updated to fetch more comprehensive friend data
       const user = await prisma.user.findUnique({
         where: { id: userId },
         include: {
@@ -132,7 +130,7 @@ export class UserController {
               username: true,
               email: true,
               bio: true,
-              // Don't include password
+              avatarUrl: true,
             }
           }
         }
@@ -348,5 +346,67 @@ export class UserController {
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
     });
+  }
+
+  static async updateUser(c: Context) {
+    try {
+      const userId = c.get('userId');
+      const { name, bio, currentPassword, newPassword } = await c.req.json();
+      
+      // Get current user
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return c.json({
+          success: false,
+          message: 'User not found'
+        }, 404);
+      }
+      
+      // Prepare update data
+      const updateData: any = {
+        name,
+        bio
+      };
+      
+      // If password change is requested
+      if (currentPassword && newPassword) {
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!isValidPassword) {
+          return c.json({
+            success: false,
+            message: 'Current password is incorrect'
+          }, 400);
+        }
+        
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        updateData.password = hashedPassword;
+      }
+      
+      // Update user
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData
+      });
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      
+      return c.json({
+        success: true,
+        user: userWithoutPassword
+      });
+      
+    } catch (error) {
+      console.error('Update user error:', error);
+      return c.json({
+        success: false,
+        message: 'Error updating user info'
+      }, 500);
+    }
   }
 }
