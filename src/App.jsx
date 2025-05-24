@@ -2,6 +2,7 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 import "./App.css";
 import SignUp from "./pages/SignUp";
@@ -21,10 +22,11 @@ import UserInformationEdit from "./pages/UserInformationEdit";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
+// ProtectedRoute will be used for each protected route
+function ProtectedRoute() {
+  const { isAuthenticated, loading } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-twilight font-bold text-xl">Loading...</div>
@@ -32,134 +34,59 @@ function AppRoutes() {
     );
   }
 
-  const ProtectedRoute = ({ children }) => {
-    return isAuthenticated ? children : <Navigate to="/login" replace />;
-  };
+  // If authenticated, render child routes, otherwise redirect to login
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+}
 
+// Public route redirects to friendlist if already authenticated
+function PublicRoute() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-twilight font-bold text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // If authenticated, redirect to friendlist, otherwise render child routes
+  return isAuthenticated ? <Navigate to="/friendlist" replace /> : <Outlet />;
+}
+
+function AppRoutes() {
+  // Create the router with authentication logic built into the routes
   const router = createBrowserRouter([
     {
       path: "/",
-      element: isAuthenticated ? (
-        <Navigate to="/friendlist" replace />
-      ) : (
-        <SignUp />
-      ),
+      element: <PublicRoute />,
+      children: [
+        { index: true, element: <SignUp /> },
+        { path: "signup", element: <SignUp /> },
+        { path: "login", element: <Login /> },
+      ],
     },
     {
-      path: "/signup",
-      element: isAuthenticated ? (
-        <Navigate to="/friendlist" replace />
-      ) : (
-        <SignUp />
-      ),
-    },
-    {
-      path: "/login",
-      element: isAuthenticated ? (
-        <Navigate to="/friendlist" replace />
-      ) : (
-        <Login />
-      ),
-    },
-    {
-      path: "/add-friend",
-      element: (
-        <ProtectedRoute>
-          <AddFriends />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/friendlist",
-      element: (
-        <ProtectedRoute>
-          <FriendList />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/groups",
-      element: (
-        <ProtectedRoute>
-          <GroupList />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/create-group",
-      element: (
-        <ProtectedRoute>
-          <GroupForm />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/groups/:groupId/items",
-      element: (
-        <ProtectedRoute>
-          <ItemList />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/edit-group/:groupId",
-      element: (
-        <ProtectedRoute>
-          <GroupForm />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/groups/:groupId/items/:itemId/edit",
-      element: (
-        <ProtectedRoute>
-          <EditItem />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/user-info",
-      element: (
-        <ProtectedRoute>
-          <UserInformation />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/user-info-edit",
-      element: (
-        <ProtectedRoute>
-          <UserInformationEdit />
-        </ProtectedRoute>
-      ),
+      path: "/",
+      element: <ProtectedRoute />,
+      children: [
+        { path: "friendlist", element: <FriendList /> },
+        { path: "add-friend", element: <AddFriends /> },
+        { path: "groups", element: <GroupList /> },
+        { path: "create-group", element: <GroupForm /> },
+        { path: "groups/:groupId/items", element: <ItemList /> },
+        { path: "edit-group/:groupId", element: <GroupForm /> },
+        { path: "groups/:groupId/items/:itemId/edit", element: <EditItem /> },
+        { path: "user-info", element: <UserInformation /> },
+        { path: "user-info-edit", element: <UserInformationEdit /> },
+        { path: "settings", element: <SettingsPage /> },
+        { path: "groups/:groupId/items/add", element: <AddItems /> },
+        { path: "groups/:groupId/split", element: <SplitBill /> },
+      ],
     },
     {
       path: "*",
       element: <NotFound />,
-    },
-    {
-      path: "/settings",
-      element: (
-        <ProtectedRoute>
-          <SettingsPage />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/groups/:groupId/items/add",
-      element: (
-        <ProtectedRoute>
-          <AddItems />
-        </ProtectedRoute>
-      ),
-    },
-    {
-      path: "/groups/:groupId/split",
-      element: (
-        <ProtectedRoute>
-          <SplitBill />
-        </ProtectedRoute>
-      ),
     },
   ]);
 
