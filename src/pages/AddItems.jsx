@@ -207,7 +207,6 @@ function AddItems() {
                     Price
                   </h3>
                   <NumberInput
-                    label="Price"
                     value={itemPrice}
                     onChange={setItemPrice}
                     placeholder="Enter price"
