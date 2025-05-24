@@ -12,6 +12,7 @@ export class GroupController {
           name,
           description,
           icon,
+          ownerId: currentUser.id, // Set the current user as owner
           members: {
             create: {
               userId: currentUser.id,
@@ -41,6 +42,13 @@ export class GroupController {
       const completeGroup = await prisma.group.findUnique({
         where: { id: group.id },
         include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+            }
+          },
           members: {
             include: {
               user: {
@@ -71,6 +79,13 @@ export class GroupController {
       const group = await prisma.group.findUnique({
         where: { id: groupId },
         include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              username: true
+            }
+          },
           members: {
             include: {
               user: {
