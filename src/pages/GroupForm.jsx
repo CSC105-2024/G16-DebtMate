@@ -35,6 +35,21 @@ function GroupForm() {
   const [serviceCharge, setServiceCharge] = useState("0");
   const [tax, setTax] = useState("0");
 
+  // Check screen size on mount and when window resizes
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (desktop) {
+        setIsMenuOpen(true);
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
   useEffect(() => {
     const fetchFriends = async () => {
       if (!user) return;
@@ -275,9 +290,7 @@ function GroupForm() {
                 const results = await Promise.all(itemUpdatePromises);
                 const failedUpdates = results.filter((r) => !r.success);
 
-                if (failedUpdates.length > 0) {
-                  // Consider handling failures more gracefully
-                }
+                
               }
             }
           }
@@ -391,6 +404,7 @@ function GroupForm() {
 
   return (
     <div className="flex bg-color-dreamy h-screen overflow-hidden">
+      {/* Sidebar - correctly implemented for both desktop and mobile */}
       {isDesktop ? (
         <div className={`fixed inset-y-0 left-0 z-50 ${menuWidth}`}>
           <HamburgerMenu isOpen={true} setIsOpen={setIsMenuOpen} />
@@ -411,7 +425,7 @@ function GroupForm() {
         <div className={`${isDesktop ? "w-1/2" : "w-full"} flex flex-col`}>
           <div className="sticky pr-4 z-30 bg-color-dreamy w-full px-4 pt-0 pb-2">
             <div className="flex items-center w-full">
-              {!isDesktop && (
+              {!isDesktop && (  
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="p-3 border border-twilight rounded-md"
@@ -422,6 +436,7 @@ function GroupForm() {
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="flex-1 overflow-y-auto">
             {error ? (
               <div className="flex items-center justify-center h-full">
@@ -480,6 +495,7 @@ function GroupForm() {
                   </div>
                 </div>
 
+                {/* Members Section */}
                 <h2 className="text-2xl font-hornbill text-twilight text-left font-black pl-4 pt-4">
                   Members
                 </h2>
@@ -513,10 +529,11 @@ function GroupForm() {
                   )}
                 </div>
 
+                {/* Add Member Button - Only show on mobile */}
                 {!isDesktop && (
                   <div className="pl-4 pr-4 pt-2 pb-8">
                     <button
-                      onClick={handleAddMembers}
+                      onClick={() => setIsAddMemberOpen(true)}
                       className="flex items-center justify-center gap-2 px-4 py-2 rounded-[13px] border border-twilight text-twilight hover:bg-twilight hover:text-white transition-colors"
                     >
                       <Plus size={16} />
@@ -531,6 +548,7 @@ function GroupForm() {
                   </div>
                 )}
 
+                {/* Save Button */}
                 <div className="pl-4 pr-4 pt-4 pb-8 sticky bottom-0 bg-color-dreamy">
                   <button
                     onClick={handleSaveGroup}
@@ -551,6 +569,7 @@ function GroupForm() {
           </div>
         </div>
 
+        {/* Add Members Panel - Always visible on desktop */}
         {isDesktop && (
           <div className="w-1/2 h-screen bg-pale bg-opacity-20 overflow-y-auto">
             <div className="w-full h-full flex flex-col">
@@ -629,6 +648,7 @@ function GroupForm() {
                     </div>
                   )}
 
+                  {/* Pagination controls */}
                   {totalPages > 1 && (
                     <div className="flex justify-center mt-4 gap-2">
                       <button
@@ -662,6 +682,7 @@ function GroupForm() {
           </div>
         )}
 
+        {/* Mobile Overlay AddMember Component */}
         {!isDesktop && (
           <AddMember
             isOpen={isAddMemberOpen}
@@ -672,6 +693,7 @@ function GroupForm() {
           />
         )}
 
+        {/* Menu backdrop overlay - mobile only */}
         {!isDesktop && isMenuOpen && (
           <div
             className="fixed inset-0 z-40"
@@ -680,6 +702,7 @@ function GroupForm() {
         )}
       </div>
 
+      {/* Group Picture Popup */}
       {isChangePicOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-[13px] shadow-lg">
