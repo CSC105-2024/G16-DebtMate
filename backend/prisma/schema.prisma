@@ -24,6 +24,7 @@ model User {
   // linking tables for other relations
   groupMemberships GroupMember[]
   itemAssignments  ItemUser[]
+  ownedGroups      Group[]   @relation("GroupOwner") // Groups owned by this user
   
   // payments made by this user
   payments         Payment[]
@@ -38,9 +39,12 @@ model Group {
   serviceCharge Float     @default(0)  //  handle  fees
   tax           Float     @default(0)  // tax calculation stuff
   isSettled     Boolean   @default(false)
+  ownerId       Int       // The user who created and owns the group
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
+  
   // group connections
+  owner         User      @relation("GroupOwner", fields: [ownerId], references: [id])
   members       GroupMember[]
   items         Item[]
   payments      Payment[]
