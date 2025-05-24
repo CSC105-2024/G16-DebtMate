@@ -236,7 +236,7 @@ function FriendList() {
             </p>
             {!searchTerm && (
               <button
-                onClick={() => (window.location.href = "/add-friends")}
+                onClick={() => (window.location.href = "/add-friend")}
                 className="px-4 py-2 bg-twilight text-white rounded-[13px]"
               >
                 Add Friends

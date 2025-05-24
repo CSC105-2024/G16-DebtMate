@@ -76,7 +76,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
             alt={friend.name}
             className="w-24 h-24 rounded-full mb-4"
           />
-          <h1 className="text-2xl font-hornbill text-twilight font-bold">
+          <h1 className="!text-4xl text-twilight font-bold">
             {friend.name}
           </h1>
           <p className="text-[20px] font-telegraf text-twilight mb-6">

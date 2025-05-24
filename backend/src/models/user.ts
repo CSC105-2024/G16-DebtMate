@@ -130,14 +130,26 @@ export const UserModel = {
   },
 
   async addFriend(userId: number, friendId: number) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: {
-        friends: {
-          connect: { id: friendId }
+    return prisma.$transaction([
+      // Connect user to friend
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          friends: {
+            connect: { id: friendId }
+          }
         }
-      }
-    });
+      }),
+      // Connect friend to user (bidirectional)
+      prisma.user.update({
+        where: { id: friendId },
+        data: {
+          friends: {
+            connect: { id: userId }
+          }
+        }
+      })
+    ]);
   },
 
   async getFriends(userId: number) {
