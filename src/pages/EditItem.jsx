@@ -212,7 +212,7 @@ function EditItem() {
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-2xl text-twilight font-hornbill font-black">
+                <h2 className="text-2xl text-twilight font-black">
                   {group?.name || "Edit Item"}
                 </h2>
               </div>

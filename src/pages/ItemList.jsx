@@ -209,7 +209,7 @@ function ItemList() {
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-3xl text-twilight font-hornbill font-black pl-2">
+                <h2 className="text-3xl text-twilight  font-black pl-2">
                   {group?.name || "Group Items"}
                 </h2>
                 <button
