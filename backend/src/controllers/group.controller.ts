@@ -298,6 +298,8 @@ export class GroupController {
     try {
       const groupId = parseInt(c.req.param('id'));
       const userId = parseInt(c.req.param('userId'));
+      const { isPaid } = await c.req.json();
+      
       const member = await prisma.groupMember.findUnique({
         where: {
           userId_groupId: {
@@ -319,14 +321,14 @@ export class GroupController {
           }
         },
         data: {
-          isPaid: true
+          isPaid: isPaid
         }
       });
       
       return c.json(updatedMember);
     } catch (error) {
       console.error('Mark member paid error:', error);
-      return c.json({ message: 'Server error while marking member as paid' }, 500);
+      return c.json({ message: 'Server error while updating payment status' }, 500);
     }
   }
 }

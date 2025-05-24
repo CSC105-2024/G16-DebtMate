@@ -16,6 +16,7 @@ function SplitBill() {
   const [memberTotals, setMemberTotals] = useState({});
   const [grandTotal, setGrandTotal] = useState(0);
   const [error, setError] = useState(null);
+  const [paidMembers, setPaidMembers] = useState({}); 
   const currency = localStorage.getItem("currency") || "$";
   const menuWidth = "w-72";
 
@@ -57,6 +58,16 @@ function SplitBill() {
         }
 
         setGroup(currentGroup);
+
+        const paidStatus = {};
+        if (currentGroup.members) {
+          currentGroup.members.forEach((member) => {
+            const memberId =
+              member.userId || (member.user ? member.user.id : member.id);
+            paidStatus[memberId] = member.isPaid || false;
+          });
+        }
+        setPaidMembers(paidStatus);
 
         const totals = {};
         let subtotal = 0;
@@ -113,9 +124,15 @@ function SplitBill() {
             const memberExtra = extraAmount * proportion;
             totals[memberId] += memberExtra;
           }
+          
+          // Auto-mark members who owe $0 as paid
+          if (Math.abs(totals[memberId]) < 0.01) {
+            paidStatus[memberId] = true;
+          }
         });
 
         setMemberTotals(totals);
+        setPaidMembers(paidStatus);
         setGrandTotal(finalTotal);
         setError(null);
       } catch (err) {
@@ -171,6 +188,33 @@ function SplitBill() {
       avatar: member.avatarUrl || defaultprofile,
     };
   };
+  const togglePaymentStatus = async (memberId) => {
+    try {
+      const newPaidStatus = !paidMembers[memberId];
+
+      setPaidMembers((prev) => ({
+        ...prev,
+        [memberId]: newPaidStatus,
+      }));
+
+      await axios.put(
+        `/api/groups/${groupId}/members/${memberId}/paid`,
+        { isPaid: newPaidStatus },
+        { withCredentials: true }
+      );
+    } catch (err) {
+      console.error("Error updating payment status:", err);
+      setPaidMembers((prev) => ({
+        ...prev,
+        [memberId]: !prev[memberId],
+      }));
+    }
+  };
+
+  const remainingToSettle = Object.entries(memberTotals)
+    .reduce((total, [memberId, amount]) => {
+      return total + (paidMembers[memberId] ? 0 : amount);
+    }, 0);
 
   return (
     <div className="flex h-screen bg-color-dreamy">
@@ -240,17 +284,21 @@ function SplitBill() {
             ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
                 <h2 className="text-3xl text-twilight font-hornbill font-black">
-                    it Bill
+                  Split Bill
                 </h2>
 
                 <div className="space-y-4">
                   {Object.entries(memberTotals)
                     .sort((a, b) => b[1] - a[1])
                     .map(([memberId, amount]) => (
-                      <button>
                       <div
                         key={memberId}
-                        className="rounded-[13px] border border-twilight bg-backg p-4 flex justify-between items-center"
+                        className={`rounded-[13px] border ${
+                          paidMembers[memberId]
+                            ? "border-green-500 bg-green-50"
+                            : "border-twilight bg-backg"
+                        } p-4 flex justify-between items-center cursor-pointer`}
+                        onClick={() => togglePaymentStatus(memberId)}
                       >
                         <div className="flex items-center gap-3">
                           <Avatar
@@ -258,15 +306,20 @@ function SplitBill() {
                             alt={getMemberName(memberId).name}
                             size="sm"
                           />
-                          <span className="font-telegraf text-twilight">
-                            {getMemberName(memberId).name}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="font-telegraf text-twilight">
+                              {getMemberName(memberId).name}
+                            </span>
+                          </div>
                         </div>
-                        <span className="font-telegraf font-bold text-twilight">
+                        <span
+                          className={`font-telegraf font-bold ${
+                            paidMembers[memberId] ? "text-green-600" : "text-twilight"
+                          }`}
+                        >
                           {currency} {amount?.toFixed(2) || "0.00"}
                         </span>
                       </div>
-                      </button>
                     ))}
                 </div>
 
@@ -277,7 +330,7 @@ function SplitBill() {
                     Left to Settle:
                   </span>
                   <span className="font-telegraf font-bold text-twilight">
-                    {currency} {grandTotal.toFixed(2)}
+                    {currency} {remainingToSettle.toFixed(2)}
                   </span>
                 </div>
               </div>
