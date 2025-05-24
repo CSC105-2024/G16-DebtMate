@@ -58,13 +58,16 @@ function SplitBill() {
         }
 
         setGroup(currentGroup);
-
+        
+        const ownerId = currentGroup.ownerId || (currentGroup.owner && currentGroup.owner.id);
+        
         const paidStatus = {};
         if (currentGroup.members) {
           currentGroup.members.forEach((member) => {
-            const memberId =
-              member.userId || (member.user ? member.user.id : member.id);
-            paidStatus[memberId] = member.isPaid || false;
+            const memberId = member.userId || (member.user ? member.user.id : member.id);
+            if (memberId !== ownerId) { // Skip the owner
+              paidStatus[memberId] = member.isPaid || false;
+            }
           });
         }
         setPaidMembers(paidStatus);
@@ -74,9 +77,10 @@ function SplitBill() {
 
         if (currentGroup.members) {
           currentGroup.members.forEach((member) => {
-            const memberId =
-              member.userId || (member.user ? member.user.id : member.id);
-            totals[memberId] = 0;
+            const memberId = member.userId || (member.user ? member.user.id : member.id);
+            if (memberId !== ownerId) { // Skip the owner
+              totals[memberId] = 0;
+            }
           });
         }
 
@@ -87,13 +91,16 @@ function SplitBill() {
             let splitMembers;
 
             if (item.users && item.users.length > 0) {
-              splitMembers = item.users.map((u) => u.userId || u.user?.id);
+              // Get all members except owner
+              splitMembers = item.users
+                .map((u) => u.userId || u.user?.id)
+                .filter(id => id !== ownerId);
             } else if (item.splitBetween && item.splitBetween.length > 0) {
-              splitMembers = item.splitBetween;
+              splitMembers = item.splitBetween.filter(id => id !== ownerId);
             } else {
-              splitMembers = currentGroup.members.map(
-                (m) => m.userId || m.user?.id || m.id
-              );
+              splitMembers = currentGroup.members
+                .map((m) => m.userId || m.user?.id || m.id)
+                .filter(id => id !== ownerId);
             }
 
             if (!splitMembers || splitMembers.length === 0) {
@@ -290,37 +297,43 @@ function SplitBill() {
                 <div className="space-y-4">
                   {Object.entries(memberTotals)
                     .sort((a, b) => b[1] - a[1])
-                    .map(([memberId, amount]) => (
-                      <div
-                        key={memberId}
-                        className={`rounded-[13px] border ${
-                          paidMembers[memberId]
-                            ? "border-green-500 bg-green-50"
-                            : "border-twilight bg-backg"
-                        } p-4 flex justify-between items-center cursor-pointer`}
-                        onClick={() => togglePaymentStatus(memberId)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            src={getMemberName(memberId).avatar}
-                            alt={getMemberName(memberId).name}
-                            size="sm"
-                          />
-                          <div className="flex flex-col">
-                            <span className="font-telegraf text-twilight">
-                              {getMemberName(memberId).name}
-                            </span>
-                          </div>
-                        </div>
-                        <span
-                          className={`font-telegraf font-bold ${
-                            paidMembers[memberId] ? "text-green-600" : "text-twilight"
-                          }`}
+                    .map(([memberId, amount]) => {
+                      if (memberId === String(group?.ownerId) || memberId === String(group?.owner?.id)) {
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          key={memberId}
+                          className={`rounded-[13px] border ${
+                            paidMembers[memberId]
+                              ? "border-green-500 bg-green-50"
+                              : "border-twilight bg-backg"
+                          } p-4 flex justify-between items-center cursor-pointer`}
+                          onClick={() => togglePaymentStatus(memberId)}
                         >
-                          {currency} {amount?.toFixed(2) || "0.00"}
-                        </span>
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              src={getMemberName(memberId).avatar}
+                              alt={getMemberName(memberId).name}
+                              size="sm"
+                            />
+                            <div className="flex flex-col">
+                              <span className="font-telegraf text-twilight">
+                                {getMemberName(memberId).name}
+                              </span>
+                            </div>
+                          </div>
+                          <span
+                            className={`font-telegraf font-bold ${
+                              paidMembers[memberId] ? "text-green-600" : "text-twilight"
+                            }`}
+                          >
+                            {currency} {amount?.toFixed(2) || "0.00"}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
 
                 <div className="border-t border-twilight my-4 lg:block lg:border-t lg:border-twilight lg:my-6"></div>
