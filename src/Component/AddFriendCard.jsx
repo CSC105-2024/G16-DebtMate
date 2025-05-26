@@ -1,11 +1,10 @@
 import Avatar from "./Avatar";
 
-const FriendCard = ({ name, balance, avatarUrl, onClick, className = "" }) => {
-  const currency = localStorage.getItem("currency") || "$";
+const AddFriendCard = ({ name, avatarUrl, onClick, className = "" }) => {
 
   const handleClick = () => {
     if (onClick && typeof onClick === "function") {
-      onClick({ name, balance, avatarUrl });
+      onClick({ name, avatarUrl });
     }
   };
 
@@ -22,24 +21,8 @@ const FriendCard = ({ name, balance, avatarUrl, onClick, className = "" }) => {
           {name}
         </span>
       </div>
-
-      <div
-        className={`font-telegraf font-black text-[20px] min-w-[70px] text-right ${
-          balance > 0
-            ? "text-twilight"
-            : balance < 0
-            ? "text-dreamy"
-            : "text-paid"
-        }`}
-      >
-        {balance > 0
-          ? `+${currency} ${Number(balance).toFixed(2)}`
-          : balance < 0
-          ? `-${currency} ${Math.abs(Number(balance)).toFixed(2)}`
-          : `${currency} 0.00`}
-      </div>
     </div>
   );
 };
 
-export default FriendCard;
+export default AddFriendCard;

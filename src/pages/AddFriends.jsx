@@ -9,7 +9,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, UserPlus } from "lucide-react";
-import FriendCard from "../Component/FriendCard";
+import AddFriendCard from "../Component/AddFriendCard";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
 import { searchUsers } from "../utils/searchUtils";
@@ -188,9 +188,8 @@ function AddFriends() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {searchResults.map((user) => (
                 <div key={user.id} className="relative">
-                  <FriendCard
+                  <AddFriendCard
                     name={user.name}
-                    balance={user.balance}
                     avatarUrl={user.avatarUrl}
                     friend={user}
                     onClick={() => handleFriendCardClick(user)}

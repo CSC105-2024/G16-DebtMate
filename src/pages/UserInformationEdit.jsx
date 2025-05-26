@@ -182,7 +182,7 @@ export default function UserInformationEdit() {
         />
       </div>
 
-      <h1 className="!text-4xl text-twilight font-bold mb-2 mixed-fonts">
+      <h1 className="!text-4xl text-twilight font-dream mb-2 mixed-fonts">
         {userInfo.name}
       </h1>
       <p className="text-[20px] font-telegraf text-twilight mb-6">@{userInfo.username}</p>

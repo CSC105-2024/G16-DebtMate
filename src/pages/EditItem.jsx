@@ -272,7 +272,7 @@ function EditItem() {
                     {group?.members?.map((memberObj) => (
                       <div
                         key={memberObj.user.id}
-                        className={`block w-full cursor-pointer ${
+                        className={`block w-full md:w-[390px] cursor-pointer ${
                           selectedMembers.includes(memberObj.user.id)
                             ? "ring-2 ring-twilight rounded-[13px]"
                             : ""

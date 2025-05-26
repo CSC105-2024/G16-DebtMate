@@ -52,7 +52,7 @@ function UserInformation() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center bg-color-dreamy min-h-screen p-4 relative">
+    <div className="flex flex-col items-center bg-color-dreamy min-h-screen p-6 relative">
       {/* Top Buttons */}
       <div className="w-full flex justify-between items-center mb-6">
         <button
@@ -78,14 +78,14 @@ function UserInformation() {
           <p className="text-red-500">{error}</p>
         </div>
       ) : (
-        <>
+        <div className="w-full max-w-md flex flex-col items-center space-y-4">
           {/* Profile Section */}
           <img
             src={userData.profilePicture}
             alt="Profile"
             className="w-24 h-24 rounded-full mb-4 object-cover"
           />
-          <h1 className="!text-4xl  text-twilight font-bold">
+          <h1 className="!text-4xl  text-twilight font-dream">
             {userData.name}
           </h1>
           <p className="text-[20px] font-telegraf text-twilight mb-6">
@@ -116,8 +116,9 @@ function UserInformation() {
                 rows={4}
               />
             </div>
+            <p className="w-[364px] md:w-[410px] lg:w-[410px]"></p>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

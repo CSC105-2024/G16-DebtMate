@@ -174,7 +174,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
             </div>
             <div className="flex flex-col w-full text-left">
               <h2
-                className={`font-telegraf font-black text-[30px] text-twilight text-left w-full max-[${XS}]:text-[24px]`}
+                className={`font-dream font-black text-[30px] text-twilight text-left w-full max-[${XS}]:text-[24px]`}
               >
                 {user.name || user.username}
               </h2>

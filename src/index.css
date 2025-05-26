@@ -30,9 +30,16 @@
   font-weight: lighter;
 }
 
+@font-face {
+  font-family: "Dream";
+  src: url("/assets/fonts/Super-Dream.ttf") format("opentype");
+  font-weight: normal;
+}
+
 @theme {
   --font-hornbill: "Hornbill", sans-serif;
   --font-telegraf: "Telegraf", sans-serif;
+  --font-dream: "Dream", sans-serif;
   --color-twilight: #51508b;
   --color-dreamy: #8197e5;
   --color-icy: #f2f5ff;

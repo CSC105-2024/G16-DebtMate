@@ -34,6 +34,15 @@ function GroupForm() {
   const [originalMembers, setOriginalMembers] = useState([]);
   const [serviceCharge, setServiceCharge] = useState("0");
   const [tax, setTax] = useState("0");
+  const [selectedFriends, setSelectedFriends] = useState([]);
+
+  const toggleFriendSelection = (id) => {
+    setSelectedFriends((prev) =>
+      prev.includes(id)
+        ? prev.filter((fid) => fid !== id)
+        : [...prev, id]
+    );
+  };
 
   // Check screen size on mount and when window resizes
   useEffect(() => {
@@ -422,7 +431,7 @@ function GroupForm() {
       <div
         className={`flex-1 flex ${isDesktop ? "ml-72 flex-row" : "flex-col"}`}
       >
-        <div className={`${isDesktop ? "w-1/2" : "w-full"} flex flex-col`}>
+        <div className="w-full lg:w-[436px] flex flex-col">
           <div className="sticky pr-4 z-30 bg-color-dreamy w-full px-4 pt-0 pb-2">
             <div className="flex items-center w-full">
               {!isDesktop && (  
@@ -571,7 +580,7 @@ function GroupForm() {
 
         {/* Add Members Panel - Always visible on desktop */}
         {isDesktop && (
-          <div className="w-1/2 h-screen bg-pale bg-opacity-20 overflow-y-auto">
+          <div className="w-full lg:w-[436px] h-screen bg-pale bg-opacity-20 overflow-y-auto">
             <div className="w-full h-full flex flex-col">
               <div className="flex-1 p-6">
                 <h2 className="text-4xl font-hornbill text-twilight text-left font-black pb-6">
@@ -611,12 +620,12 @@ function GroupForm() {
                             onClick={() => toggleMemberSelection(friend)}
                           >
                             <div
-                              className="h-[71px] cursor-pointer rounded-[13px] overflow-hidden"
+                              onClick={() => toggleFriendSelection(friend.id)}
+                              className={`h-[71px] cursor-pointer rounded-[13px] overflow-hidden ${
+                                selectedFriends.includes(friend.id) ? "ring-2 ring-twilight" : ""
+                              }`}
                               style={{
-                                boxShadow: isSelected
-                                  ? "0 0 0 2pxrgb(0, 0, 0)"
-                                  : "none",
-                                border: "2px solid rgba(79, 70, 229, 0.3)",
+                                border: "1px solid rgba(79, 70, 229, 0.3)",
                               }}
                             >
                               <FriendCardEmpty
@@ -624,6 +633,7 @@ function GroupForm() {
                                 avatarUrl={friend.avatarUrl}
                               />
                             </div>
+
                             {isSelected && (
                               <div className="absolute top-2 right-2 bg-twilight rounded-full p-1">
                                 <svg
