@@ -250,6 +250,7 @@ function AddItems() {
                         onClick={() => toggleMemberSelection(memberObj.user.id)}
                       >
                         <FriendCard
+                          userId={memberObj.user.id}
                           name={memberObj.user.name || memberObj.user.username}
                           balance={0}
                           avatarUrl={memberObj.user.avatarUrl || defaultprofile}
