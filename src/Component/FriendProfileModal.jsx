@@ -56,17 +56,7 @@ const FriendProfileModal = ({ friend, onClose, onFriendAdded }) => {
           >
             &lt; Back
           </button>
-          <button
-            onClick={handleAddFriend}
-            className="p-2 rounded-full hover:bg-slate-300 transition"
-            disabled={isAdding || isFriend}
-          >
-            {isFriend ? (
-              <UserMinus className="text-twilight w-6 h-6" />
-            ) : (
-              <UserPlus className="text-twilight w-6 h-6" />
-            )}
-          </button>
+          
         </div>
 
         {/* Profile Info */}
