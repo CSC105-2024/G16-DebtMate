@@ -16,7 +16,7 @@ const FriendCardEmpty = ({ name, avatarUrl, onClick, className = "" }) => {
     >
       <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
         <Avatar src={avatarUrl} alt={name} />
-        <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">
+        <span className="font-dream font-extrabold text-[20px] text-twilight truncate">
           {name}
         </span>
       </div>

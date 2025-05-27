@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
-import FriendCard from "../Component/FriendCard";
+import FriendCardEmpty from "../Component/FriendCardEmpty";
 import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
@@ -249,7 +249,7 @@ function AddItems() {
                         }`}
                         onClick={() => toggleMemberSelection(memberObj.user.id)}
                       >
-                        <FriendCard
+                        <FriendCardEmpty
                           userId={memberObj.user.id}
                           name={memberObj.user.name || memberObj.user.username}
                           balance={0}
