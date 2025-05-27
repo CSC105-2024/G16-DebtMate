@@ -15,6 +15,7 @@ function GroupList() {
   const [sortAsc, setSortAsc] = useState(true);
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState(null);
+  const currency = localStorage.getItem("currency") || "$"; 
   const groupsPerPage = 14;
 
   useEffect(() => {
@@ -187,7 +188,6 @@ function GroupList() {
                           <Avatar
                             src={getAvatarUrl(group, "group")}
                             alt={group.name}
-                          
                           />
                           <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">
                             {group.name}
@@ -203,10 +203,10 @@ function GroupList() {
                           }`}
                         >
                           {group.balance > 0
-                            ? `+$${Number(group.balance).toFixed(2)}`
+                            ? `+${currency} ${Number(group.balance).toFixed(2)}`
                             : group.balance < 0
-                            ? `-$${Math.abs(Number(group.balance)).toFixed(2)}`
-                            : "$0.00"}
+                            ? `-${currency} ${Math.abs(Number(group.balance)).toFixed(2)}`
+                            : `${currency} 0.00`}
                         </div>
                       </div>
                     </div>
@@ -268,10 +268,10 @@ function GroupList() {
                       }`}
                     >
                       {group.balance > 0
-                        ? `+$${Number(group.balance).toFixed(2)}`
+                        ? `+${currency}${Number(group.balance).toFixed(2)}`
                         : group.balance < 0
-                        ? `-$${Math.abs(Number(group.balance)).toFixed(2)}`
-                        : "$0.00"}
+                        ? `-${currency}${Math.abs(Number(group.balance)).toFixed(2)}`
+                        : `${currency}0.00`}
                     </div>
                   </div>
                 ))}

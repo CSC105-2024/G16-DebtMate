@@ -22,6 +22,21 @@ function SettingsPage() {
 
   const menuWidth = "w-72";
 
+  // Currency code to symbol mapping
+  const currencySymbols = {
+    THB: "฿",
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    JPY: "¥",
+    INR: "₹",
+  };
+
+  // Function to convert currency code to symbol
+  const getCurrencySymbol = (code) => {
+    return currencySymbols[code] || code;
+  };
+
   useEffect(() => {
     const checkScreenSize = () => {
       const desktop = window.innerWidth >= 1024;
@@ -145,9 +160,10 @@ function SettingsPage() {
         open={isCurrencyModalOpen}
         onClose={() => setIsCurrencyModalOpen(false)}
         onSelect={(selectedCurrency) => {
+          const currencySymbol = getCurrencySymbol(selectedCurrency);
           setCurrency(selectedCurrency);
-          console.log("Selected:", selectedCurrency);
-          localStorage.setItem("currency", selectedCurrency);
+          console.log("Selected:", selectedCurrency, "Symbol:", currencySymbol);
+          localStorage.setItem("currency", currencySymbol);
         }}
       />
     </div>
