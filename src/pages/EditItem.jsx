@@ -176,6 +176,14 @@ function EditItem() {
     }
   };
 
+  const toggleMemberSelection = (memberId) => {
+    if (selectedMembers.includes(memberId)) {
+      setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
+    } else {
+      setSelectedMembers([...selectedMembers, memberId]);
+    }
+  };
+
   const hasMembers = group?.members && group.members.length > 0;
 
   return (
@@ -299,27 +307,15 @@ function EditItem() {
                     {group?.members?.map((memberObj) => (
                       <div
                         key={memberObj.user.id}
-                        className={`block w-full md:w-[390px] cursor-pointer ${
+                        className={`w-full cursor-pointer ${
                           selectedMembers.includes(memberObj.user.id)
                             ? "ring-2 ring-twilight rounded-[13px]"
                             : ""
                         }`}
-                        onClick={() => {
-                          if (selectedMembers.includes(memberObj.user.id)) {
-                            setSelectedMembers(
-                              selectedMembers.filter(
-                                (id) => id !== memberObj.user.id
-                              )
-                            );
-                          } else {
-                            setSelectedMembers([
-                              ...selectedMembers,
-                              memberObj.user.id,
-                            ]);
-                          }
-                        }}
+                        onClick={() => toggleMemberSelection(memberObj.user.id)}
                       >
                         <FriendCard
+                          userId={memberObj.user.id}
                           name={memberObj.user.name || memberObj.user.username}
                           balance={0}
                           avatarUrl={memberObj.user.avatarUrl || defaultprofile}
