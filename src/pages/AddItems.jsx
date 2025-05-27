@@ -7,6 +7,7 @@ import FriendCard from "../Component/FriendCard";
 import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
+import { z } from "zod"; 
 
 function AddItems() {
   const { groupId } = useParams();
@@ -18,6 +19,18 @@ function AddItems() {
   const [itemPrice, setItemPrice] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [error, setError] = useState(null);
+
+  const itemSchema = z.object({
+    name: z.string().min(1, "Item name is required"),
+    price: z
+      .string()
+      .refine((val) => val.length > 0, "Price is required")
+      .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number")
+      .refine((val) => parseFloat(val) > 0, "Price must be greater than zero"),
+    members: z
+      .array(z.number())
+      .min(1, "Please select at least one member"),
+  });
 
   const menuWidth = "w-72";
 
@@ -61,19 +74,16 @@ function AddItems() {
   }, []);
 
   const handleAddItem = async () => {
-    if (!itemName || !itemPrice || selectedMembers.length === 0) {
-      setError("Please fill in all fields and select at least one member");
-      return;
-    }
-
-    const price = parseFloat(itemPrice);
-    if (isNaN(price) || price <= 0) {
-      setError("Please enter a valid price");
-      return;
-    }
-
     try {
+      itemSchema.parse({
+        name: itemName,
+        price: itemPrice,
+        members: selectedMembers,
+      });
+
+      const price = parseFloat(itemPrice);
       const splitAmount = price / selectedMembers.length;
+
       const userAssignments = selectedMembers.map((memberId) => ({
         userId: memberId,
         amount: splitAmount,
@@ -97,8 +107,12 @@ function AddItems() {
         setError("Failed to add item");
       }
     } catch (err) {
-      console.error("Error adding item:", err);
-      setError(err.response?.data?.message || "Failed to add item");
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
+      } else {
+        console.error("Error adding item:", err);
+        setError(err.response?.data?.message || "Failed to add item");
+      }
     }
   };
 
@@ -173,11 +187,7 @@ function AddItems() {
 
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {error ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-red-500">{error}</p>
-              </div>
-            ) : !hasMembers ? (
+            {!hasMembers ? (
               <div className="flex flex-col items-center justify-center h-64">
                 <p className="text-twilight mb-2">This group has no members.</p>
                 <button
@@ -185,6 +195,16 @@ function AddItems() {
                   className="px-4 py-2 bg-twilight text-white rounded-[13px]"
                 >
                   Add Members
+                </button>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center mt-8">
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="px-4 py-2 bg-twilight text-white rounded-[13px] font-semibold"
+                >
+                  Try Again
                 </button>
               </div>
             ) : (

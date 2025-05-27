@@ -4,9 +4,10 @@ import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
 import Avatar from "../Component/Avatar";
 import FriendCard from "../Component/FriendCard";
+import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
-import NumberInput from "../Component/NumberInput";
+import { z } from "zod"; 
 
 function EditItem() {
   const { groupId, itemId } = useParams();
@@ -21,6 +22,16 @@ function EditItem() {
   const [error, setError] = useState(null);
   const [memberRemovedFromGroup, setMemberRemovedFromGroup] = useState(false);
   const menuWidth = "w-72";
+
+  const itemSchema = z.object({
+    name: z.string().min(1, "Item name is required"),
+    price: z
+      .string()
+      .refine((val) => val.length > 0, "Price is required")
+      .refine((val) => !isNaN(parseFloat(val)), "Price must be a valid number")
+      .refine((val) => parseFloat(val) > 0, "Price must be greater than zero"),
+    members: z.array(z.number()).min(1, "Please select at least one member"),
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,12 +136,13 @@ function EditItem() {
   }, []);
 
   const handleUpdateItem = async () => {
-    if (!itemName || !itemPrice || selectedMembers.length === 0) {
-      setError("Please fill in all fields and select at least one member");
-      return;
-    }
-
     try {
+      itemSchema.parse({
+        name: itemName,
+        price: itemPrice,
+        members: selectedMembers,
+      });
+
       const price = parseFloat(itemPrice);
       const splitAmount = parseFloat(
         (price / selectedMembers.length).toFixed(2)
@@ -155,8 +167,12 @@ function EditItem() {
 
       navigate(`/groups/${groupId}/items`);
     } catch (err) {
-      console.error("Error updating item:", err);
-      setError(err.response?.data?.message || "Failed to update item");
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
+      } else {
+        console.error("Error updating item:", err);
+        setError(err.response?.data?.message || "Failed to update item");
+      }
     }
   };
 
@@ -223,11 +239,7 @@ function EditItem() {
 
         <div className="flex-1 overflow-y-auto px-6">
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
-            {error ? (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-red-500">{error}</p>
-              </div>
-            ) : !hasMembers ? (
+            {!hasMembers ? (
               <div className="flex flex-col items-center justify-center h-64">
                 <p className="text-twilight mb-2">This group has no members.</p>
                 <button
@@ -237,9 +249,24 @@ function EditItem() {
                   Add Members
                 </button>
               </div>
-            ) : (
+            ) : error ? (
+              <div className="flex flex-col items-center mt-8">
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="px-4 py-2 bg-twilight text-white rounded-[13px] font-semibold"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : ( 
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
-                {memberRemovedFromGroup }
+                {memberRemovedFromGroup && (
+                  <div className="bg-yellow-100 text-yellow-800 p-3 rounded-lg mb-4">
+                    Some users who were part of this expense are no longer in the
+                    group.
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <h3 className="font-telegraf text-twilight font-bold">
