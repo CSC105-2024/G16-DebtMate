@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CurrencySelect from "../Component/CurrencySelect";
+import FeedbackForm from "../Component/FeedbackForm";
+import AboutModal from "../Component/AboutModal";
 import { useAuth } from "../context/AuthContext";
 
 function SettingsPage() {
@@ -17,6 +19,8 @@ function SettingsPage() {
   const [isDesktop, setIsDesktop] = useState(false);
   const navigate = useNavigate();
   const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [currency, setCurrency] = useState("USD");
   const { logout } = useAuth();
 
@@ -67,9 +71,13 @@ function SettingsPage() {
   const handleClick = async (type) => {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
-    } else if(type == "Refresh"){
+    } else if (type === "Refresh") {
       window.location.reload();
-    }else if (type === "Logout") {
+    } else if (type === "Feedback") {
+      setIsFeedbackModalOpen(true);
+    } else if (type === "About") {
+      setIsAboutModalOpen(true);
+    } else if (type === "Logout") {
       try {
         await logout();
         navigate("/");
@@ -167,6 +175,16 @@ function SettingsPage() {
           console.log("Selected:", selectedCurrency, "Symbol:", currencySymbol);
           localStorage.setItem("currency", currencySymbol);
         }}
+      />
+
+      <FeedbackForm
+        open={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+      />
+
+      <AboutModal
+        open={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
       />
     </div>
   );
