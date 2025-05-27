@@ -414,4 +414,43 @@ export class UserController {
       }, 500);
     }
   }
+
+  static async getFriendsWithBalances(c: Context) {
+    try {
+      const userId = c.get('user').id;
+      
+      const friendsWithBalances = await UserModel.getFriendsWithBalances(userId);
+      
+      return c.json({
+        success: true,
+        friends: friendsWithBalances
+      });
+    } catch (error) {
+      console.error('Get friends with balances error:', error);
+      return c.json({ 
+        success: false,
+        message: 'Failed to get friends with balances'
+      }, 500);
+    }
+  }
+  
+  static async getBalanceWithFriend(c: Context) {
+    try {
+      const userId = c.get('user').id;
+      const friendId = parseInt(c.req.param('friendId'));
+      
+      const balance = await UserModel.calculateBalanceWithFriend(userId, friendId);
+      
+      return c.json({
+        success: true,
+        balance
+      });
+    } catch (error) {
+      console.error('Get balance with friend error:', error);
+      return c.json({ 
+        success: false,
+        message: 'Failed to calculate balance with friend'
+      }, 500);
+    }
+  }
 }
