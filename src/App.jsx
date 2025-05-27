@@ -4,6 +4,8 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import "./App.css";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
@@ -19,6 +21,7 @@ import GroupForm from "./pages/GroupForm";
 import EditItem from "./pages/EditItem";
 import UserInformation from "./pages/UserInformation";
 import UserInformationEdit from "./pages/UserInformationEdit";
+import PageTransition from "./Component/PageTransition";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -52,6 +55,90 @@ function PublicRoute() {
 
   // If authenticated, redirect to friendlist, otherwise render child routes
   return isAuthenticated ? <Navigate to="/friendlist" replace /> : <Outlet />;
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-twilight font-bold text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public routes - redirect if authenticated */}
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/friendlist" replace /> : <PageTransition><SignUp /></PageTransition>}
+        />
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/friendlist" replace /> : <PageTransition><Login /></PageTransition>}
+        />
+        <Route
+          path="/signup"
+          element={isAuthenticated ? <Navigate to="/friendlist" replace /> : <PageTransition><SignUp /></PageTransition>}
+        />
+        
+        <Route
+          path="/friendlist"
+          element={isAuthenticated ? <PageTransition><FriendList /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/add-friend"
+          element={isAuthenticated ? <PageTransition><AddFriends /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/groups"
+          element={isAuthenticated ? <PageTransition><GroupList /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/create-group"
+          element={isAuthenticated ? <PageTransition><GroupForm /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/groups/:groupId/items"
+          element={isAuthenticated ? <PageTransition><ItemList /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/edit-group/:groupId"
+          element={isAuthenticated ? <PageTransition><GroupForm /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/groups/:groupId/items/:itemId/edit"
+          element={isAuthenticated ? <PageTransition><EditItem /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/user-info"
+          element={isAuthenticated ? <PageTransition><UserInformation /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/user-info-edit"
+          element={isAuthenticated ? <PageTransition><UserInformationEdit /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/settings"
+          element={isAuthenticated ? <PageTransition><SettingsPage /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/groups/:groupId/items/add"
+          element={isAuthenticated ? <PageTransition><AddItems /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/groups/:groupId/split"
+          element={isAuthenticated ? <PageTransition><SplitBill /></PageTransition> : <Navigate to="/login" replace />}
+        />
+        
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
 }
 
 function AppRoutes() {
@@ -97,7 +184,12 @@ function App() {
   return (
     <AuthProvider>
       <div className="app-container">
-        <AppRoutes />
+        {/* <AppRoutes /> */}
+
+        <BrowserRouter>
+          <AnimatedRoutes />
+        </BrowserRouter>
+        
       </div>
     </AuthProvider>
   );

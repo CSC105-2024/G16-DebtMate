@@ -25,3 +25,4 @@ dist-ssr
 backend/.env
 
 backend/dev.db
+backend/prisma/migrations/migration_lock.toml

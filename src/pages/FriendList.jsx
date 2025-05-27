@@ -252,7 +252,7 @@ function FriendList() {
             <p className="text-twilight mb-2">
               {searchTerm
                 ? "No search results found."
-                : "You don't have any friends yet."}
+                : "You don't have any friends"}
             </p>
             {!searchTerm && (
               <button
