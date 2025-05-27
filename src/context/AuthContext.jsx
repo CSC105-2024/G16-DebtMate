@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
     setUser((prevUser) => ({
       ...prevUser,
       ...userData,
+      avatar: userData.avatar || prevUser?.avatar,
     }));
   };
 

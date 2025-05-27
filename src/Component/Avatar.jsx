@@ -5,9 +5,11 @@ const Avatar = ({ src, alt, size = "md" }) => {
     lg: "w-12 h-12",
   };
 
+  const avatarSrc = src || "/default-avatar.png";
+
   return (
     <img
-      src={src || "/default-avatar.png"}
+      src={avatarSrc}
       alt={alt}
       className={`${sizeClasses[size]} rounded-full object-cover`}
     />

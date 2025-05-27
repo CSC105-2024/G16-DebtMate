@@ -30,7 +30,7 @@ function UserInformation() {
 
           setUserData({
             profilePicture:
-              response.data.user.avatar || "/assets/icons/imgtemp.png",
+              response.data.user.avatarUrl || response.data.user.avatar || "/assets/icons/imgtemp.png",
             name: response.data.user.name || "",
             username: response.data.user.username || "",
             email: response.data.user.email || "",

@@ -7,8 +7,9 @@ import friendsIcon from "/assets/icons/Friends.svg";
 import groupsIcon from "/assets/icons/Groups.svg";
 import addFriendIcon from "/assets/icons/AddFriend.svg";
 import settingsIcon from "/assets/icons/Settings.svg";
-import placeImg from "/assets/icons/imgtemp.png";
+import defaultprofile from "/assets/icons/imgtemp.png";
 import { getCurrentUser } from "../utils/friendUtils";
+import { useAuth } from "../context/AuthContext"; 
 
 // breakpoint for Iphone-SE
 const XS = "400px";
@@ -40,7 +41,8 @@ MenuItem.propTypes = {
 export default function HamburgerMenu({ isOpen, setIsOpen }) {
   const navigate = useNavigate();
   const [isDesktop, setIsDesktop] = useState(false);
-  const [user, setUser] = useState({ username: "User", name: "" });
+  const [localUser, setLocalUser] = useState({ username: "User", name: "" });
+  const { user: contextUser } = useAuth();
 
   // Fetch current user data from database
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
       try {
         const { user: userData, error } = await getCurrentUser();
         if (userData) {
-          setUser(userData);
+          setLocalUser(userData);
         } else {
           console.error("Error fetching user data:", error);
         }
@@ -59,6 +61,15 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
 
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    if (contextUser) {
+      setLocalUser((prevUser) => ({
+        ...prevUser,
+        ...contextUser,
+      }));
+    }
+  }, [contextUser]);
 
   // check screen size and set initial state
   useEffect(() => {
@@ -166,7 +177,11 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
               className={`w-22 h-22 bg-gray-300 rounded-full flex items-center justify-center text-gray-500 mb-2 max-[${XS}]:w-16 max-[${XS}]:h-16`}
             >
               <img
-                src={placeImg}
+                src={
+                  localUser.avatarUrl ||
+                  localUser.avatar ||
+                  defaultprofile
+                }
                 alt="User Profile"
                 className="w-full h-full rounded-full object-cover cursor-pointer"
                 onClick={() => navigate("/user-info")}
@@ -176,12 +191,12 @@ export default function HamburgerMenu({ isOpen, setIsOpen }) {
               <h2
                 className={`font-dream font-black text-[30px] text-twilight text-left w-full max-[${XS}]:text-[24px]`}
               >
-                {user.name || user.username}
+                {localUser.name || localUser.username}
               </h2>
               <h3
                 className={`font-telegraf font-black text-[17px] text-twilight text-left w-full max-[${XS}]:text-[14px]`}
               >
-                @{user.username}
+                @{localUser.username}
               </h3>
             </div>
           </div>

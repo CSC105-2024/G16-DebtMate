@@ -7,7 +7,7 @@ export const getAvatarUrl = (entity, type = "user") => {
     return entity.icon || entity.avatarUrl || defaultprofile;
   }
 
-  return entity.avatarUrl || defaultprofile;
+  return entity.avatarUrl || entity.avatar || defaultprofile;
 };
 
 export const getDisplayName = (entity, defaultName = "Unknown") => {

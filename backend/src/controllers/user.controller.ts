@@ -351,7 +351,7 @@ export class UserController {
   static async updateUser(c: Context) {
     try {
       const userId = c.get('userId');
-      const { name, bio, currentPassword, newPassword } = await c.req.json();
+      const { name, bio, currentPassword, newPassword, avatar } = await c.req.json();
       
       // Get current user
       const user = await prisma.user.findUnique({
@@ -370,6 +370,11 @@ export class UserController {
         name,
         bio
       };
+      
+      // Add avatar to update data if provided
+      if (avatar) {
+        updateData.avatarUrl = avatar;
+      }
       
       // If password change is requested
       if (currentPassword && newPassword) {

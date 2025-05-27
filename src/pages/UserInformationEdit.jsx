@@ -57,7 +57,7 @@ export default function UserInformationEdit() {
             newPassword: "",
           });
           
-          setProfilePicture(response.data.user.avatar || "/assets/icons/imgtemp.png");
+          setProfilePicture(response.data.user.avatarUrl || response.data.user.avatar || "/assets/icons/imgtemp.png");
         }
       } catch (err) {
         console.error("Error fetching user data:", err);
@@ -129,9 +129,10 @@ export default function UserInformationEdit() {
       
       if (response.data.success) {
         updateUser({
+          ...user,
           name: userInfo.name,
           bio: userInfo.bio,
-          avatar: profilePicture, 
+          avatar: profilePicture,
         });
         
         setSuccess("Profile updated successfully!");
