@@ -8,7 +8,7 @@ async function main() {
     console.log('Starting database setup...');
     
     const saltRounds = 10;
-    const password = await bcrypt.hash('password123', saltRounds); // simple pwd for testing
+    const password = await bcrypt.hash('password123', saltRounds); 
     
     const users = [
       {
@@ -45,66 +45,63 @@ async function main() {
       }
     ];
     
-    // Reset database
-    console.log('Cleaning up existing records...');
-    await prisma.payment.deleteMany({});
-    await prisma.itemUser.deleteMany({});
-    await prisma.item.deleteMany({});
-    await prisma.groupMember.deleteMany({});
-    await prisma.group.deleteMany({});
-    await prisma.user.deleteMany({});
-    
-    console.log('Creating users...');
-    for (const userData of users) {
-      await prisma.user.create({
-        data: userData
-      });
-    }
-    
-    // Create some friendship connections
-    console.log('Setting up friendships...');
-    const user1 = await prisma.user.findUnique({ where: { username: 'testuser' } });
-    const user2 = await prisma.user.findUnique({ where: { username: 'janesmith' } });
-    const user3 = await prisma.user.findUnique({ where: { username: 'johndoe' } });
-    
-    if (user1 && user2) {
-      await prisma.user.update({
-        where: { id: user1.id },
-        data: {
-          friends: {
-            connect: { id: user2.id }
-          }
-        }
-      });
+    try {
+      console.log('Setting up database schema...');
       
-      await prisma.user.update({
-        where: { id: user2.id },
-        data: {
-          friends: {
-            connect: { id: user1.id }
-          }
-        }
-      });
-    }
-    
-    if (user1 && user3) {
-      await prisma.user.update({
-        where: { id: user1.id },
-        data: {
-          friends: {
-            connect: { id: user3.id }
-          }
-        }
-      });
+      console.log('Creating users...');
+      for (const userData of users) {
+        await prisma.user.create({
+          data: userData
+        });
+      }
       
-      await prisma.user.update({
-        where: { id: user3.id },
-        data: {
-          friends: {
-            connect: { id: user1.id }
+      // Set up friendships
+      console.log('Setting up friendships...');
+      const user1 = await prisma.user.findUnique({ where: { username: 'testuser' } });
+      const user2 = await prisma.user.findUnique({ where: { username: 'janesmith' } });
+      const user3 = await prisma.user.findUnique({ where: { username: 'johndoe' } });
+      
+      if (user1 && user2) {
+        await prisma.user.update({
+          where: { id: user1.id },
+          data: {
+            friends: {
+              connect: { id: user2.id }
+            }
           }
-        }
-      });
+        });
+        
+        await prisma.user.update({
+          where: { id: user2.id },
+          data: {
+            friends: {
+              connect: { id: user1.id }
+            }
+          }
+        });
+      }
+      
+      if (user1 && user3) {
+        await prisma.user.update({
+          where: { id: user1.id },
+          data: {
+            friends: {
+              connect: { id: user3.id }
+            }
+          }
+        });
+        
+        await prisma.user.update({
+          where: { id: user3.id },
+          data: {
+            friends: {
+              connect: { id: user1.id }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
     
     console.log('Database setup completed successfully!');
