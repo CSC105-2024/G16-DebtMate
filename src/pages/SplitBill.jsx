@@ -87,20 +87,17 @@ function SplitBill() {
         if (currentGroup.items) {
           currentGroup.items.forEach((item) => {
             const itemAmount = parseFloat(item.amount);
-
             let splitMembers;
 
             if (item.users && item.users.length > 0) {
-              // Get all members except owner
-              splitMembers = item.users
-                .map((u) => u.userId || u.user?.id)
-                .filter(id => id !== ownerId);
+              // Include all users
+              splitMembers = item.users.map((u) => u.userId || u.user?.id);
             } else if (item.splitBetween && item.splitBetween.length > 0) {
-              splitMembers = item.splitBetween.filter(id => id !== ownerId);
+              // Include all specified split members
+              splitMembers = item.splitBetween;
             } else {
-              splitMembers = currentGroup.members
-                .map((m) => m.userId || m.user?.id || m.id)
-                .filter(id => id !== ownerId);
+              // Include all group members
+              splitMembers = currentGroup.members.map((m) => m.userId || m.user?.id || m.id);
             }
 
             if (!splitMembers || splitMembers.length === 0) {
@@ -110,7 +107,10 @@ function SplitBill() {
             const splitAmount = itemAmount / splitMembers.length;
 
             splitMembers.forEach((memberId) => {
-              totals[memberId] = (totals[memberId] || 0) + splitAmount;
+              // Only add to totals if the member is not the owner
+              if (memberId !== ownerId) {
+                totals[memberId] = (totals[memberId] || 0) + splitAmount;
+              }
             });
 
             subtotal += itemAmount;
