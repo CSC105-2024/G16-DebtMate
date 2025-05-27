@@ -37,6 +37,8 @@ protectedRoutes.put('/users/me', UserController.updateUser);
 protectedRoutes.get('/users/:userId/friends', UserController.getFriends);
 protectedRoutes.post('/users/friends', UserController.addFriend);
 protectedRoutes.get('/users/friends/search', UserController.searchUsers);
+protectedRoutes.get('/users/me/friends/balances', UserController.getFriendsWithBalances); // single-many balances calculation
+protectedRoutes.get('/users/me/friends/:friendId/balance', UserController.getBalanceWithFriend); // single-single balance calculation
 
 
 // group management endpoints
