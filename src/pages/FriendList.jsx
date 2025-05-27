@@ -7,6 +7,7 @@ import defaultprofile from "/assets/icons/defaultprofile.png";
 import SearchBar from "../Component/SearchBar";
 import FriendProfileModal from "../Component/FriendProfileModal";
 import { searchUsers, filterBySearchTerm } from "../utils/searchUtils";
+import { getFriendBalance } from "../utils/balanceUtils";
 
 function FriendList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,9 +19,10 @@ function FriendList() {
   const [friends, setFriends] = useState([]);
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
+  const [loadingBalances, setLoadingBalances] = useState(false);
   const friendsPerPage = 14;
 
-  // Fetch friends from the database
+  // Fetch friends from the database 
   useEffect(() => {
     const fetchFriends = async () => {
       try {
@@ -36,6 +38,7 @@ function FriendList() {
           throw new Error(meData.message || "Failed to fetch user data");
         }
 
+        // Get friend data (this does not include balances)
         const friendsResponse = await axios.get(
           `http://localhost:3000/api/users/${meData.user.id}/friends`,
           {
@@ -51,12 +54,31 @@ function FriendList() {
             name: friend.name || friend.username,
             username: friend.username,
             email: friend.email,
-            balance: 0,
+            balance: 0, // Initialize with zero, will update later with our getFriendBalance call
             avatarUrl: friend.avatarUrl || defaultprofile,
             bio: friend.bio || "No bio available",
           }));
 
           setFriends(formattedFriends);
+          
+          // Fetch balances for each friend
+          setLoadingBalances(true);
+          try {
+            const friendsWithBalances = await Promise.all(
+              formattedFriends.map(async (friend) => {
+                const balance = await getFriendBalance(friend.id);
+                return {
+                  ...friend,
+                  balance
+                };
+              })
+            );
+            setFriends(friendsWithBalances);
+          } catch (balanceErr) {
+            console.error("Error fetching friend balances:", balanceErr);
+          } finally {
+            setLoadingBalances(false);
+          }
         } else {
           throw new Error(friendsData.message || "Failed to fetch friends");
         }
@@ -77,7 +99,6 @@ function FriendList() {
     setSelectedFriend(null);
   };
 
-  // Updated search handler to use searchUtils
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       setSearchResults(null);
@@ -103,7 +124,6 @@ function FriendList() {
       setSearchResults(result.results);
     } else {
       console.error("Search failed:", result.error);
-      // Fall back to local filtering even if API search fails
       setSearchResults(filteredLocalFriends);
     }
   };
@@ -251,6 +271,7 @@ function FriendList() {
                 {sortedFriends.map((friend) => (
                   <FriendCard
                     key={friend.id}
+                    userId={friend.id}
                     name={friend.name}
                     balance={friend.balance}
                     avatarUrl={friend.avatarUrl}
@@ -267,6 +288,7 @@ function FriendList() {
                 {paginatedFriends.map((friend) => (
                   <div key={friend.id} className="mb-4 break-inside-avoid">
                     <FriendCard
+                      userId={friend.id}  
                       name={friend.name}
                       balance={friend.balance}
                       avatarUrl={friend.avatarUrl}
