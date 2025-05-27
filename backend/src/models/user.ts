@@ -161,6 +161,107 @@ export const UserModel = {
     });
     return user?.friends || [];
   },
+  /**
+   * 
+   * @param userId 
+   * @param friendId 
+   * @returns 
+   * 
+   * @USE this if you have a userId and a friendId and want to get the balance between them
+   * @AKA single-single balance calculation
+   */
+  async calculateBalanceWithFriend(userId: number, friendId: number) {
+    // Find all groups where both users are members
+    const sharedGroups = await prisma.group.findMany({
+      where: {
+        members: {
+          some: {
+            userId: userId
+          }
+        },
+        AND: {
+          members: {
+            some: {
+              userId: friendId
+            }
+          }
+        }
+      },
+      include: {
+        members: {
+          where: {
+            OR: [
+              { userId: userId },
+              { userId: friendId }
+            ]
+          }
+        },
+        owner: {
+          select: {
+            id: true
+          }
+        }
+      }
+    });
 
+    let balance = 0;
+
+    // Calculate the balance for each shared group
+    for (const group of sharedGroups) {
+      // Find member records for both users
+      const userMember = group.members.find(m => m.userId === userId);
+      const friendMember = group.members.find(m => m.userId === friendId);
+      
+      if (!userMember || !friendMember) continue;
+
+      // If current user is owner, add friend's debt
+      if (group.owner.id === userId) {
+        balance += friendMember.amountOwed;
+      }
+      // If friend is owner, subtract user's debt
+      else if (group.owner.id === friendId) {
+        balance -= userMember.amountOwed;
+      }
+      // If neither is owner, compare amounts owed or add 0 to balance.
+      // this assumes that if neither is owner, they owe each other the same amount.
+      else {
+        balance += (userMember.amountOwed - friendMember.amountOwed);
+      }
+    }
+
+    return balance;
+  },
   
+
+  /**
+   * 
+   * @param userId 
+   * @returns 
+   * 
+   * @USE this if you have a userId and want to get all their friends with their balances
+   * @AKA single-many balance calculation
+   */
+  async getFriendsWithBalances(userId: number) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        friends: true
+      }
+    });
+    
+    if (!user) return [];
+    
+    // calculate balance for each friend
+    const friendsWithBalances = await Promise.all(
+      user.friends.map(async (friend) => {
+        const balance = await this.calculateBalanceWithFriend(userId, friend.id);
+        return {
+          ...friend,
+          balance
+        };
+      })
+    );
+    
+    return friendsWithBalances;
+  }
 };
