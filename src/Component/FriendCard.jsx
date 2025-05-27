@@ -1,7 +1,28 @@
+import React, { useState, useEffect } from 'react';
 import Avatar from "./Avatar";
+import { getFriendBalance } from '../utils/balanceUtils';
 
-const FriendCard = ({ name, balance, avatarUrl, onClick, className = "" }) => {
+const FriendCard = ({ name, balance: initialBalance, avatarUrl, onClick, className = "", userId }) => {
   const currency = localStorage.getItem("currency") || "$";
+  const [balance, setBalance] = useState(initialBalance || 0);
+
+  useEffect(() => {
+    // If userId is provided, fetch the balance
+    const fetchBalance = async () => {
+      if (!userId) return;
+      
+      try {
+        const fetchedBalance = await getFriendBalance(userId);
+        setBalance(fetchedBalance);
+      } catch (err) {
+        console.error('Error fetching friend balance:', err);
+      }
+    };
+    
+    if (userId) {
+      fetchBalance();
+    }
+  }, [userId]); 
 
   const handleClick = () => {
     if (onClick && typeof onClick === "function") {
