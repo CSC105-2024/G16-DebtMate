@@ -67,7 +67,9 @@ function SettingsPage() {
   const handleClick = async (type) => {
     if (type === "Currency") {
       setIsCurrencyModalOpen(true);
-    } else if (type === "Logout") {
+    } else if(type == "Refresh"){
+      window.location.reload();
+    }else if (type === "Logout") {
       try {
         await logout();
         navigate("/");
