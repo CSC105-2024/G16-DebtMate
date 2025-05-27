@@ -6,7 +6,7 @@ import Avatar from "../Component/Avatar";
 import SearchBar from "../Component/SearchBar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
-
+import { getAvatarUrl } from "../utils/avatarUtils";
 function GroupList() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -185,8 +185,9 @@ function GroupList() {
                       >
                         <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                           <Avatar
-                            src={group.avatarUrl || defaultprofile}
+                            src={getAvatarUrl(group, "group")}
                             alt={group.name}
+                          
                           />
                           <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">
                             {group.name}
@@ -250,7 +251,7 @@ function GroupList() {
                   >
                     <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
                       <Avatar
-                        src={group.avatarUrl || defaultprofile}
+                        src={getAvatarUrl(group, "group")}
                         alt={group.name}
                       />
                       <span className="font-telegraf font-extrabold text-[20px] text-twilight truncate">

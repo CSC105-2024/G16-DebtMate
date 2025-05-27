@@ -8,7 +8,7 @@ import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 import { z } from "zod"; 
-
+import { getAvatarUrl } from "../utils/avatarUtils";
 function EditItem() {
   const { groupId, itemId } = useParams();
   const navigate = useNavigate();
@@ -223,7 +223,7 @@ function EditItem() {
           <div className="lg:max-w-4xl lg:mx-auto lg:w-full">
             <div className="flex items-center gap-3 mb-2">
               <Avatar
-                src={group?.icon || defaultprofile}
+                src={getAvatarUrl(group, "group")}
                 alt={group?.name || "Group"}
                 size="lg"
               />

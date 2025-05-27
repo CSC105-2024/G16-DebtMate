@@ -151,15 +151,20 @@ export class GroupController {
         return c.json({ message: 'Group not found' }, 404);
       }
       
+      const updateData: any = {
+        name,
+        description,
+        serviceCharge,
+        tax
+      };
+      
+      if (icon !== undefined) {
+        updateData.icon = icon;
+      }
+      
       const updatedGroup = await prisma.group.update({
         where: { id: groupId },
-        data: {
-          name,
-          description,
-          icon,
-          serviceCharge,
-          tax
-        }
+        data: updateData
       });
       
       return c.json(updatedGroup);

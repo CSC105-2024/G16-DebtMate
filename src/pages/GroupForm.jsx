@@ -206,6 +206,8 @@ function GroupForm() {
     try {
       const memberIds = selectedMembers.map((member) => member.id);
 
+      const iconToSave = groupPicture !== defaultprofile ? groupPicture : null;
+
       if (groupId) {
         if (originalMembers) {
           const removedMembers = originalMembers.filter(
@@ -310,7 +312,7 @@ function GroupForm() {
           {
             name: groupName,
             description: groupDescription || "",
-            icon: groupPicture !== defaultprofile ? groupPicture : null,
+            icon: iconToSave, 
           },
           { withCredentials: true }
         );
@@ -358,7 +360,7 @@ function GroupForm() {
           {
             name: groupName,
             description: groupDescription || "",
-            icon: groupPicture !== defaultprofile ? groupPicture : null,
+            icon: iconToSave, 
             serviceCharge: parseFloat(serviceCharge) || 0,
             tax: parseFloat(tax) || 0,
             members: memberIds,
