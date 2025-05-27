@@ -273,7 +273,7 @@ function SplitBill() {
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-2xl text-twilight font-hornbill font-black">
+                <h2 className="text-2xl text-twilight font-dream font-black">
                   {group?.name || "Group"}
                 </h2>
               </div>

@@ -176,7 +176,7 @@ function AddItems() {
                 size="lg"
               />
               <div className="flex items-center justify-between flex-1">
-                <h2 className="text-2xl font-hornbill text-twilight font-black">
+                <h2 className="text-2xl font-dream text-twilight font-black">
                   {group?.name || "Add Item"}
                 </h2>
               </div>
