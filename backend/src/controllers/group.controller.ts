@@ -333,6 +333,28 @@ export class GroupController {
         return c.json({ message: 'User is not a member of this group' }, 404);
       }
       
+      const updateData: any = {
+        isPaid: isPaid
+      };
+      
+      if (isPaid) {
+        updateData.amountOwed = 0;
+      } 
+      else {
+        const itemAssignments = await prisma.itemUser.findMany({
+          where: {
+            userId,
+            item: {
+              groupId
+            }
+          }
+        });
+        
+        // Sum up all the amounts from these items
+        const totalOwed = itemAssignments.reduce((sum, assignment) => sum + assignment.amount, 0);
+        updateData.amountOwed = totalOwed;
+      }
+      
       const updatedMember = await prisma.groupMember.update({
         where: {
           userId_groupId: {
@@ -340,9 +362,7 @@ export class GroupController {
             groupId
           }
         },
-        data: {
-          isPaid: isPaid
-        }
+        data: updateData
       });
       
       return c.json(updatedMember);

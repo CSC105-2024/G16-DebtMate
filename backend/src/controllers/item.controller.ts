@@ -174,21 +174,31 @@ export class ItemController {
           where: { itemId }
         });
         
-        //  remove what they used to owe first
+        // Get the current group members with their paid status
+        const groupMembers = await prisma.groupMember.findMany({
+          where: {
+            groupId: item.groupId
+          }
+        });
+        
         for (const assignment of existingAssignments) {
-          await prisma.groupMember.update({
-            where: {
-              userId_groupId: {
-                userId: assignment.userId,
-                groupId: item.groupId
+          const member = groupMembers.find(m => m.userId === assignment.userId);
+          
+          if (member && !member.isPaid) {
+            await prisma.groupMember.update({
+              where: {
+                userId_groupId: {
+                  userId: assignment.userId,
+                  groupId: item.groupId
+                }
+              },
+              data: {
+                amountOwed: {
+                  decrement: assignment.amount
+                }
               }
-            },
-            data: {
-              amountOwed: {
-                decrement: assignment.amount
-              }
-            }
-          });
+            });
+          }
         }
         
         // clean out the old assignments
@@ -203,24 +213,28 @@ export class ItemController {
           await prisma.itemUser.create({
             data: {
               itemId,
-              userId: typeof userId === 'string' ? parseInt(userId, 10) : userId, // convert string to number
+              userId: typeof userId === 'string' ? parseInt(userId, 10) : userId,
               amount
             }
           });
           
-          await prisma.groupMember.update({
-            where: {
-              userId_groupId: {
-                userId,
-                groupId: item.groupId
+          const member = groupMembers.find(m => m.userId === (typeof userId === 'string' ? parseInt(userId, 10) : userId));
+          
+          if (member && !member.isPaid) {
+            await prisma.groupMember.update({
+              where: {
+                userId_groupId: {
+                  userId,
+                  groupId: item.groupId
+                }
+              },
+              data: {
+                amountOwed: {
+                  increment: amount
+                }
               }
-            },
-            data: {
-              amountOwed: {
-                increment: amount
-              }
-            }
-          });
+            });
+          }
         }
       }
       
