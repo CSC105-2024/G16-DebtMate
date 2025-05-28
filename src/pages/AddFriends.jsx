@@ -51,7 +51,6 @@ function AddFriends() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Effect to trigger search when searchTerm changes
   useEffect(() => {
     if (searchTerm.length > 0) {
       handleSearch();
@@ -87,7 +86,10 @@ function AddFriends() {
         }
       }
 
-      const searchResult = await searchUsers(searchTerm);
+      // Special case: # shows all available users
+      const query = searchTerm === "#" ? "" : searchTerm;
+      
+      const searchResult = await searchUsers(query, searchTerm === "#");
 
       if (searchResult.success) {
         const currentUserId = currentUser ? currentUser.id : null;

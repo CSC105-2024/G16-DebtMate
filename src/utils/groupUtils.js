@@ -107,7 +107,6 @@ export const calculateGroupTotal = async (groupId) => {
           memberTotals[memberId] = parseFloat(memberTotals[memberId].toFixed(2));
         }
         
-        // Store for database updates
         memberAmounts[memberId] = memberTotals[memberId];
         
         const member = group.members.find(m => {
@@ -123,7 +122,6 @@ export const calculateGroupTotal = async (groupId) => {
     
     total = parseFloat(total.toFixed(2));
     
-    // Update group total
     await updateGroupTotal(groupId, total);
     
     // Update each member's amountOwed in the database
@@ -140,7 +138,6 @@ export const calculateGroupTotal = async (groupId) => {
   }
 };
 
-// Add a new function to update individual member amounts
 export const updateMemberAmount = async (groupId, memberId, amount) => {
   try {
     await axios.put(

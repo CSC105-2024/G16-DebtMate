@@ -25,7 +25,6 @@ export class ItemController {
         }
       });
       
-      // need to assign costs to specific users and update what they owe
       if (userAssignments && Array.isArray(userAssignments)) {
         for (const assignment of userAssignments) {
           const { userId, amount } = assignment;
@@ -48,7 +47,6 @@ export class ItemController {
               }
             });
             
-            // Don't increment what the owner owes if they're part of this item
             if (userId !== group.ownerId) {
               await prisma.groupMember.update({
                 where: {
@@ -95,8 +93,6 @@ export class ItemController {
         }
       });
       
-      // After successfully creating the item and its user assignments
-      // Recalculate the entire group totals - frontend will handle this
       
       return c.json(completeItem, 201);
     } catch (error) {
@@ -150,7 +146,6 @@ export class ItemController {
         return c.json({ message: 'Item not found' }, 404);
       }
       
-      // keep track of original amount to calculate the difference
       const oldAmount = item.amount;
       
       const updatedItem = await prisma.item.update({
@@ -171,13 +166,11 @@ export class ItemController {
         }
       });
       
-      // handle user assignments. first remove the old ones then add the new ones
       if (userAssignments && Array.isArray(userAssignments)) {
         const existingAssignments = await prisma.itemUser.findMany({
           where: { itemId }
         });
         
-        // Get the current group members with their paid status
         const groupMembers = await prisma.groupMember.findMany({
           where: {
             groupId: item.groupId
@@ -204,12 +197,10 @@ export class ItemController {
           }
         }
         
-        // clean out the old assignments
         await prisma.itemUser.deleteMany({
           where: { itemId }
         });
         
-        // add all the new ones
         for (const assignment of userAssignments) {
           const { userId, amount } = assignment;
           
@@ -257,9 +248,6 @@ export class ItemController {
           }
         }
       });
-      
-      // After successfully updating the item
-      // Let frontend handle recalculation of amounts with tax and service charge
       
       return c.json(completeItem);
     } catch (error) {

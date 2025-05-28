@@ -2,7 +2,6 @@ import { Hono } from 'hono';
 import { UserController } from '../controllers/user.controller';
 import { GroupController } from '../controllers/group.controller';
 import { ItemController } from '../controllers/item.controller';
-import { PaymentController } from '../controllers/payment.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { setCookie } from 'hono/cookie';
 
@@ -61,9 +60,6 @@ protectedRoutes.put('/items/:id', ItemController.updateItem);
 protectedRoutes.delete('/items/:id', ItemController.deleteItem);
 protectedRoutes.get('/groups/:groupId/items', ItemController.getGroupItems);
 
-// payment tracking
-protectedRoutes.post('/groups/:groupId/payments', PaymentController.createPayment);
-protectedRoutes.get('/groups/:groupId/payments', PaymentController.getGroupPayments);
 
 // need to prefix with /api so it doesn't mess with the root routes
 api.route('/api', protectedRoutes);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
@@ -128,7 +128,16 @@ function AddItems() {
     }
   };
 
-  const hasMembers = group?.members && group.members.length > 0;
+  // Memoize split amount calculation
+  const splitAmount = useMemo(() => {
+    if (!itemPrice || !selectedMembers.length) return 0;
+    return parseFloat(itemPrice) / selectedMembers.length;
+  }, [itemPrice, selectedMembers]);
+  
+  // Memoize availability of members
+  const hasMembers = useMemo(() => {
+    return group?.members && group.members.length > 0;
+  }, [group?.members]);
 
   return (
     <div className="flex h-screen bg-color-dreamy">

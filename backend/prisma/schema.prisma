@@ -26,8 +26,8 @@ model User {
   itemAssignments  ItemUser[]
   ownedGroups      Group[]   @relation("GroupOwner") // Groups owned by this user
   
-  // payments made by this user
-  payments         Payment[]
+
+  @@index([name])
 }
 
 model Group {
@@ -47,7 +47,9 @@ model Group {
   owner         User      @relation("GroupOwner", fields: [ownerId], references: [id])
   members       GroupMember[]
   items         Item[]
-  payments      Payment[]
+  
+  @@index([name])
+  @@index([ownerId])
 }
 
 model GroupMember {
@@ -63,6 +65,8 @@ model GroupMember {
   group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
 }
 
 model Item {
@@ -76,6 +80,9 @@ model Item {
   // connections
   group       Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   users       ItemUser[]
+  
+  @@index([groupId])
+  @@index([name])
 }
 
 model ItemUser {
@@ -89,17 +96,7 @@ model ItemUser {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([itemId, userId])
-}
-
-model Payment {
-  id        Int       @id @default(autoincrement())
-  groupId   Int
-  userId    Int
-  amount    Float
-  note      String?
-  createdAt DateTime  @default(now())
   
-  // linking to other tables
-  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([itemId])
+  @@index([userId])
 }

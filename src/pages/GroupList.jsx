@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, Plus } from "lucide-react";
@@ -19,6 +19,7 @@ function GroupList() {
   const [sortAsc, setSortAsc] = useState(true);
   const [groups, setGroups] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true); 
   const currency = localStorage.getItem("currency") || "$"; 
   const groupsPerPage = 14;
 
@@ -26,17 +27,16 @@ function GroupList() {
     const fetchGroups = async () => {
       if (!user) return;
       
+      setLoading(true); 
       try {
         const response = await axios.get("/api/users/me/groups", {
           withCredentials: true,
         });
 
         if (response.data) {
-          // First calculate all group totals to ensure they're up to date
           const groupsData = response.data;
           console.log("Recalculating group totals...");
           
-          // Calculate totals for all groups and update member amounts
           for (const group of groupsData) {
             try {
               await calculateGroupTotal(group.id);
@@ -90,21 +90,40 @@ function GroupList() {
       } catch (err) {
         console.error("Error loading groups:", err);
         setError("Failed to load groups");
+      } finally {
+        setLoading(false); 
       }
     };
 
     fetchGroups();
   }, [user]);
 
-  const filteredGroups = groups.filter((group) =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const toggleSort = useCallback(() => {
+    setSortAsc(prev => !prev);
+  }, []);
+  
+  const filteredGroups = useMemo(() => {
+    return groups.filter(group => 
+      group.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [groups, searchTerm]);
+  
+  const sortedGroups = useMemo(() => {
+    return [...filteredGroups].sort((a, b) => {
+      if (sortAsc) {
+        // Sort alphabetically A-Z
+        return a.name.localeCompare(b.name);
+      } else {
+        // Sort by balance value, highest to lowest
+        return b.balance - a.balance;
+      }
+    });
+  }, [filteredGroups, sortAsc]);
 
-  const sortedGroups = [...filteredGroups].sort((a, b) => {
-    return sortAsc
-      ? a.name.localeCompare(b.name)
-      : b.name.localeCompare(a.name);
-  });
+  const paginatedGroups = useMemo(() => {
+    const startIndex = (currentPage - 1) * groupsPerPage;
+    return sortedGroups.slice(startIndex, startIndex + groupsPerPage);
+  }, [sortedGroups, currentPage, groupsPerPage]);
 
   const handleSearch = () => {
     console.log("Searching for:", searchTerm);
@@ -125,11 +144,6 @@ function GroupList() {
   }, []);
 
   const totalPages = Math.ceil(sortedGroups.length / groupsPerPage);
-  const paginatedGroups = sortedGroups.slice(
-    (currentPage - 1) * groupsPerPage,
-    currentPage * groupsPerPage
-  );
-
   const navigate = useNavigate();
 
   const handleGroupClick = (groupId) => {
@@ -183,7 +197,7 @@ function GroupList() {
           <div className="mt-4 flex items-center justify-between">
             <h1 className="text-2xl font-hornbill text-twilight">Groups</h1>
             <button
-              onClick={() => setSortAsc(!sortAsc)}
+              onClick={toggleSort}
               className="p-2 hover:bg-slate-200 rounded transition"
             >
               <img
@@ -192,7 +206,7 @@ function GroupList() {
                     ? "/assets/icons/12-order.svg"
                     : "/assets/icons/az-order.svg"
                 }
-                alt="Sort toggle"
+                alt={sortAsc ? "Sort alphabetically" : "Sort by balance"}
                 className="w-5 h-5"
               />
             </button>
@@ -201,7 +215,12 @@ function GroupList() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10">
-          {error ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="w-12 h-12 border-4 border-twilight border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-4 text-twilight font-medium">Loading groups...</p>
+            </div>
+          ) : error ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-red-500">{error}</p>
             </div>

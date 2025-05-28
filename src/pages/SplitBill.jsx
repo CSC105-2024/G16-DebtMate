@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
@@ -39,9 +39,14 @@ function SplitBill() {
           if (response.data) {
             currentGroup = response.data;
 
-            billData = JSON.parse(
-              localStorage.getItem(`bill_${groupId}`) || "{}"
-            );
+            try {
+              billData = JSON.parse(
+                localStorage.getItem(`bill_${groupId}`) || "{}"
+              );
+            } catch (parseError) {
+              console.error("Error parsing bill data from localStorage:", parseError);
+              billData = {};
+            }
           }
         } catch (apiErr) {
           console.log("API fetch failed, falling back to localStorage", apiErr);
@@ -79,7 +84,7 @@ function SplitBill() {
         if (currentGroup.members) {
           currentGroup.members.forEach((member) => {
             const memberId = member.userId || (member.user ? member.user.id : member.id);
-            if (memberId !== ownerId) { // Skip the owner
+            if (memberId !== ownerId) {
               totals[memberId] = 0;
             }
           });
@@ -91,13 +96,10 @@ function SplitBill() {
             let splitMembers;
 
             if (item.users && item.users.length > 0) {
-              // Include all users
               splitMembers = item.users.map((u) => u.userId || u.user?.id);
             } else if (item.splitBetween && item.splitBetween.length > 0) {
-              // Include all specified split members
               splitMembers = item.splitBetween;
             } else {
-              // Include all group members
               splitMembers = currentGroup.members.map((m) => m.userId || m.user?.id || m.id);
             }
 
@@ -108,7 +110,6 @@ function SplitBill() {
             const splitAmount = itemAmount / splitMembers.length;
 
             splitMembers.forEach((memberId) => {
-              // Only add to totals if the member is not the owner
               if (memberId !== ownerId) {
                 totals[memberId] = (totals[memberId] || 0) + splitAmount;
               }
@@ -212,7 +213,6 @@ function SplitBill() {
         { withCredentials: true }
       );
       
-      // If marking as unpaid, also update the member's amount owed
       if (!newPaidStatus) {
         await updateMemberAmount(groupId, memberId, memberTotals[memberId]);
       }
@@ -230,17 +230,19 @@ function SplitBill() {
       
       setPaidMembers((prev) => ({
         ...prev,
-        [memberId]: !prev[memberId], // Revert UI state on error
+        [memberId]: !prev[memberId], 
       }));
       
       setError("Failed to update payment status");
     }
   };
 
-  const remainingToSettle = Object.entries(memberTotals)
-    .reduce((total, [memberId, amount]) => {
-      return total + (paidMembers[memberId] ? 0 : amount);
-    }, 0);
+  const remainingToSettle = useMemo(() => {
+    return Object.entries(memberTotals)
+      .reduce((total, [memberId, amount]) => {
+        return total + (paidMembers[memberId] ? 0 : amount);
+      }, 0);
+  }, [memberTotals, paidMembers]);
 
   return (
     <div className="flex h-screen bg-color-dreamy">

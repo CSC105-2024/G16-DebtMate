@@ -1,6 +1,6 @@
 import React from "react";
 
-function ItemCard({ item, currency, onClick }) {
+const ItemCard = React.memo(function ItemCard({ item, currency, onClick }) {
   return (
     <div
       className="rounded-[13px] border border-twilight bg-backg py-6 px-4 flex justify-between items-center cursor-pointer hover:bg-gray-100"
@@ -14,6 +14,6 @@ function ItemCard({ item, currency, onClick }) {
       </span>
     </div>
   );
-}
+});
 
 export default ItemCard;

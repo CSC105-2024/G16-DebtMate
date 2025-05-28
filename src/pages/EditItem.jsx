@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu, X } from "lucide-react";
@@ -181,15 +181,27 @@ function EditItem() {
     }
   };
 
-  const toggleMemberSelection = (memberId) => {
-    if (selectedMembers.includes(memberId)) {
-      setSelectedMembers(selectedMembers.filter((id) => id !== memberId));
-    } else {
-      setSelectedMembers([...selectedMembers, memberId]);
-    }
-  };
+  // Prevent unnecessary state updates
+  const toggleMemberSelection = useCallback(
+    (id) => {
+      setSelectedMembers((prev) => {
+        const isSelected = prev.includes(id);
+        if (isSelected) {
+          // Only update if needed
+          return prev.filter((memberId) => memberId !== id);
+        } else {
+          return [...prev, id];
+        }
+      });
+    },
+    [setSelectedMembers]
+  );
 
-  const hasMembers = group?.members && group.members.length > 0;
+  const hasMembers = useMemo(() => {
+    return group?.members && group.members.length > 0;
+  }, [group?.members]);
+
+
 
   return (
     <div className="flex h-screen bg-color-dreamy">

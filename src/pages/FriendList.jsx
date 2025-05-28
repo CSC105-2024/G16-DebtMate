@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import HamburgerMenu from "../Component/HamburgerMenu";
 import { Menu } from "lucide-react";
@@ -20,11 +20,13 @@ function FriendList() {
   const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState(null);
   const [loadingBalances, setLoadingBalances] = useState(false);
+  const [loading, setLoading] = useState(true); 
   const friendsPerPage = 14;
 
   // Fetch friends from the database 
   useEffect(() => {
     const fetchFriends = async () => {
+      setLoading(true); 
       try {
         const meResponse = await axios.get(
           "http://localhost:3000/api/users/me",
@@ -85,39 +87,42 @@ function FriendList() {
       } catch (err) {
         console.error("Error fetching friends:", err);
         setError("Failed to load friends. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFriends();
   }, []);
 
-  const handleFriendCardClick = (friend) => {
+  const handleFriendCardClick = useCallback((friend) => {
     setSelectedFriend(friend);
-  };
+  }, []);
 
-  const handleClosePopup = () => {
+  const handleClosePopup = useCallback(() => {
     setSelectedFriend(null);
-  };
-
+  }, []);
+  
+  const toggleSort = useCallback(() => {
+    setSortAsc(prev => !prev);
+  }, []);
+  
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       setSearchResults(null);
       return;
     }
 
-    // First try to filter existing friends
     const filteredLocalFriends = filterBySearchTerm(friends, searchTerm, [
       "name",
       "username",
     ]);
 
-    // If we have local results, just use those
     if (filteredLocalFriends.length > 0) {
       setSearchResults(filteredLocalFriends);
       return;
     }
 
-    // Otherwise, search the API
     const result = await searchUsers(searchTerm);
 
     if (result.success) {
@@ -155,9 +160,13 @@ function FriendList() {
       : friends);
 
   const sortedFriends = [...filteredFriends].sort((a, b) => {
-    return sortAsc
-      ? a.name.localeCompare(b.name)
-      : b.name.localeCompare(a.name);
+    if (sortAsc) {
+      // Sort alphabetically A-Z
+      return a.name.localeCompare(b.name);
+    } else {
+      // Sort by balance (highest to lowest)
+      return b.balance - a.balance;
+    }
   });
 
   // Pagination for desktop
@@ -227,7 +236,7 @@ function FriendList() {
             <h1 className="text-2xl font-hornbill text-twilight">Friends</h1>
 
             <button
-              onClick={() => setSortAsc(!sortAsc)}
+              onClick={toggleSort}
               className="p-2 hover:bg-slate-200 rounded transition"
             >
               <img
@@ -236,14 +245,19 @@ function FriendList() {
                     ? "/assets/icons/12-order.svg"
                     : "/assets/icons/az-order.svg"
                 }
-                alt="Sort toggle"
+                alt={sortAsc ? "Sort alphabetically" : "Sort by balance"}
                 className="w-5 h-5"
               />
             </button>
           </div>
         </div>
 
-        {error ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-12 h-12 border-4 border-twilight border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-twilight font-medium">Loading friends...</p>
+          </div>
+        ) : error ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-red-500">{error}</p>
           </div>

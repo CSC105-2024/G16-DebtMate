@@ -142,7 +142,6 @@ function AnimatedRoutes() {
 }
 
 function AppRoutes() {
-  // Create the router with authentication logic built into the routes
   const router = createBrowserRouter([
     {
       path: "/",

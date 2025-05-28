@@ -12,7 +12,7 @@ export class GroupController {
           name,
           description,
           icon,
-          ownerId: currentUser.id, // Set the current user as owner
+          ownerId: currentUser.id, 
           members: {
             create: {
               userId: currentUser.id,
@@ -21,7 +21,6 @@ export class GroupController {
         }
       });
       
-      // loop through and add all the members
       if (members && Array.isArray(members)) {
         for (const memberId of members) {
           const userExists = await prisma.user.findUnique({

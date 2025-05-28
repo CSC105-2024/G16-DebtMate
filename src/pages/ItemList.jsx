@@ -86,7 +86,7 @@ function ItemList() {
     };
 
     checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
+    window.addEventListener("resize", checkScreenSize, { passive: true });
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
@@ -136,12 +136,10 @@ function ItemList() {
               [field]: parsedValue,
             }));
 
-            // This will recalculate and update all member amounts including tax and service charge
             await calculateGroupTotal(groupId);
           }
         } catch (err) {
           console.error(`Error updating group ${field}:`, err);
-          // Reset value in UI if update fails
           if (field === "serviceCharge") {
             setServiceCharge(group?.serviceCharge?.toString() || "0");
           } else if (field === "tax") {

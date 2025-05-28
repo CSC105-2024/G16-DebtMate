@@ -239,8 +239,9 @@ export class UserController {
     try {
       const userId = parseInt(c.get('user').id);
       const query = c.req.query('query');
+      const fetchAll = c.req.query('all') === 'true';
       
-      if (!query || query.length < 1) {
+      if (!fetchAll && (!query || query.length < 1)) {
         return c.json({ success: false, message: 'Search query too short' }, 400);
       }
       
@@ -259,22 +260,24 @@ export class UserController {
       const users = await prisma.user.findMany({
         where: {
           AND: [
-            {
+            // If fetchAll is true, don't filter by search terms
+            ...(!fetchAll ? [{
               OR: [
                 { username: { contains: query } },
                 { email: { contains: query } },
                 { name: { contains: query } }
               ]
-            },
-                { id: { not: userId } },
-                { id: { notIn: friendIds } }
+            }] : []),
+            { id: { not: userId } },
+            { id: { notIn: friendIds } }
           ]
         },
         select: {
           id: true,
           name: true,
           username: true,
-          email: true
+          email: true,
+          avatarUrl: true
         }
       });
       
