@@ -29,7 +29,7 @@ function GroupForm() {
   const [friends, setFriends] = useState([]);
   const friendsPerPage = 14;
 
-  const [groupPicture, setGroupPicture] = useState(defaultprofile);
+  const [groupPicture, setGroupPicture] = useState(group1);
   const [isChangePicOpen, setIsChangePicOpen] = useState(false);
 
   const [originalMembers, setOriginalMembers] = useState([]);
@@ -207,7 +207,7 @@ function GroupForm() {
     try {
       const memberIds = selectedMembers.map((member) => member.id);
 
-      const iconToSave = groupPicture !== defaultprofile ? groupPicture : null;
+      const iconToSave = groupPicture !== group1 ? groupPicture : null;
 
       if (groupId) {
         if (originalMembers) {
@@ -465,7 +465,7 @@ function GroupForm() {
                     onClick={() => setIsChangePicOpen(true)}
                   >
                     <img
-                      src={groupPicture || group1}
+                      src={groupPicture ||group1 }
                       alt="Group Profile"
                       className="w-full h-full object-cover"
                     />

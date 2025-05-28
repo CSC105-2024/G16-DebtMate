@@ -266,7 +266,14 @@ function AddItems() {
                           userId={memberObj.user.id}
                           name={memberObj.user.name || memberObj.user.username}
                           balance={0}
-                          avatarUrl={memberObj.user.avatarUrl || defaultprofile}
+                          avatarUrl={
+                            
+                            memberObj.user.avatarUrl || 
+                            memberObj.avatarUrl ||
+                            memberObj.user.avatar ||
+                            (memberObj.user.profile && memberObj.user.profile.avatar) ||
+                            defaultprofile
+                          }
                           className="w-full lg:!w-full"
                         />
                       </div>

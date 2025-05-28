@@ -201,8 +201,6 @@ function EditItem() {
     return group?.members && group.members.length > 0;
   }, [group?.members]);
 
-
-
   return (
     <div className="flex h-screen bg-color-dreamy">
       {isDesktop ? (
@@ -335,7 +333,7 @@ function EditItem() {
                           userId={memberObj.user.id}
                           name={memberObj.user.name || memberObj.user.username}
                           balance={0}
-                          avatarUrl={memberObj.user.avatarUrl || defaultprofile}
+                          avatarUrl={getAvatarUrl(memberObj.user)}
                           className="w-full lg:!w-full"
                         />
                       </div>

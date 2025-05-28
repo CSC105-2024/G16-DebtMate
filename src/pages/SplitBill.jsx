@@ -335,7 +335,7 @@ function SplitBill() {
                         >
                           <div className="flex items-center gap-3">
                             <Avatar
-                              src={getMemberName(memberId).avatar}
+                              src={getAvatarUrl(memberId, "user")}
                               alt={getMemberName(memberId).name}
                               size="sm"
                             />

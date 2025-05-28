@@ -111,17 +111,6 @@ export class GroupController {
                 }
               }
             }
-          },
-          payments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  username: true
-                }
-              }
-            }
           }
         }
       });
