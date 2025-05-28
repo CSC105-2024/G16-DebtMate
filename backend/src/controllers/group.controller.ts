@@ -412,4 +412,47 @@ export class GroupController {
       return c.json({ message: 'Server error while updating group total' }, 500);
     }
   }
+  
+  static async updateMemberAmount(c: Context) {
+    try {
+      const groupId = parseInt(c.req.param('id'));
+      const userId = parseInt(c.req.param('userId'));
+      const { amountOwed } = await c.req.json();
+      
+      const member = await prisma.groupMember.findUnique({
+        where: {
+          userId_groupId: {
+            userId,
+            groupId
+          }
+        }
+      });
+      
+      if (!member) {
+        return c.json({ message: 'User is not a member of this group' }, 404);
+      }
+      
+      // Skip update if member is marked as paid
+      if (member.isPaid) {
+        return c.json(member);
+      }
+      
+      const updatedMember = await prisma.groupMember.update({
+        where: {
+          userId_groupId: {
+            userId,
+            groupId
+          }
+        },
+        data: {
+          amountOwed
+        }
+      });
+      
+      return c.json(updatedMember);
+    } catch (error) {
+      console.error('Update member amount error:', error);
+      return c.json({ message: 'Server error while updating member amount' }, 500);
+    }
+  }
 }

@@ -36,7 +36,7 @@ function GroupList() {
           const groupsData = response.data;
           console.log("Recalculating group totals...");
           
-          // Calculate totals for all groups before formatting
+          // Calculate totals for all groups and update member amounts
           for (const group of groupsData) {
             try {
               await calculateGroupTotal(group.id);
@@ -65,50 +65,8 @@ function GroupList() {
               );
               
               if (userMember) {
-                // Calculate balance the same way SplitBill.jsx does
-                let memberTotal = 0;
-                let subtotal = 0;
-                
-                // Calculate base item amounts
-                if (group.items) {
-                  group.items.forEach((item) => {
-                    const itemAmount = parseFloat(item.amount);
-                    let splitMembers;
-                    
-                    if (item.users && item.users.length > 0) {
-                      splitMembers = item.users.map((u) => u.userId || u.user?.id);
-                    } else if (item.splitBetween && item.splitBetween.length > 0) {
-                      splitMembers = item.splitBetween;
-                    } else {
-                      splitMembers = group.members.map((m) => m.userId || m.user?.id || m.id);
-                    }
-                    
-                    if (splitMembers && splitMembers.length > 0) {
-                      const splitAmount = itemAmount / splitMembers.length;
-                      
-                      // Only add to total if this user is in splitMembers
-                      const userId = userMember.userId || (userMember.user && userMember.user.id);
-                      if (userId && splitMembers.includes(userId)) {
-                        memberTotal += splitAmount;
-                      }
-                      
-                      subtotal += itemAmount;
-                    }
-                  });
-                }
-                
-                // Apply service charge and tax proportionally
-                const serviceChargeRate = parseFloat(group.serviceCharge || 0) / 100;
-                const taxRate = parseFloat(group.tax || 0) / 100;
-                const extraAmount = subtotal * (serviceChargeRate + taxRate);
-                
-                if (subtotal > 0) {
-                  const proportion = memberTotal / subtotal;
-                  const memberExtra = extraAmount * proportion;
-                  memberTotal += memberExtra;
-                }
-                
-                balance = -memberTotal; // Negative because it's an amount owed
+                // Directly use the stored amountOwed value (negative because it's an amount owed)
+                balance = -(userMember.amountOwed || 0);
               } else {
                 balance = 0;
               }

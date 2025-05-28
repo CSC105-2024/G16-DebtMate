@@ -52,7 +52,8 @@ protectedRoutes.post('/groups/:id/members', GroupController.addGroupMember);
 protectedRoutes.delete('/groups/:id/members/:userId', GroupController.removeGroupMember);
 protectedRoutes.put('/groups/:id/members/:userId/paid', GroupController.markMemberPaid);
 protectedRoutes.put('/groups/:id/total', GroupController.updateGroupTotal);
-
+protectedRoutes.put('/groups/:id/members/:userId/amount',  GroupController.updateMemberAmount);
+// ...existing code...
 // items in groups
 protectedRoutes.post('/groups/:groupId/items', ItemController.createItem);
 protectedRoutes.get('/items/:id', ItemController.getItem);

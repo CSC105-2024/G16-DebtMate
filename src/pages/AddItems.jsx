@@ -9,6 +9,8 @@ import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 import { z } from "zod"; 
 import { getAvatarUrl } from "../utils/avatarUtils";
+import { calculateGroupTotal } from "../utils/groupUtils";
+
 function AddItems() {
   const { groupId } = useParams();
   const navigate = useNavigate();
@@ -102,6 +104,8 @@ function AddItems() {
       );
 
       if (response.status === 201) {
+        // Recalculate group total including tax and service charges
+        await calculateGroupTotal(groupId);
         navigate(`/groups/${groupId}/items`);
       } else {
         setError("Failed to add item");

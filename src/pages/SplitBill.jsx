@@ -6,7 +6,7 @@ import Avatar from "../Component/Avatar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 import { getAvatarUrl, getDisplayName } from "../utils/avatarUtils";
-import { updateGroupTotal } from "../utils/groupUtils";
+import { updateGroupTotal, updateMemberAmount } from "../utils/groupUtils"; // Added updateMemberAmount
 
 function SplitBill() {
   const { groupId } = useParams();
@@ -205,11 +205,17 @@ function SplitBill() {
         [memberId]: newPaidStatus,
       }));
 
+      // Update paid status in the database
       await axios.put(
         `/api/groups/${groupId}/members/${memberId}/paid`,
         { isPaid: newPaidStatus },
         { withCredentials: true }
       );
+      
+      // If marking as unpaid, also update the member's amount owed
+      if (!newPaidStatus) {
+        await updateMemberAmount(groupId, memberId, memberTotals[memberId]);
+      }
       
       const newRemainingTotal = Object.entries(memberTotals)
         .reduce((total, [id, amount]) => {
@@ -224,8 +230,10 @@ function SplitBill() {
       
       setPaidMembers((prev) => ({
         ...prev,
-        [memberId]: !prev[memberId],
+        [memberId]: !prev[memberId], // Revert UI state on error
       }));
+      
+      setError("Failed to update payment status");
     }
   };
 

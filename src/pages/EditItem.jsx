@@ -167,8 +167,9 @@ function EditItem() {
         }
       );
 
+      // Calculate group total including tax and service charges
+      // This will also update all member amounts
       await calculateGroupTotal(groupId);
-
       navigate(`/groups/${groupId}/items`);
     } catch (err) {
       if (err instanceof z.ZodError) {

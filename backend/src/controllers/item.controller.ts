@@ -95,6 +95,9 @@ export class ItemController {
         }
       });
       
+      // After successfully creating the item and its user assignments
+      // Recalculate the entire group totals - frontend will handle this
+      
       return c.json(completeItem, 201);
     } catch (error) {
       console.error('Create item error:', error);
@@ -254,6 +257,9 @@ export class ItemController {
           }
         }
       });
+      
+      // After successfully updating the item
+      // Let frontend handle recalculation of amounts with tax and service charge
       
       return c.json(completeItem);
     } catch (error) {

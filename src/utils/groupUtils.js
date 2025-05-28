@@ -52,6 +52,7 @@ export const calculateGroupTotal = async (groupId) => {
     const ownerId = group.ownerId || (group.owner && group.owner.id);
     
     let total = 0;
+    const memberAmounts = {};
     
     if (group.members && group.items) {
       const memberTotals = {};
@@ -64,6 +65,7 @@ export const calculateGroupTotal = async (groupId) => {
         }
       });
       
+      // Calculate base item amounts
       group.items.forEach((item) => {
         const itemAmount = parseFloat(item.amount);
         let splitMembers;
@@ -89,16 +91,24 @@ export const calculateGroupTotal = async (groupId) => {
         }
       });
       
+      // Apply service charge and tax proportionally
       const serviceChargeRate = parseFloat(group.serviceCharge || 0) / 100;
       const taxRate = parseFloat(group.tax || 0) / 100;
       const extraAmount = subtotal * (serviceChargeRate + taxRate);
       
+      // Calculate final amounts for each member including tax and service charge
       Object.keys(memberTotals).forEach((memberId) => {
         if (subtotal > 0) {
           const proportion = memberTotals[memberId] / subtotal;
           const memberExtra = extraAmount * proportion;
           memberTotals[memberId] += memberExtra;
+          
+          // Round to 2 decimal places
+          memberTotals[memberId] = parseFloat(memberTotals[memberId].toFixed(2));
         }
+        
+        // Store for database updates
+        memberAmounts[memberId] = memberTotals[memberId];
         
         const member = group.members.find(m => {
           const mId = m.userId || (m.user && m.user.id);
@@ -113,11 +123,32 @@ export const calculateGroupTotal = async (groupId) => {
     
     total = parseFloat(total.toFixed(2));
     
+    // Update group total
     await updateGroupTotal(groupId, total);
+    
+    // Update each member's amountOwed in the database
+    const updatePromises = Object.entries(memberAmounts).map(([memberId, amount]) => {
+      return updateMemberAmount(groupId, parseInt(memberId), amount);
+    });
+    
+    await Promise.all(updatePromises);
     
     return total;
   } catch (err) {
     console.error('Error calculating group total:', err);
     throw err;
+  }
+};
+
+// Add a new function to update individual member amounts
+export const updateMemberAmount = async (groupId, memberId, amount) => {
+  try {
+    await axios.put(
+      `/api/groups/${groupId}/members/${memberId}/amount`,
+      { amountOwed: amount },
+      { withCredentials: true }
+    );
+  } catch (err) {
+    console.error(`Error updating amount for member ${memberId}:`, err);
   }
 };
