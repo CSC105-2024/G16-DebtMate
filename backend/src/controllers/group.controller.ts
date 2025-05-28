@@ -365,10 +365,51 @@ export class GroupController {
         data: updateData
       });
       
+      const groupMembers = await prisma.groupMember.findMany({
+        where: { groupId }
+      });
+      
+      const remainingTotal = groupMembers.reduce((total, member) => {
+        return total + (member.isPaid ? 0 : member.amountOwed);
+      }, 0);
+      
+      await prisma.group.update({
+        where: { id: groupId },
+        data: { total: remainingTotal }
+      });
+      
       return c.json(updatedMember);
     } catch (error) {
       console.error('Mark member paid error:', error);
       return c.json({ message: 'Server error while updating payment status' }, 500);
+    }
+  }
+  
+  static async updateGroupTotal(c: Context) {
+    try {
+      const groupId = parseInt(c.req.param('id'));
+      const { total } = await c.req.json();
+      
+      const group = await prisma.group.findUnique({
+        where: { id: groupId },
+        include: {
+          members: true
+        }
+      });
+      
+      if (!group) {
+        return c.json({ message: 'Group not found' }, 404);
+      }
+      
+      const updatedGroup = await prisma.group.update({
+        where: { id: groupId },
+        data: { total }
+      });
+      
+      return c.json(updatedGroup);
+    } catch (error) {
+      console.error('Update group total error:', error);
+      return c.json({ message: 'Server error while updating group total' }, 500);
     }
   }
 }

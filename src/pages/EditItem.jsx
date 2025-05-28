@@ -7,8 +7,10 @@ import FriendCard from "../Component/FriendCard";
 import NumberInput from "../Component/NumberInput";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
-import { z } from "zod"; 
+import { z } from "zod";
 import { getAvatarUrl } from "../utils/avatarUtils";
+import { calculateGroupTotal } from "../utils/groupUtils";
+
 function EditItem() {
   const { groupId, itemId } = useParams();
   const navigate = useNavigate();
@@ -165,6 +167,8 @@ function EditItem() {
         }
       );
 
+      await calculateGroupTotal(groupId);
+
       navigate(`/groups/${groupId}/items`);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -267,7 +271,7 @@ function EditItem() {
                   Try Again
                 </button>
               </div>
-            ) : ( 
+            ) : (
               <div className="space-y-6 lg:max-w-xl lg:mx-auto">
                 {memberRemovedFromGroup && (
                   <div className="bg-yellow-100 text-yellow-800 p-3 rounded-lg mb-4">

@@ -33,7 +33,7 @@ export default function UserInformationEdit() {
         currentPassword: "",
         newPassword: "",
       });
-      setProfilePicture(user.avatar || "/assets/icons/imgtemp.png");
+      setProfilePicture(user.avatarUrl || user.avatar || "/assets/icons/imgtemp.png");
     }
   }, [user]);
 

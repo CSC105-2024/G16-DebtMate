@@ -6,6 +6,7 @@ import Avatar from "../Component/Avatar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 import { getAvatarUrl, getDisplayName } from "../utils/avatarUtils";
+import { updateGroupTotal } from "../utils/groupUtils";
 
 function SplitBill() {
   const { groupId } = useParams();
@@ -209,8 +210,18 @@ function SplitBill() {
         { isPaid: newPaidStatus },
         { withCredentials: true }
       );
+      
+      const newRemainingTotal = Object.entries(memberTotals)
+        .reduce((total, [id, amount]) => {
+          const isPaid = id === memberId ? newPaidStatus : paidMembers[id];
+          return total + (isPaid ? 0 : amount);
+        }, 0);
+      
+      await updateGroupTotal(groupId, newRemainingTotal);
+      
     } catch (err) {
       console.error("Error updating payment status:", err);
+      
       setPaidMembers((prev) => ({
         ...prev,
         [memberId]: !prev[memberId],

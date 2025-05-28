@@ -10,6 +10,7 @@ import ChangeGroupPic from "../Component/ChangeGroupPic";
 import group1 from "/assets/icons/group1.svg";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { calculateGroupTotal } from "../utils/groupUtils";
 
 function GroupForm() {
   const { groupId } = useParams();
@@ -349,11 +350,8 @@ function GroupForm() {
           }
         }
 
-        if (response.status === 200) {
-          navigate(`/groups/${groupId}/items`);
-        } else {
-          setError("Failed to update group. Please try again.");
-        }
+        await calculateGroupTotal(groupId);
+        navigate(`/groups/${groupId}/items`);
       } else {
         const response = await axios.post(
           "/api/groups",

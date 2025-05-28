@@ -7,7 +7,11 @@ import SearchBar from "../Component/SearchBar";
 import defaultprofile from "/assets/icons/defaultprofile.png";
 import axios from "axios";
 import { getAvatarUrl } from "../utils/avatarUtils";
+import { useAuth } from "../context/AuthContext";
+import { calculateGroupTotal } from "../utils/groupUtils";
+
 function GroupList() {
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,24 +24,105 @@ function GroupList() {
 
   useEffect(() => {
     const fetchGroups = async () => {
+      if (!user) return;
+      
       try {
         const response = await axios.get("/api/users/me/groups", {
           withCredentials: true,
         });
 
         if (response.data) {
+          // First calculate all group totals to ensure they're up to date
+          const groupsData = response.data;
+          console.log("Recalculating group totals...");
+          
+          // Calculate totals for all groups before formatting
+          for (const group of groupsData) {
+            try {
+              await calculateGroupTotal(group.id);
+              console.log(`Updated total for group: ${group.name}`);
+            } catch (err) {
+              console.error(`Failed to calculate total for group ${group.id}:`, err);
+            }
+          }
+          
+          // Fetch updated group data after calculating totals
+          const updatedResponse = await axios.get("/api/users/me/groups", {
+            withCredentials: true,
+          });
+          
           // Format groups data for display
-          const formattedGroups = response.data.map((group) => ({
-            id: group.id,
-            name: group.name,
-            description: group.description,
-            icon: group.icon,
-            // Calculate balance for each group
-            balance: group.members.reduce((total, member) => {
-              return total + member.amountOwed;
-            }, 0),
-            members: group.members,
-          }));
+          const formattedGroups = updatedResponse.data.map((group) => {
+            const isOwner = group.ownerId === user.id;
+            let balance;
+            
+            if (isOwner) {
+              balance = group.total || 0;
+            } else {
+              const userMember = group.members.find(member => 
+                (member.userId === user.id) || 
+                (member.user && member.user.id === user.id)
+              );
+              
+              if (userMember) {
+                // Calculate balance the same way SplitBill.jsx does
+                let memberTotal = 0;
+                let subtotal = 0;
+                
+                // Calculate base item amounts
+                if (group.items) {
+                  group.items.forEach((item) => {
+                    const itemAmount = parseFloat(item.amount);
+                    let splitMembers;
+                    
+                    if (item.users && item.users.length > 0) {
+                      splitMembers = item.users.map((u) => u.userId || u.user?.id);
+                    } else if (item.splitBetween && item.splitBetween.length > 0) {
+                      splitMembers = item.splitBetween;
+                    } else {
+                      splitMembers = group.members.map((m) => m.userId || m.user?.id || m.id);
+                    }
+                    
+                    if (splitMembers && splitMembers.length > 0) {
+                      const splitAmount = itemAmount / splitMembers.length;
+                      
+                      // Only add to total if this user is in splitMembers
+                      const userId = userMember.userId || (userMember.user && userMember.user.id);
+                      if (userId && splitMembers.includes(userId)) {
+                        memberTotal += splitAmount;
+                      }
+                      
+                      subtotal += itemAmount;
+                    }
+                  });
+                }
+                
+                // Apply service charge and tax proportionally
+                const serviceChargeRate = parseFloat(group.serviceCharge || 0) / 100;
+                const taxRate = parseFloat(group.tax || 0) / 100;
+                const extraAmount = subtotal * (serviceChargeRate + taxRate);
+                
+                if (subtotal > 0) {
+                  const proportion = memberTotal / subtotal;
+                  const memberExtra = extraAmount * proportion;
+                  memberTotal += memberExtra;
+                }
+                
+                balance = -memberTotal; // Negative because it's an amount owed
+              } else {
+                balance = 0;
+              }
+            }
+
+            return {
+              id: group.id,
+              name: group.name,
+              description: group.description,
+              icon: group.icon,
+              balance: balance,
+              members: group.members,
+            };
+          });
 
           setGroups(formattedGroups);
           setError(null);
@@ -51,7 +136,7 @@ function GroupList() {
     };
 
     fetchGroups();
-  }, []);
+  }, [user]);
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())

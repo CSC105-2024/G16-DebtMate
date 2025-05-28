@@ -7,6 +7,7 @@ import { getAvatarUrl, getDisplayName } from "../utils/avatarUtils";
 import ItemCard from "../Component/ItemCard";
 import axios from "axios";
 import NumberInput from "../Component/NumberInput";
+import { calculateGroupTotal } from "../utils/groupUtils";
 
 function ItemList() {
   const { groupId } = useParams();
@@ -134,6 +135,8 @@ function ItemList() {
               ...prev,
               [field]: parsedValue,
             }));
+
+            await calculateGroupTotal(groupId);
           }
         } catch (err) {
           if (field === "serviceCharge") {

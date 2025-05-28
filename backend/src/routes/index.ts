@@ -51,6 +51,7 @@ protectedRoutes.get('/users/me/groups', GroupController.getUserGroups); // just 
 protectedRoutes.post('/groups/:id/members', GroupController.addGroupMember);
 protectedRoutes.delete('/groups/:id/members/:userId', GroupController.removeGroupMember);
 protectedRoutes.put('/groups/:id/members/:userId/paid', GroupController.markMemberPaid);
+protectedRoutes.put('/groups/:id/total', GroupController.updateGroupTotal);
 
 // items in groups
 protectedRoutes.post('/groups/:groupId/items', ItemController.createItem);
