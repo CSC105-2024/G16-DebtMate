@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { execSync } from 'child_process';
 import path from 'path';
 
 const prisma = new PrismaClient();
@@ -20,6 +21,15 @@ const avatars = {
 async function main() {
   try {
     console.log('Starting database setup...');
+    
+    // First ensure database schema is created
+    try {
+      console.log('Creating database schema...');
+      execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+    } catch (error) {
+      console.error('Error creating database schema:', error);
+      process.exit(1);
+    }
     
     const saltRounds = 10;
     const password = await bcrypt.hash('password123', saltRounds); 
@@ -169,7 +179,6 @@ async function main() {
       console.log('Setting up friendships...');
 
       try {
-        // First clear any existing friendship connections for Alex
         const alex = await prisma.user.findUnique({ 
           where: { username: 'alexturner' },
           include: { friends: true }
@@ -216,8 +225,6 @@ async function main() {
         
         console.log(`Alex now has ${alexWithFriends?.friends.length} friends`);
         
-        // Remove the redundant friendship creation code below this section
-        // or comment it out since it might cause conflicts
       } catch (error) {
         console.error('Error setting up Alex\'s friendships:', error);
       }
@@ -303,7 +310,7 @@ async function main() {
             ownerId: alex.id,
             members: {
               create: [
-                { userId: alex.id }, // Owner is automatically a member
+                { userId: alex.id }, 
                 { userId: brooke.id },
                 { userId: carlos.id },
                 { userId: dana.id },
@@ -378,14 +385,14 @@ async function main() {
         // Item 4: Dinner at Restaurant
         const dinner = await prisma.item.create({
           data: {
-            name: 'Seafood Dinner',
-            amount: 425.80,
+            name: 'Dinner at Restaurant',
+            amount: 420.00,
             groupId: weekendGroup.id
           }
         });
 
-        // Split dinner equally
-        const dinnerShare = 425.80 / 6;
+        // Split dinner equally among all 6 members
+        const dinnerShare = 420.00 / 6;
         await Promise.all([
           prisma.itemUser.create({ data: { itemId: dinner.id, userId: alex.id, amount: dinnerShare } }),
           prisma.itemUser.create({ data: { itemId: dinner.id, userId: brooke.id, amount: dinnerShare } }),
