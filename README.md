@@ -25,8 +25,11 @@
 - npm (v7+)
 
 ---
+bet my g, here’s the fixed markdown flow, clean and clear af:
 
-### Setting Up the Project
+---
+
+### 🚀 Setting Up the Project
 
 1. **Clone the repository**
 
@@ -35,13 +38,7 @@
    cd G16-DebtMate
    ```
 
-2. **Install dependencies**
-
-   ```bash
-   npm run setup
-   ```
-
-3. **Configure the backend environment**
+2. **Configure the backend environment**
 
    ```bash
    cd backend
@@ -49,60 +46,30 @@
    cd ..
    ```
 
+3. **Install dependencies**
+
+   ```bash
+   npm run setup
+   ```
+
 4. **Default `.env` configuration**
 
    ```env
-    # JWT Configuration
-    JWT_SECRET="aec0d8"
-    JWT_EXPIRES_IN=7d
-    
-    # Prisma Database Configuration
-    DATABASE_URL="file:../dev.db"
-    
-    PORT=3000
+   # JWT Configuration
+   JWT_SECRET="aec0d8"
+   JWT_EXPIRES_IN=7d
+
+   # Prisma Database Configuration
+   DATABASE_URL="file:../dev.db"
+
+   PORT=3000
    ```
 
-5. **Initialize and seed the database (from backend folder)**
+5. **Start both frontend and backend concurrently**
 
-   ```bash
-   npm run db:setup
-   ```
-
-   > This seeds the initial data using:
-   >
-   > ```json
-   > "db:setup": "tsx prisma/setup.ts"
-   > ```
-
-6. **Start both frontend and backend concurrently**
-    > In Root:
    ```bash
    npm run dev:all
    ```
-
----
-
-## Running in Development Mode
-
-- Frontend only:
-
-  ```bash
-  npm run dev
-  # Access at http://localhost:5173
-  ```
-
-- Backend only:
-
-  ```bash
-  npm run server
-  # Access at http://localhost:3000
-  ```
-
-- Both:
-
-  ```bash
-  npm run dev:all
-  ```
 
 ---
 
